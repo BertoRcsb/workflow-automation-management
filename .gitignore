@@ -1,0 +1,11 @@
+# Editors / IDEs
+.idea/
+.vscode/
+*.iml
+
+# Generated previews
+*.preview.html
+
+# OS
+.DS_Store
+Thumbs.db
