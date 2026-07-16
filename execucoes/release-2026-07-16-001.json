@@ -3,7 +3,7 @@
   "date": "2026-07-16",
   "release_version": "1.111.2",
   "release_type": "Hotfix",
-  "trigger": "Optimus Prime — teste E2E (modo executar, até Passo 1)",
+  "trigger": "Optimus Prime — 1º ciclo E2E completo (coletor → validador → montador → Sync Passos 1/2/3 + sync pós-deploy)",
   "cards_collected": 1,
   "cards_approved": 1,
   "cards_rejected": 0,
@@ -24,16 +24,42 @@
   "notion_page": "https://app.notion.com/p/39f19d89231881e4a2ebea8cb573467e",
   "notifications_sent": 0,
   "sync": {
-    "step": "1 (prerelease -> teste_regressivo)",
     "repos_ativados": ["bernhoeft-grt-autocadastro-front"],
     "repos_comentados": ["contractweb-v3", "bernhoeft-grt-storage"],
-    "command": "make run PR_TITLE=\"1.111.2\"",
-    "prs_created": ["https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/245"],
-    "merged": false,
-    "exit_code": 0,
-    "summary": "total=1 sucesso=1 conflito=0 erro=0 sem_alteracao=0"
+    "passo_1": {
+      "descricao": "prerelease -> teste_regressivo (pré-prod)",
+      "command": "make run PR_TITLE=\"1.111.2\"",
+      "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/245",
+      "merged_by_ronan": true
+    },
+    "passo_2": {
+      "descricao": "teste_regressivo -> master (prod)",
+      "command": "make run PR_TITLE=\"[Hotfix] 1.111.2\"",
+      "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/247",
+      "merged_by_ronan": true
+    },
+    "passo_3": {
+      "descricao": "triggers Cloud Build — deploy nos ambientes dos clientes (grt-app-prod / global)",
+      "command": "make run-triggers",
+      "nota": "run-triggers NÃO recebe PR_TITLE; aprovação do build é do Ronan no GCP após OK do QA",
+      "triggers": [
+        {"nome": "neoenergia-front-autocadastro", "trigger_id": "1ab464c6-f489-4c68-9182-eb5990009153", "build_id": "2a1658fd-ba44-4907-b1de-24827d20ecdf", "status": "aprovado/deployado"},
+        {"nome": "vli-front-autocadastro", "trigger_id": "0601cee1-6236-489d-a985-e92f6fb5410a", "build_id": "8733754b-e199-4e8e-abe4-e9d0e7220cf9", "status": "aprovado/deployado"}
+      ]
+    },
+    "pos_deploy_sync": {
+      "descricao": "master -> develop/stage/prerelease (propaga a master de volta pras branches de trabalho)",
+      "command": "make run PR_TITLE=\"Sync Master\"",
+      "prs": [
+        "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/248 (develop)",
+        "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/249 (stage)",
+        "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/250 (prerelease)"
+      ],
+      "merge": "Ronan"
+    }
   },
-  "stopped_at": "PR #245 criado — aguardando merge do Ronan. Passo 2 (master) e Passo 3 (triggers) pendentes, governança do Ronan.",
+  "stopped_at": "DEPLOY CONCLUÍDO com sucesso (2026-07-16): 1.111.2 no ar em prod + clientes (Neoenergia, VLI). Sync pós-deploy master->develop/stage/prerelease criado (PRs #248/#249/#250, aguardando merge do Ronan). Ciclo E2E completo, sem erros.",
+  "status": "concluido",
   "errors": [],
-  "relatorio": "Esteira executada de ponta a ponta pelo Optimus Prime (coletor -> validador -> montador -> Sync Passo 1). PB-5740 aprovado (PR+repo), documentado no Notion como Hotfix 1.111.2, e sincronizado prerelease -> teste_regressivo abrindo o PR #245. Nenhum merge/deploy real (governanca do Ronan). Sem erros."
+  "relatorio": "1º ciclo E2E completo conduzido pelo Optimus Prime. PB-5740 (Hotfix 1.111.2) coletado, validado (PR+repo), documentado no Notion, promovido via Sync (Passo 1 PR #245, Passo 2 PR #247), triggers Neoenergia+VLI deployadas (builds 2a1658fd e 8733754b), e sync pós-deploy master->develop/stage/prerelease (PRs #248/#249/#250). Merges e aprovação de build = governança do Ronan. Sem erros."
 }

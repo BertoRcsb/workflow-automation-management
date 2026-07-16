@@ -54,9 +54,17 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
        `make dry-run` → OK do Ronan → **`make run`** (abre os PRs). **Merge é do Ronan.**
      - **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando explícito
        do Ronan**. Por enquanto o Optimus Prime **só edita o YAML** (não roda o `make run` de master).
-     - **Passo 3** — **`make run-triggers PR_TITLE="<versão>"`** (deploy nos ambientes dos clientes):
-       **100% do Ronan**, após o OK do QA.
-   - **PARA no Passo 1.** Master/prod e triggers = governança total do Ronan.
+     - **Passo 3** — **`make run-triggers`** (dispara os triggers Cloud Build → deploy nos ambientes
+       dos clientes; **NÃO recebe `PR_TITLE`**). O Optimus Prime pode **disparar** sob **comando
+       explícito** do Ronan; **quais** triggers vêm de **instrução do Ronan + os `triggers:` do
+       `repos.yaml`** (ainda **não** estão no Notion). A **aprovação do build no GCP é do Ronan**,
+       após OK do QA. Ex. (autocadastro-front): `neoenergia-front-autocadastro`, `vli-front-autocadastro`.
+     - **Pós-deploy (sync de volta)** — depois do deploy, sincroniza **master → develop, stage,
+       prerelease**: edita o YAML (`source: master`, `targets: [develop, stage, prerelease]`),
+       `make dry-run` → OK → **`make run PR_TITLE="Sync Master"`** (título **padrão** desse passo).
+       Cria os PRs; **merges do Ronan**.
+   - **Governança:** master/prod, merges e aprovação de build = **sempre do Ronan**; o Optimus Prime
+     **pergunta antes** de master (Passo 2) e das triggers (Passo 3).
 7. **Resumo consolidado** (§9) → exibe e salva em `execucoes/`.
 
 ## Configuração atual — MCPs + `make` do sync-repos-from-master
@@ -65,10 +73,12 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
 - **MCPs:** Atlassian (leitura de cards, `read:jira-work`) e Notion (base "Versões - NewContract").
 - **Deploy tool:** `/home/ronan/sync-repos-from-master` (Makefile). Comandos:
   - `make dry-run [PR_TITLE="..."]` / `make dry-run-triggers` → **simulação segura** (sempre antes).
-  - `make run [PR_TITLE="<versão>"]` → cria/atualiza **PRs** conforme `source`/`target` do YAML.
-    No fluxo NewContract: **Passo 1** = `prerelease` → `teste_regressivo` (até onde o Optimus Prime vai).
-  - `make run-triggers PR_TITLE="<versão>"` → **deploy real na GCP** (Cloud Build). **NÃO é acionado
-    pelo Optimus Prime** (Passo 3, 100% do Ronan).
+  - `make run PR_TITLE="..."` → cria/atualiza **PRs** conforme `source`/`target` do YAML. **Convenção do
+    `PR_TITLE`:** promoção de release = `[Hotfix]`/`[Release] <versão>`; **pós-deploy** (master →
+    develop/stage/prerelease) = **`Sync Master`** (padrão).
+  - `make run-triggers` → dispara os **triggers Cloud Build** (deploy nos ambientes dos clientes).
+    **NÃO recebe `PR_TITLE`.** Disparado pelo Optimus Prime **sob comando explícito do Ronan**; a
+    **aprovação do build no GCP** é do Ronan (após OK do QA).
   - Saída é **`chave=valor` parseável**; **exit code 0 = ok, 1 = erro** (usar para o gate).
   - **Branches (confirmar grafia exata):** `prerelease` → `teste_regressivo` → `master`. `make run`
     **sempre com `target` explícito**; trocar `source`/`targets` por passo é via **edição do YAML**
@@ -77,7 +87,9 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
 
 ## Guardrails (diretrizes inquebráveis)
 - 🚫 **MERGE é só do Ronan** — Optimus Prime **nunca** mergeia (garantia: `auto_merge=false`).
-- 🚫 **Deploy real (`make run-triggers`) é do Ronan** — parar no `make run`.
+- 🚫 **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master
+  (Passo 2) e antes de disparar triggers (Passo 3). Pode **disparar** triggers sob comando explícito,
+  mas a **aprovação do build no GCP é do Ronan** (após OK do QA).
 - 🛡️ **Segurança por ação:** toda ação que muda algo roda antes em **dry-run**, parseia saída +
   exit code; erro → documenta e **para**; limpo → mostra e espera **OK explícito** antes do real.
 - 📓 **Todo erro documentado**; refino de skill/comando **só com aprovação do Ronan** (sem correção
