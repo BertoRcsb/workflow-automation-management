@@ -1,0 +1,39 @@
+{
+  "execution_id": "release-2026-07-16-001",
+  "date": "2026-07-16",
+  "release_version": "1.111.2",
+  "release_type": "Hotfix",
+  "trigger": "Optimus Prime — teste E2E (modo executar, até Passo 1)",
+  "cards_collected": 1,
+  "cards_approved": 1,
+  "cards_rejected": 0,
+  "cards": [
+    {
+      "card_id": "PB-5740",
+      "title": "Bloqueio no Autocadastro - Etapa 4 (\"Nenhum e-mail cadastrado\")",
+      "issue_type": "Bug",
+      "status": "Teste regressivo",
+      "owner": "Anderson de Oliveira Santos",
+      "product": "NewContract",
+      "repository": "bernhoeft/bernhoeft-grt-autocadastro-front",
+      "pull_requests": ["https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/244"],
+      "validation": "approved (PR + repositório)"
+    }
+  ],
+  "release_notes_updated": true,
+  "notion_page": "https://app.notion.com/p/39f19d89231881e4a2ebea8cb573467e",
+  "notifications_sent": 0,
+  "sync": {
+    "step": "1 (prerelease -> teste_regressivo)",
+    "repos_ativados": ["bernhoeft-grt-autocadastro-front"],
+    "repos_comentados": ["contractweb-v3", "bernhoeft-grt-storage"],
+    "command": "make run PR_TITLE=\"1.111.2\"",
+    "prs_created": ["https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/245"],
+    "merged": false,
+    "exit_code": 0,
+    "summary": "total=1 sucesso=1 conflito=0 erro=0 sem_alteracao=0"
+  },
+  "stopped_at": "PR #245 criado — aguardando merge do Ronan. Passo 2 (master) e Passo 3 (triggers) pendentes, governança do Ronan.",
+  "errors": [],
+  "relatorio": "Esteira executada de ponta a ponta pelo Optimus Prime (coletor -> validador -> montador -> Sync Passo 1). PB-5740 aprovado (PR+repo), documentado no Notion como Hotfix 1.111.2, e sincronizado prerelease -> teste_regressivo abrindo o PR #245. Nenhum merge/deploy real (governanca do Ronan). Sem erros."
+}

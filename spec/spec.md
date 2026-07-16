@@ -1,9 +1,13 @@
 # Spec — Esteira Inteligente de Release Notes (Jira → Notion)
 
 > Documento **vivo** (v1, 2026-07-13). Funde a spec "Esteira Inteligente para Montagem de Pacotes
-> de Deploy" com o que **validamos no 1º teste E2E**. Base de origem do futuro **skill**.
+> de Deploy" com o que **validamos no 1º teste E2E**. Base de origem das **skills**.
 > Relacionados: `workflow-with-automation-assisted-by-management.md` (plano geral), `PROPOSTA.md`,
 > e o doc original `esteira-inteligente-para-montagem-de-pacotes-de-deploy.md`.
+>
+> **Escopo (não é só incidentes):** a esteira abrange (ou abrangerá) os boards de **incidents,
+> features e refatoração**. O 1º ciclo foi validado em incidentes (PB), e daí cresce. (Por isso a
+> esteira não é a "de incidentes"; a spec vive em `spec/spec.md`.)
 
 ## 1. Visão geral
 
@@ -19,7 +23,7 @@ Quatro papéis + um orquestrador (podem ser módulos/prompts, não precisam ser 
 | **Validador** | aplica o gate de elegibilidade (regra v2) | ✅ validado |
 | **Montador** | escreve/atualiza a release no Notion (molde 1.110.0) | ✅ validado |
 | **Notificador** | comunica pendências dos reprovados | ⏳ pendente (sandbox) |
-| **Orquestrador** | coordena, consolida, garante idempotência/rastreabilidade | ⏳ a formalizar |
+| **Orquestrador** | coordena tudo + governa o Sync; segurança por ação, consolida, documenta erro | ✅ formalizado (skill `orquestrador` / **"Optimus Prime"**) |
 
 ## 2. Objetivo
 
@@ -77,10 +81,15 @@ cards em "Pronto para deploy" estavam vazios).
 
 **Barra** quem **não tem nada** (sem PR, sem repo, sem ação de dados). `"N/A"` **não** é link válido.
 
+**Heurística "só-banco legítimo"** (validada 2026-07-14, caso-modelo **PB-5778** — virou deploy
+real em prod): para distinguir banco legítimo de "código que esqueceu a PR" →
+`Ação de dados = Sim` **e** (assignee é responsável de banco **ou** a descrição cita
+proc/procedure/carga/seleção/query) → **aprova sem exigir PR/repo**. PB-5778: Ação de dados=Sim,
+sem PR/repo, assignee **Alexandre Bolonhini** (banco) + descrição sobre corrigir a procedure → aprovado.
+
 - **Saída aprovados:** chave, título, responsável, resumo, categoria, evidências, data da validação.
 - **Saída reprovados:** chave, título, responsável, `pending_items`, orientação, data.
-- **Refino aberto:** distinguir "só-banco legítimo" de "código que esqueceu a PR"; ler PR do
-  **painel Development** quando o campo estiver vazio.
+- **Refino aberto:** ler PR do **painel Development** quando o campo estiver vazio.
 
 ### 5.3 Montador
 Cria/atualiza a página da versão no Notion, no **molde 1.110.0**.
@@ -137,6 +146,37 @@ sequenceDiagram
     O->>R: resumo consolidado (execucao)
     Note over R,N: Deploy segue manual via sync-repos-from-master
 ```
+
+### 6.1 Optimus Prime (orquestrador) — modos, gates e o Sync
+
+O orquestrador é a skill **"Optimus Prime"** (`.claude/skills/orquestrador/`). Ele **governa as
+skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
+
+- **`verificar`** — dry/seguro: roda a sequência sem tocar em nada (coletor → confere → montador
+  **simula** o Notion → mostra o alvo do Sync + `make dry-run`). Só relatório.
+- **`executar`** — sequência completa até o `make run` (PRs), com **gate de segurança por ação**.
+
+**Gate de segurança por ação:** toda ação que muda algo roda antes em **dry-run**, parseia a saída
+(`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**; se limpo → **mostra
+e espera OK explícito** do Ronan antes do real.
+
+**Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e ativa
+**apenas os repositórios de "Repositórios para Deploy"**; **o que não corresponder → comenta de volta**
+(não entra no `make run`); **repo faltando → para e reporta** (Ronan adiciona).
+
+**Fluxo de promoção de branches (nunca direto pra master; `make run` sempre com `target` explícito):**
+- **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): edita o YAML,
+  `make dry-run` → OK → `make run` (PRs). **Merge é do Ronan.**
+- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando do Ronan**;
+  por enquanto o Optimus Prime **só edita o YAML**.
+- **Passo 3** — `make run-triggers PR_TITLE="<versão>"` (ambientes dos clientes): **100% do Ronan**,
+  após OK do QA.
+- Troca de `source`/`target` por passo é via **edição do YAML** (comentar/descomentar). Branches:
+  `prerelease` → `teste_regressivo` → `master` (confirmar grafia exata antes do run real).
+
+**Diretrizes inquebráveis:** 🚫 **merge é só do Ronan** (manter `auto_merge=false`); 🚫 **deploy real
+(`make run-triggers`) é do Ronan** — Optimus Prime **para no `make run`**; 🧩 **hotfix** o Ronan
+conduz. Erros viram **`erros/AAAA-MM-DD-*.md`** (base de refino, corrigido só com OK do Ronan).
 
 ## 7. Modelo de card normalizado
 
