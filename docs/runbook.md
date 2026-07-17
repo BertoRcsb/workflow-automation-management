@@ -4,6 +4,16 @@
 > → equivale a **`/optimus-prime executar`** (ou **`/optimus-prime verificar`** para ensaiar em
 > *dry*, sem tocar em nada).
 
+## Pré-requisitos (PyCharm)
+Pra o **"optimus prime iniciar"** funcionar, a esteira roda **dentro do Claude Code** (o Claude é quem
+opera os MCPs). Antes de rodar:
+1. **Claude Code ativo/conectado** na sessão do PyCharm.
+2. **MCPs `Atlassian` + `Notion` conectados** (conferir com `/mcp`).
+3. **Projeto `workflow-automation-management` aberto** (pras skills + comando carregarem).
+
+> ⚠️ Não é desassistido (tipo `make run`): **pausa nos gates** (Notion, `make run`, e — sempre seu —
+> merge/master/`run-triggers`) e **consome créditos do Claude** por execução.
+
 ## Sequência completa (o que roda por baixo) e seus gates
 
 | # | Etapa | Comando por baixo | Gate (Ronan) |

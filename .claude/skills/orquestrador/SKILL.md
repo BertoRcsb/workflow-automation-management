@@ -4,7 +4,7 @@ description: >-
   Use quando o usuário quer conduzir a esteira de release notes de ponta a ponta
   — coordenar coletor → validador → montador → notificador e acionar o deploy via
   sync-repos-from-master, com segurança por ação e aprovação humana. Gatilhos:
-  "Optimus Prime", "Optimus Prime verificar", "Optimus Prime executar", "iniciar
+  "Optimus Prime", "Optimus Prime iniciar", "Optimus Prime verificar", "Optimus Prime executar", "iniciar
   deploy", "montar e preparar a release", "rodar a esteira". Contexto atual: MCPs
   Atlassian + Notion e comandos `make` do sync-repos-from-master; papel agnóstico.
 ---
@@ -34,6 +34,8 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
 - **`executar`** — a **sequência completa até o `make run`**: tudo do `verificar` +, a cada
   gate aprovado pelo Ronan: monta/atualiza o Notion (real) → aciona o `notificador` (sandbox)
   → edita o `repos.yaml` → roda `make run` (só PRs). **Para antes de merge/deploy real.**
+
+> **"Optimus Prime iniciar"** (ou só **"iniciar"**) = modo **`executar`**.
 
 ## Sequência e gates (base spec §6)
 1. **Versão-alvo:** lê a última versão no Notion e **propõe a próxima** (release ou hotfix);

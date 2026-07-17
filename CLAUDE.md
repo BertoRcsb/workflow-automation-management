@@ -8,6 +8,11 @@ no Jira, valida por conteúdo, documenta a versão no Notion, notifica responsá
 `sync-repos-from-master` (que abre os PRs / dispara triggers). **MCP-first, código mínimo, clean
 architecture** (referência: o próprio `sync-repos-from-master`). O **deploy real e os merges são do Ronan**.
 
+> **Sem clients Python bespoke** (spec §3): a orquestração é a **skill sobre os MCPs** (Atlassian/Notion)
+> + os `make` do `sync-repos-from-master`. Aciona-se com **"optimus prime iniciar"** no Claude Code
+> (dentro do PyCharm), com o Claude conectado e os MCPs ativos. Não é um `make run` desassistido —
+> pausa nos gates (merge/master/triggers = Ronan).
+
 ## Comandos
 Orquestrador (**Optimus Prime**), via slash command:
 ```

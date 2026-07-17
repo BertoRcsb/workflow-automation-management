@@ -1,6 +1,6 @@
 ---
 description: Optimus Prime — orquestra a esteira (coletor→validador→montador→Sync) com gate de segurança e aprovação humana. Modos: verificar | executar.
-argument-hint: verificar | executar [--card PB-XXXX] [--versao 1.111.2]
+argument-hint: iniciar | verificar | executar [--card PB-XXXX] [--versao 1.111.2]
 allowed-tools: Bash, Read, Edit, mcp__atlassian__getJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-query-data-sources
 ---
 
@@ -9,7 +9,8 @@ comportamento é a skill `orquestrador` (`.claude/skills/orquestrador/SKILL.md`)
 `spec/spec.md`. Delegue aos papéis `coletor`/`validador`/`montador`
 (notificador ainda em sandbox).
 
-**Modo:** `$ARGUMENTS` (se vazio, use **`verificar`**).
+**Modo:** `$ARGUMENTS` — **`iniciar`**/**`executar`** = roda a esteira (com gates); **`verificar`** =
+ensaio dry (não toca em nada). Se vazio, use **`verificar`**.
 
 ## Sequência
 1. **Versão-alvo** — leia a última no Notion (base "Versões - NewContract") e proponha a próxima
