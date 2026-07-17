@@ -73,7 +73,8 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
 - **Skills irmãs** (delegar, nunca reimplementar): `coletor`, `validador`, `montador`
   (+ `notificador` quando existir).
 - **MCPs:** Atlassian (leitura de cards, `read:jira-work`) e Notion (base "Versões - NewContract").
-- **Deploy tool:** `/home/ronan/sync-repos-from-master` (Makefile). Comandos:
+- **Deploy tool:** `sync-repos-from-master` — **repo separado** (não faz parte deste repo). Caminho via
+  env **`SYNC_REPO_PATH`**; default: repo-irmão **`../sync-repos-from-master`**. Makefile. Comandos:
   - `make dry-run [PR_TITLE="..."]` / `make dry-run-triggers` → **simulação segura** (sempre antes).
   - `make run PR_TITLE="..."` → cria/atualiza **PRs** conforme `source`/`target` do YAML. **Convenção do
     `PR_TITLE`:** promoção de release = `[Hotfix]`/`[Release] <versão>`; **pós-deploy** (master →

@@ -4,6 +4,7 @@
 > **Você fala/escreve:** `Optimus Prime, iniciar` → equivale a **`/optimus-prime executar`**
 > (ou **`/optimus-prime verificar`** para ensaiar em *dry*, sem tocar em nada).
 > **Roteiro completo (comandos por passo):** [`docs/runbook.md`](docs/runbook.md)
+> **Primeira vez / configurar (clonou agora?):** [`docs/SETUP.md`](docs/SETUP.md)
 
 Governança de deploy assistida por automação: **Jira → Notion → Sync/Deploy (GCP)**, com o
 orquestrador **"Optimus Prime"** conduzindo a esteira e o Ronan aprovando cada passo crítico.
