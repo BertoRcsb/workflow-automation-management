@@ -1,0 +1,18 @@
+{
+  "execution_id": "exec-20260717-130553",
+  "date": "2026-07-17",
+  "release_version": "1.111.3",
+  "release_type": "Release",
+  "trigger": "Optimus Prime — executar",
+  "cards_collected": 1,
+  "cards_approved": 1,
+  "cards_rejected": 0,
+  "cards": [],
+  "release_notes_updated": true,
+  "notion_page": "https://app.notion.com/p/notion-mock-1.111.3",
+  "notifications_sent": 0,
+  "stopped_at": "",
+  "status": "concluido",
+  "errors": [],
+  "relatorio": ""
+}
