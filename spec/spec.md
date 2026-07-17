@@ -65,7 +65,9 @@ flowchart LR
 Busca no Jira os cards candidatos e os normaliza (ver modelo em §7).
 - **Entrada:** projeto(s), filtro JQL, status alvo, versão de destino.
 - **Config atual:** projeto `PB`; `issuetype = Incidente`; status `Teste regressivo`, `Pronto para deploy`.
-  **Um tipo por ciclo** (agora incidentes; refatoração etc. depois).
+- **Um board por ciclo — NUNCA misturar:** coletar de **um** board por execução (**incidentes** *ou*
+  **features** *ou* **refatoração**); o board é **parâmetro** da coleta. Cada board → sua própria
+  release/hotfix. Misturar boards só com **OK explícito do Ronan** ("avisaremos ao Optimus"). Hoje: incidentes/PB.
 - **Saída:** lista de cards com chave, título, status, responsável, produto, PR, repo, ação de dados.
 - **Aprendizado:** respostas do Jira são **grandes** → pedir só os campos necessários e parsear
   (salvar em arquivo + Python quando estourar o limite de tokens).

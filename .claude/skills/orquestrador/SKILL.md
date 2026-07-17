@@ -27,10 +27,10 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
   própria — sempre delega às skills). **Não** mergeia nem faz deploy real (é do Ronan).
 
 ## Modos (verificar / executar)
-- **`verificar`** — modo **seguro/dry**, não toca em nada: `coletor` → confere specs →
-  `montador` **simula** a página e compara com as versões anteriores no Notion (colunas,
-  release/hotfix) → mostra o que faria no Sync (`repos.yaml` alvo + saída de `make dry-run`).
-  Entrega só **relatório**. É o "iniciar comando de verificação".
+- **`verificar`** — **apresenta ANTES o que vai fazer** (todos os passos + os comandos que rodaria),
+  **sem executar NENHUM comando** que mude algo: `coletor` (leitura) → `validador` → **rascunho**
+  (aprovados × reprovados) → simula o Notion e mostra o alvo do Sync (`repos.yaml` + `make dry-run`).
+  Entrega só **relatório/plano**.
 - **`executar`** — a **sequência completa até o `make run`**: tudo do `verificar` +, a cada
   gate aprovado pelo Ronan: monta/atualiza o Notion (real) → aciona o `notificador` (sandbox)
   → edita o `repos.yaml` → roda `make run` (só PRs). **Para antes de merge/deploy real.**
@@ -98,6 +98,10 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
   silenciosa). Ver [[regra-nao-executar-sozinho]].
 - 🔒 **Não inventar dado ausente** (§11); privilégio mínimo (Jira leitura; Notion só a base).
 - 🧩 **Hotfix** → identificar e **devolver ao Ronan** para ele conduzir.
+- 🧭 **Um board por vez** — coletar de UM board (incidentes/features/refatoração) por execução;
+  **nunca misturar** numa release. Misturar só com **OK explícito do Ronan**.
+- 👁️ **`verificar` nunca executa** — só apresenta o plano (o que faria); execução real só em
+  `executar`/`iniciar`.
 
 ## Documentação de erro / refino
 - Cada erro → um arquivo **`erros/AAAA-MM-DD-<slug>.md`** no repo: comando + parâmetros, exit code,

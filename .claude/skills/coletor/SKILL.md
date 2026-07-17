@@ -25,6 +25,9 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
   precisar, salvar a resposta em arquivo e parsear.
 - Entregar cada item no **modelo normalizado** (abaixo).
 - **Não** valida nem escreve em destino — isso é do `validador` / `montador`.
+- **Um board por vez:** coletar de **UM** board por execução — **incidentes** *ou* **features** *ou*
+  **refatoração** — **nunca misturar**. O board é **parâmetro** da coleta (não fixo). Misturar boards
+  numa mesma coleta/release só com **OK explícito do Ronan** ("avisaremos ao Optimus").
 
 ## Configuração atual — Jira via MCP Atlassian (read-only, escopo `read:jira-work`)
 - **cloudId:** `f36e5519-1f88-4f71-a406-75326e86deda` (bernhoeft.atlassian.net)
