@@ -1,0 +1,62 @@
+{
+  "execution_id": "release-2026-07-20-001",
+  "date": "2026-07-20",
+  "trigger": "Optimus Prime iniciar — todos os boards (varredura por prioridade, incidentes 1º; termina no Notion, Sync fora do loop)",
+  "mode": "executar",
+  "target": "todos os boards",
+  "cards_collected": 23,
+  "cards_approved": 11,
+  "cards_rejected": 12,
+  "boards": [
+    {
+      "board": "1 - Linha de frente / Incidentes",
+      "issuetype": "Incidente",
+      "release_version": "1.112.0",
+      "release_type": "Release",
+      "notion_page": "https://app.notion.com/p/3a319d892318818ea510f693709543f1",
+      "collected": 6,
+      "approved": ["PB-5822", "PB-5770", "PB-5651"],
+      "rejected": ["PB-5804", "PB-5728", "PB-5599"],
+      "repos_deploy": ["contractweb-v3", "bernhoeft-grt-contractweb-front", "bernhoeft-grt-login-api"],
+      "notas": "PB-5599 tem PR apontando só para PB-5651 (possível duplicata). Reprovados sem PR/repo/ação de dados."
+    },
+    {
+      "board": "2 - Features",
+      "issuetype": "Story (summary !~ Refatoração)",
+      "release_version": "1.113.0",
+      "release_type": "Release",
+      "notion_page": "https://app.notion.com/p/3a319d89231881cbabbef650ec4a6a1d",
+      "collected": 7,
+      "approved": ["PB-5528", "PB-5316", "PB-4727", "PB-4726", "PB-4761"],
+      "rejected": ["PB-5786", "PB-4786"],
+      "repos_deploy": ["bernhoeft-grt-newcontract-front", "bernhoeft-grt-sla-api"],
+      "decisoes_ronan": [
+        "PB-4761 aprovado como só-banco (APENAS PROC, Banco=Sim) — heurística não fechava; decisão do Ronan.",
+        "PB-5528: repo do card (sla-api) diverge da PR (newcontract-front #1112) — registrado PR + os dois repos, por decisão do Ronan."
+      ]
+    },
+    {
+      "board": "3 - Refatoração",
+      "issuetype": "Story (summary ~ Refatoração)",
+      "release_version": "1.114.0",
+      "release_type": "Release",
+      "notion_page": "https://app.notion.com/p/3a319d89231881d791ffcba3cc345537",
+      "collected": 10,
+      "approved": ["PB-5173", "PB-5166", "PB-5110"],
+      "rejected": ["PB-5735", "PB-5734", "PB-5723", "PB-5169", "PB-5162", "PB-5141", "PB-5115"],
+      "repos_deploy": ["bernhoeft-grt-contractweb-front"],
+      "notas": "3 aprovados são o front (PR #1003). Reprovados são BACK-/Triagem- e front sem PR."
+    }
+  ],
+  "release_notes_updated": true,
+  "notifications_sent": 0,
+  "notificador": "sandbox — mensagens de pendência dos reprovados mostradas só ao Ronan; nada enviado.",
+  "sync": {
+    "executado": false,
+    "nota": "Sync fica FORA do loop da varredura — por-board e explícito, em dias diferentes (incidentes 1º). Não rodado nesta execução."
+  },
+  "stopped_at": "Varredura dos 3 boards concluída no Notion (páginas 1.112.0 / 1.113.0 / 1.114.0 criadas e re-verificadas). Sync (Passo 1+) pendente, por-board, sob comando do Ronan.",
+  "status": "concluido",
+  "errors": [],
+  "relatorio": "Optimus Prime — iniciar todos os boards. Varreu Incidentes (1.112.0), Features (1.113.0) e Refatoração (1.114.0), cada board isolado com coleta→validação→página própria no Notion, sem misturar cards. 23 coletados, 11 aprovados, 12 reprovados. Duas decisões do Ronan no Board 2 (PB-4761 só-banco; PB-5528 repo/PR divergentes). Notificador em sandbox. Sync fora do loop (por-board e explícito, depois). Sem erros."
+}
