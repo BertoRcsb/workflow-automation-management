@@ -24,13 +24,47 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
 - Pedir **só os campos necessários** — respostas grandes estouram o contexto; se
   precisar, salvar a resposta em arquivo e parsear.
 - Entregar cada item no **modelo normalizado** (abaixo).
+- **PR por referência de card:** se o campo de PR **não** trouxer link do Bitbucket mas **referenciar
+  outro card** (`PB-XXXX`, ex.: "Pr no card PB-5651"), **resolver e herdar a PR/repo desse card
+  referenciado** como PR **compartilhada** (registrar que é a mesma PR do card X). Só herda o que
+  **existe** no card referenciado — **nunca inventa**; se lá também não houver PR, deixa vazio.
 - **Não** valida nem escreve em destino — isso é do `validador` / `montador`.
 - **Um board por vez:** coletar de **UM** board por execução — **incidentes** *ou* **features** *ou*
   **refatoração** — **nunca misturar**. O board é **parâmetro** da coleta (não fixo). Misturar boards
   numa mesma coleta/release só com **OK explícito do Ronan** ("avisaremos ao Optimus").
+- **Varredura "todos os boards":** quando o orquestrador pede os três, coletar **um por vez, em
+  sequência**, na **ordem de prioridade do registro** (incidentes 1º) — cada board vira **sua própria**
+  coleta → validação → release/hotfix (nunca um pacote combinado). Ver [[orquestrador]].
 
 ## Configuração atual — Jira via MCP Atlassian (read-only, escopo `read:jira-work`)
 - **cloudId:** `f36e5519-1f88-4f71-a406-75326e86deda` (bernhoeft.atlassian.net)
+
+### Registro de boards (fonte única — o board é config, não texto solto)
+Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **Ordem = prioridade**
+(incidentes sempre 1º). **Board sem JQL → pula e reporta** "filtro a definir" (não coleta, **não inventa**).
+
+| # (prioridade) | board (nome no Jira) | projeto | issuetype | status alvo | JQL | estado |
+|---|-------|---------|-----------|-------------|-----|--------|
+| 1 | **Linha de frente** (= incidentes) | `PB` | `Incidente` | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Incidente AND status in ("Teste regressivo","Pronto para deploy")` | ✅ definido |
+| 2 | **Features** | `PB` | `Story` (sem "Refatoração" no título) | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Story AND summary !~ "Refatoração" AND status in ("Teste regressivo","Pronto para deploy")` | ✅ definido |
+| 3 | **Refatoração** | `PB` | `Story` (com "Refatoração" no título) | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Story AND summary ~ "Refatoração" AND status in ("Teste regressivo","Pronto para deploy")` | ✅ definido |
+
+> **Como o mapeamento foi cravado:** os três "boards" do Jira (*Projetos Bernhoeft › Linha de frente /
+> Features / Refatoração*) são **visões dentro do projeto `PB`** — o MCP **não expõe a API de
+> boards/filtros**, então o issuetype de cada um foi **inferido pela população em status de deploy** e
+> **confirmado pelo Ronan**. Board sem mapeamento → **pula e reporta** (não inventa).
+>
+> **Features × Refatoração (critério fino confirmado pelo Ronan):** ambos são `Story`; a separação é
+> **pelo título** — **Refatoração = título contém "Refatoração"** (heurística `summary ~ "Refatoração"`,
+> observada nos cards: `FRONT -`/`BACK -`/`Triagem - Refatoração ...`); **Features = o complemento**
+> (`summary !~ "Refatoração"`). **Refatoração é o board menos importante (3º).** Se um card ficar no
+> board errado, é sinal de refino do critério (ajustar o filtro com OK do Ronan) — **não inventar**
+> outro critério por conta própria.
+>
+> **Prioridade (ordem da varredura "todos os boards"):** 1º **Linha de frente/incidentes** (principal) →
+> 2º **Features** (principal) → 3º **Refatoração** (menos importante).
+
+**Board 1 (Linha de frente / incidentes) — detalhe:**
 - **Projeto:** `PB` · **Issue type:** `Incidente` (um tipo por ciclo)
 - **Status alvo:** `Teste regressivo`, `Pronto para deploy`
 - **JQL:** `project = PB AND issuetype = Incidente AND status in ("Teste regressivo","Pronto para deploy")`
@@ -68,7 +102,8 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
 A **versão de destino não vem do card** — é atribuída na montagem do pacote.
 
 ## Evolução / próximos papéis (este escopo vai crescer)
-- Ler PR do **painel Development** quando o campo estiver vazio.
+- Ler PR do **painel Development** quando o campo estiver vazio (relacionado à "PR por referência de
+  card", já documentada em "Responsabilidade").
 - Extrair o **nome do proc** da descrição (cards só-banco).
 - Outras fontes/ciclos: outros projetos, issue types (refatoração etc.), Bitbucket/GitHub direto.
 - Trocar a ferramenta sem mudar o papel: reescrever apenas "Configuração atual".

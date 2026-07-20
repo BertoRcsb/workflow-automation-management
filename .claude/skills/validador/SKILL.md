@@ -25,6 +25,11 @@ Um item **passa** se:
 **Barra** quem não tem **nada** (sem PR, sem repo, sem ação de dados).
 `"N/A"` e `"Apenas PROC"` **não** contam como link válido.
 
+**PR por referência de card (conta como PR válida):** quando o `coletor` herda a PR de **outro card
+referenciado** (o campo apontava pra `PB-XXXX` em vez de link do Bitbucket — ver `coletor`), essa PR
+**compartilhada vale como PR + repositório** para a regra 1. Caso-modelo **PB-5599** (herdou a PR do
+PB-5651, `login-api #365`) → **APROVADO**.
+
 ## Heurística "só-banco legítimo" (validada em 2026-07-14 — caso-modelo PB-5778)
 Para distinguir **banco legítimo** de **"código que esqueceu a PR"**:
 
