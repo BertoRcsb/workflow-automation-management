@@ -79,8 +79,13 @@ O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qu
    pro Ronan** (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela documentação**:
    - **Lê o doc da versão no Notion** e ativa no `repos.yaml` **apenas os repositórios que constam em
-     "Repositórios para Deploy"**; **tudo que não corresponder → comenta de volta** (não entra no
+     "Repositórios para Deploy"** — ativando **só `name` + `repository`**; **os `triggers:` ficam
+     comentados** (triggers são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do
+     Passo 1/2 **não os usa**). **Tudo que não corresponder → comenta de volta** (não entra no
      `make run`). **Repo faltando no YAML → para e reporta** (Ronan adiciona).
+   - **Editar o `repos.yaml` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração** —
+     só interrompe/reporta em caso de **discrepância** (repo faltando no YAML, doc ambígua). O **gate
+     humano fica no `make run`** (dry-run → OK), **não** na edição do YAML.
    - **Fluxo de promoção (NUNCA direto pra master; `make run` sempre com `target` explícito):**
      - **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): ajusta o YAML,
        `make dry-run` → OK do Ronan → **`make run`** (abre os PRs). **Merge é do Ronan.**

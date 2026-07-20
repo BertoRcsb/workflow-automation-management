@@ -42,7 +42,11 @@ rascunho do validador, "posso criar"); **`verificar`** = ensaio dry (não toca e
 5. **Notificador** → *pulado* (sandbox; ainda não existe).
 6. **Sync (`sync-repos-from-master`), guiado pela documentação:**
    - Leia o doc da versão no Notion e ative no `repos.yaml` **só os repos de "Repositórios para
-     Deploy"**; **comente todo o resto**. Repo faltando → **pare e reporte**.
+     Deploy"** — ativando **só `name` + `repository`**; **`triggers:` ficam comentados** (são do
+     Passo 3/prod, após OK do PO/QA — o `make run` não os usa). **Comente todo o resto**. Repo
+     faltando → **pare e reporte**.
+   - **Editar o YAML é autônomo** (guiado pela doc): **não pergunte a cada alteração** — só reporte
+     **discrepância**. O gate humano é no **`make run`** (dry-run → OK), não na edição do YAML.
    - **Passo 1:** `source: prerelease` → `target: teste_regressivo`. `make dry-run` → OK → `make run`.
    - **Passo 2** (`teste_regressivo` → `master`): **só edite o YAML**; o run é do Ronan.
    - **Passo 3** (`make run-triggers`): **100% do Ronan**.
