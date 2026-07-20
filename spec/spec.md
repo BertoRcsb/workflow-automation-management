@@ -68,6 +68,20 @@ Busca no Jira os cards candidatos e os normaliza (ver modelo em §7).
 - **Um board por ciclo — NUNCA misturar:** coletar de **um** board por execução (**incidentes** *ou*
   **features** *ou* **refatoração**); o board é **parâmetro** da coleta. Cada board → sua própria
   release/hotfix. Misturar boards só com **OK explícito do Ronan** ("avisaremos ao Optimus"). Hoje: incidentes/PB.
+- **Registro de boards (config, não texto solto):** cada board tem projeto/issuetype/status/JQL numa
+  tabela na skill `coletor` ("Configuração atual"), com **ordem = prioridade**. Mapeamento **confirmado**
+  (os 3 "boards" são visões dentro do `PB`; o MCP não expõe a API de boards, então o issuetype foi
+  inferido pela população em status de deploy + OK do Ronan): **1º Linha de frente/incidentes = `Incidente`**
+  · **2º Features = `Story`** · **3º Refatoração = `Story`** (menos importante). Status alvo iguais nos três.
+- **Features × Refatoração (critério fino confirmado):** ambos são `Story`; a separação é **pelo
+  título** — **Refatoração** = `summary ~ "Refatoração"` (cards `FRONT -`/`BACK -`/`Triagem -
+  Refatoração ...`); **Features** = o complemento (`summary !~ "Refatoração"`). Refatoração é o 3º/menos
+  importante. Card no board errado = refino do filtro (com OK do Ronan) — **nunca inventar** critério.
+- **Varredura "todos os boards":** o orquestrador pode varrer os três **em sequência, por prioridade**
+  (incidentes 1º), rodando a esteira **isolada por board** (coleta→validação→**Notion próprio**). Isso
+  **reforça** a regra "nunca misturar" (cada board = sua release/hotfix); **não** é misturar. A varredura
+  **termina no Notion** — o Sync/deploy segue **por-board e em dias diferentes**. Board sem filtro → pula
+  e reporta. Ver §6.1.
 - **Saída:** lista de cards com chave, título, status, responsável, produto, PR, repo, ação de dados.
 - **Aprendizado:** respostas do Jira são **grandes** → pedir só os campos necessários e parsear
   (salvar em arquivo + Python quando estourar o limite de tokens).
@@ -126,15 +140,18 @@ sequenceDiagram
     participant N as Notion MCP
     participant T as Notificador (sandbox)
 
-    R->>O: iniciar esteira (incidentes)
+    R->>O: iniciar esteira (autonomo ate o Notion)
+    O->>O: versao-alvo automatica (Release X.(Y+1).0)
     O->>J: coletar (JQL: PB, Incidente, status alvo)
     J-->>O: cards + campos
     O->>V: validar por conteudo (regra v2)
     V-->>O: aprovados + reprovados (com pending_items)
-    O->>R: rascunho (aprovados/reprovados)
-    R-->>O: ok / ajustes
+    opt card genuinamente ambiguo (unica pausa antes do Notion)
+        O->>R: pergunta (heuristica so-banco / repo!=PR)
+        R-->>O: decisao
+    end
     alt existem aprovados
-        O->>M: montar release
+        O->>M: montar release (sem pedir OK)
         M->>N: create/replace pagina da versao
         N-->>M: page_id + url
         M->>N: fetch (verificacao)
@@ -146,7 +163,7 @@ sequenceDiagram
         T-->>O: registro das notificacoes
     end
     O->>R: resumo consolidado (execucao)
-    Note over R,N: Deploy segue manual via sync-repos-from-master
+    Note over R,N: Sync/deploy segue sob OK do Ronan via sync-repos-from-master
 ```
 
 ### 6.1 Optimus Prime (orquestrador) — modos, gates e o Sync
@@ -156,11 +173,22 @@ skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
 
 - **`verificar`** — dry/seguro: roda a sequência sem tocar em nada (coletor → confere → montador
   **simula** o Notion → mostra o alvo do Sync + `make dry-run`). Só relatório.
-- **`executar`** — sequência completa até o `make run` (PRs), com **gate de segurança por ação**.
+- **`executar`** — roda a esteira **autônoma até a documentação no Notion** (versão-alvo automática →
+  coletor → validador → montador cria a página **sem pedir OK**); **única pausa antes do Notion** é card
+  genuinamente ambíguo. **Para depois do Notion**: o Sync (`make run`) em diante segue com **gate de
+  segurança por ação** sob OK do Ronan. **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) —
+  **incidente não é hotfix por padrão**; hotfix só quando o Ronan avisar.
 
-**Gate de segurança por ação:** toda ação que muda algo roda antes em **dry-run**, parseia a saída
-(`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**; se limpo → **mostra
-e espera OK explícito** do Ronan antes do real.
+**Alvo (independente do modo):** **`<board>`** (um board, padrão) ou **`todos os boards`** — varre os
+três **em sequência, por prioridade (incidentes 1º)**, **isolados** (cada board → sua própria página no
+Notion; nunca misturar). No alvo `todos os boards` a varredura **termina no Notion**; o Sync fica
+**por-board e explícito** (fora do loop). Board sem filtro definido → **pula e reporta** "⏳ a definir".
+Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar todos os boards`.
+
+**Gate de segurança por ação (Sync em diante):** toda ação do `sync-repos-from-master` roda antes em
+**dry-run**, parseia a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e
+para**; se limpo → **mostra e espera OK explícito** do Ronan antes do real. (Antes do Notion a esteira
+é autônoma; a única pausa é card genuinamente ambíguo.)
 
 **Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e ativa
 **apenas os repositórios de "Repositórios para Deploy"**; **o que não corresponder → comenta de volta**

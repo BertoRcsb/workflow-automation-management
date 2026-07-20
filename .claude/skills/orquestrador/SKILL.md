@@ -4,7 +4,8 @@ description: >-
   Use quando o usuário quer conduzir a esteira de release notes de ponta a ponta
   — coordenar coletor → validador → montador → notificador e acionar o deploy via
   sync-repos-from-master, com segurança por ação e aprovação humana. Gatilhos:
-  "Optimus Prime", "Optimus Prime iniciar", "Optimus Prime verificar", "Optimus Prime executar", "iniciar
+  "Optimus Prime", "Optimus Prime iniciar", "Optimus Prime verificar", "Optimus Prime executar",
+  "Optimus Prime verificar todos os boards", "Optimus Prime iniciar todos os boards", "iniciar
   deploy", "montar e preparar a release", "rodar a esteira". Contexto atual: MCPs
   Atlassian + Notion e comandos `make` do sync-repos-from-master; papel agnóstico.
 ---
@@ -31,20 +32,49 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
   **sem executar NENHUM comando** que mude algo: `coletor` (leitura) → `validador` → **rascunho**
   (aprovados × reprovados) → simula o Notion e mostra o alvo do Sync (`repos.yaml` + `make dry-run`).
   Entrega só **relatório/plano**.
-- **`executar`** — a **sequência completa até o `make run`**: tudo do `verificar` +, a cada
-  gate aprovado pelo Ronan: monta/atualiza o Notion (real) → aciona o `notificador` (sandbox)
-  → edita o `repos.yaml` → roda `make run` (só PRs). **Para antes de merge/deploy real.**
+- **`executar`** — roda a esteira **autônoma até a documentação no Notion** (passos 1–5 e 7):
+  versão-alvo (automática) → `coletor` → `validador` → `montador` **cria/atualiza o Notion (real) sem
+  pedir aprovação** → `notificador` (sandbox). **A única pausa antes do Notion é card genuinamente
+  ambíguo** (ver passo 3). **Para depois do Notion:** o **Sync** (passo 6, `make run`) e tudo à frente
+  seguem **sob OK explícito do Ronan** — a esteira **não dispara `make` sozinha**.
 
 > **"Optimus Prime iniciar"** (ou só **"iniciar"**) = modo **`executar`**.
 
+### Alvo da varredura: um board × "todos os boards"
+O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qual board.
+- **`<board>`** (incidentes | features | refatoração) — roda **um** board (comportamento de sempre).
+- **`todos os boards`** — varre os três **em sequência, na ordem de prioridade do registro do
+  `coletor` (incidentes SEMPRE 1º)**. Cada board é **totalmente isolado**: sua própria coleta →
+  validação → versão-alvo → **sua própria página no Notion** (release/hotfix por board). **NUNCA**
+  se misturam cards de boards diferentes (invariante §5.1 — a varredura reforça a regra, não a viola).
+  - A varredura **termina no Notion**: o **Sync** (`repos.yaml` + `make run`) **não** entra no loop —
+    segue **por-board e explícito**, como hoje (deploys em dias diferentes, incidentes primeiro).
+  - **Board sem mapeamento** → **pula e reporta** naquele bloco; os demais seguem normalmente. Definir
+    filtro = descoberta via MCP + OK do Ronan (ver `coletor`, "Registro de boards"). **Nunca inventar JQL.**
+  - Combina com os dois modos: **`verificar todos os boards`** (dry, só relatório — um bloco por board)
+    e **`iniciar todos os boards`** (executa até o Notion de cada board, com os gates por ação).
+  - **Ordem/prioridade:** 1º **Linha de frente/incidentes** (`Incidente`) → 2º **Features** (`Story`)
+    → 3º **Refatoração** (`Story`, menos importante). Mapeamento e JQL: ver `coletor`, "Registro de boards".
+  - **Features × Refatoração** (ambos `Story`) são separados **pelo título**: **Refatoração** = título
+    contém "Refatoração" (`summary ~ "Refatoração"`); **Features** = o complemento (`summary !~ ...`).
+    Blocos distintos, sem sobreposição. Se um card cair no board errado → refino do filtro (com OK do
+    Ronan); **nunca inventar** outro critério. Ver `coletor`, "Registro de boards".
+
 ## Sequência e gates (base spec §6)
-1. **Versão-alvo:** lê a última versão no Notion e **propõe a próxima** (release ou hotfix);
-   Ronan confirma. **Hotfix quem decide é o Ronan.**
+> No alvo **`todos os boards`**, os passos **1–5 e 7 rodam por board** (em ordem de prioridade,
+> incidentes 1º), **isolados**; o passo **6 (Sync)** fica **fora do loop** (por-board e explícito, depois).
+> A versão-alvo é atribuída **automaticamente por board** como **`Release` sequencial** (`X.(Y+1).0`);
+> **incidente NÃO é hotfix por padrão** (é release comum) — hotfix só quando o Ronan avisar.
+
+1. **Versão-alvo (automática):** lê a última versão no Notion e atribui a **próxima `X.(Y+1).0` como
+   `Release`** por board, em ordem de prioridade (incidentes 1º). **Incidente NÃO é hotfix por padrão**
+   (é release comum); **hotfix só quando o Ronan avisar**. Não pausa.
 2. **Coletor** → cards do Jira normalizados (§7).  · gate: erro de leitura → documenta e **para**.
-3. **Validador** → aprovados × reprovados (regra v2 + heurística "só-banco"). Mostra o **rascunho**.
-   · **checkpoint humano**: ok / ajustes.
-4. **Montador** → cria/atualiza a página no Notion no molde e **re-verifica via re-fetch**
-   (colunas iguais às versões anteriores).  · gate: divergência → documenta e **para**.
+3. **Validador** → aprovados × reprovados (regra v2 + heurística "só-banco"). **Segue sozinho nos casos
+   claros** (sem checkpoint de rascunho). · **pausa SÓ em card genuinamente ambíguo** (heurística
+   só-banco não fecha, ou dado divergente tipo repo≠PR): aí pergunta ao Ronan — **nunca inventa**.
+4. **Montador** → **cria/atualiza a página no Notion no molde sem pedir OK** e **re-verifica via
+   re-fetch** (colunas iguais às versões anteriores).  · gate: divergência no re-fetch → documenta e **para**.
 5. **Notificador (sandbox)** → gera as mensagens de pendência/deploy p/ dev/PO/QA; **mostra só
    pro Ronan** (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela documentação**:
@@ -93,8 +123,11 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
 - 🚫 **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master
   (Passo 2) e antes de disparar triggers (Passo 3). Pode **disparar** triggers sob comando explícito,
   mas a **aprovação do build no GCP é do Ronan** (após OK do QA).
-- 🛡️ **Segurança por ação:** toda ação que muda algo roda antes em **dry-run**, parseia saída +
-  exit code; erro → documenta e **para**; limpo → mostra e espera **OK explícito** antes do real.
+- 🤖 **Autonomia até o Notion:** no `executar`, passos 1–5 e 7 rodam **sem aprovação humana** (a doc no
+  Notion é criada automaticamente). **Única pausa antes do Notion:** card genuinamente ambíguo (passo 3).
+- 🛡️ **Segurança por ação (Sync em diante):** toda ação do `sync-repos-from-master` roda antes em
+  **dry-run**, parseia saída + exit code; erro → documenta e **para**; limpo → mostra e espera **OK
+  explícito** do Ronan antes do real. A esteira **não dispara `make` sozinha**.
 - 📓 **Todo erro documentado**; refino de skill/comando **só com aprovação do Ronan** (sem correção
   silenciosa). Ver [[regra-nao-executar-sozinho]].
 - 🔒 **Não inventar dado ausente** (§11); privilégio mínimo (Jira leitura; Notion só a base).
