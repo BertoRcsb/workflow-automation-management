@@ -21,6 +21,9 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
 - **data_source "Versões - NewContract":** `23e19d89-2318-81ff-812d-000b6afb6b5a`
 - **Propriedades:** `Versão` (title) · `Tipo` (select: `Release` / `Hotfix`)
 - **Ferramentas:** `mcp__notion__notion-create-pages`, `notion-fetch`, `notion-query-data-sources`.
+  - **Localizar versão/última página: use `notion-query-data-sources` (SQL) — rápido e estável.**
+    **Evite `notion-search`** (semântico, lento/instável nesta base).
+- **Modelo sugerido:** barato (ex.: Haiku) — montagem é escrita mecânica no molde.
 - **Molde de referência:** reler a **última página do mesmo `Tipo`** antes de montar
   (query por `Tipo` ordenando por `Criado em` desc).
 
@@ -37,8 +40,8 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
 - **Idempotência:** não duplicar card; se a página da versão já existe, **atualizar**
   (usar replace do conteúdo), não criar outra.
 - **Não inventar** Infra / Merge / repositório — deixar em branco.
-- **Verificação:** **reler** a página com `notion-fetch` depois de escrever e conferir
-  tabela + propriedades.
+- **Verificação enxuta:** reler a página com `notion-fetch` **uma vez, ao final** (não a cada
+  linha/card) e conferir tabela + propriedades. Menos ida-e-volta = mais rápido.
 
 ## Evolução / próximos papéis (este escopo vai crescer)
 - **Categorias** na tabela/release.

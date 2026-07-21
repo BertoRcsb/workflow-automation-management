@@ -123,6 +123,18 @@ O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qu
     (comentar/descomentar), ativando **só os repos da doc do Notion**.
 - **`repos.yaml`** (na raiz do sync tool): manter **`auto_merge=false`**; descomentar só o repo alvo.
 
+## Modelo & custo (troca automática por skill)
+A esteira é **majoritariamente mecânica** (orquestrar MCPs + parsear/escrever) → **roda no modelo mais
+barato por padrão (ex.: Haiku)**. Só **um ponto exige julgamento fino**: validar **card ambíguo**.
+- **Padrão barato:** `coletor` e `montador` (trabalho mecânico) ficam no modelo barato.
+- **Escala só na ambiguidade:** ao bater num card ambíguo (heurística só-banco não fecha, ou repo ≠ PR),
+  o Optimus **pausa e pede o veredito ao Ronan** — que decide ali (ou sobe pra um modelo mais forte, se quiser).
+- **Como a skill "troca" de modelo:** cada skill declara seu **"Modelo sugerido"** (padrão = barato); a
+  escalada é **explícita** (a pausa do card ambíguo). *(Evolução opcional: delegar as etapas mecânicas a
+  um subagente no modelo barato, mantendo o julgamento no principal — só quando não arriscar o funcionamento.)*
+- 🛟 **Regra de ouro:** **desempenho atual vem primeiro.** Economizar modelo/token **nunca** pode quebrar
+  ou degradar a esteira; na dúvida, **mantém como está**.
+
 ## Guardrails (diretrizes inquebráveis)
 - 🚫 **MERGE é só do Ronan** — Optimus Prime **nunca** mergeia (garantia: `auto_merge=false`).
 - 🚫 **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master

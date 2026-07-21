@@ -308,6 +308,10 @@ elegibilidade:
 - **Intervenção humana:** revisão manual em critérios inconclusivos, dados contraditórios, exceção autorizada, evidências insuficientes. **O agente não inventa dados para preencher campo ausente.**
 - **Segurança (privilégio mínimo):** Jira leitura (`read:jira-work`); Notion só a base de Release Notes; notificação com permissão restrita; repositório leitura.
 - **Regra do projeto:** o assistente **não executa nada sem OK explícito do Ronan**; ele aprova cada passo.
+- **Desempenho & custo:** **coleta enxuta** (só os campos necessários, sem `description` em lote — puxar
+  sob demanda); no Notion, localizar via `query_data_sources` (SQL) e **verificar uma vez ao final**;
+  **rodar no modelo mais barato por padrão**, escalando só em card ambíguo (ver as skills, "Modelo
+  sugerido"). ⚠️ **Nunca** sacrificar o funcionamento por economia — na dúvida, mantém como está.
 
 ## 12. Escopo da 1ª versão × evoluções
 

@@ -81,6 +81,11 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
 
 - **Ferramentas:** `mcp__atlassian__searchJiraIssuesUsingJql`, `mcp__atlassian__getJiraIssue`
   (usar `fields` explícito + `responseContentFormat: "markdown"`).
+- **Coleta enxuta (rápida e barata):** peça **só os campos da tabela acima** (chave/summary/status/
+  assignee + os customfields). **NÃO** traga `description` nem `*all` na busca em lote — é o que estoura
+  o limite e força salvar-e-parsear. Precisa da descrição (heurística só-banco / card ambíguo)? Puxe
+  **sob demanda, por card**, com `getJiraIssue` incluindo `description`. Menos payload = mais rápido e menos token.
+- **Modelo sugerido:** barato (ex.: Haiku) — coleta é trabalho mecânico.
 
 ## Modelo normalizado (contrato de saída)
 ```json

@@ -46,6 +46,8 @@ Bolonhini** (banco) e descrição sobre corrigir a *procedure/seleção* → **A
 ## Guardrails
 - O agente **não inventa** dado para preencher campo ausente.
 - Casos inconclusivos / contraditórios / exceções → **intervenção humana** (Ronan aprova).
+- **Modelo sugerido:** decide no **barato** (a regra v2 é objetiva); **escala** para modelo forte **só em
+  card ambíguo** (heurística só-banco não fecha, ou dado divergente tipo repo ≠ PR) — aí pausa e pergunta.
 
 ## Regra como config (evita hardcode)
 Externalizar a regra em `deploy_requirements.yaml` (ver spec §10) — mudar a regra =
