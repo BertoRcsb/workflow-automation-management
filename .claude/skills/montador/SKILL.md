@@ -29,7 +29,10 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
 
 ## Molde de conteúdo
 - **Tabela:** `Item · Pull Requests · Tem Ação de Banco ? · Tem Ação de Infra ? · Merge Realizado ?`
-  - **Item:** card linkado — `[PB-XXXX](https://bernhoeft.atlassian.net/browse/PB-XXXX)`.
+  - **Item:** card linkado **com título** (e status) —
+    `[PB-XXXX — <título do card>](https://bernhoeft.atlassian.net/browse/PB-XXXX) · <status>`.
+    Enriquece a leitura. *(O "mention" nativo do Jira **não** é reproduzível via MCP — o link com título
+    é o equivalente suportado e verificável no re-fetch.)*
   - **Pull Requests:** URL da PR (código) **ou** `• APENAS PROC` (item só-banco).
   - **Infra / Merge:** em branco até apurar (**não inventar**).
 - **Blocos:** Testes regressivos · Ambientes · Repositórios para Deploy · Participantes

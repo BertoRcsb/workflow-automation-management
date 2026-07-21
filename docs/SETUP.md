@@ -50,8 +50,8 @@ optimus prime iniciar todos os boards    # varre os três, incidentes 1º, 1 Not
 - **`<board>`** = **incidentes** | **features** | **refatoração** (um por vez; **nunca misturar**).
 - **`todos os boards`** = varredura **sequencial por prioridade** (incidentes 1º), **isolada** (cada board
   → sua própria release/hotfix no Notion). **Termina no Notion**; o Sync/deploy segue **por-board** depois.
-  Mapeamento: **incidentes** = `Incidente` · **features** = `Story` · **refatoração** = `Story`
-  (compartilha a população com features — o 3º/menos importante). Board sem mapeamento → **pulado e reportado**.
+  Mapeamento: **incidentes** = `Incidente` · **features** = `Story` **sem** "Refatoração" no título ·
+  **refatoração** = `Story` **com** "Refatoração" no título (o 3º/menos importante). Board sem mapeamento → **pulado e reportado**.
 - Se não informar o board, o Optimus **pergunta** qual é.
 - Roteiro completo dos passos e comandos: [`COMANDOS.md`](COMANDOS.md).
 

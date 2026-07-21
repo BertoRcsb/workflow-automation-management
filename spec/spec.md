@@ -110,7 +110,8 @@ sem PR/repo, assignee **Alexandre Bolonhini** (banco) + descrição sobre corrig
 ### 5.3 Montador
 Cria/atualiza a página da versão no Notion, no **molde 1.110.0**.
 - **Tabela única:** `Item · Pull Requests · Tem Ação de Banco ? · Tem Ação de Infra ? · Merge Realizado ?`
-  - **Item:** card como link pro Jira (ex.: `[PB-5415](.../browse/PB-5415)`).
+  - **Item:** card como link **com título** e status (ex.: `[PB-5415 — <título>](.../browse/PB-5415) · <status>`).
+    O *mention* nativo do Jira não é reproduzível via MCP; o link enriquecido é o equivalente suportado.
   - **Pull Requests:** URL da PR (código) ou `• APENAS PROC` (banco).
   - **Infra / Merge / nome do proc:** em branco até apurarmos (o agente **não inventa**).
 - **Blocos:** Testes regressivos · Ambientes · Repositórios para Deploy · Participantes do Deploy
