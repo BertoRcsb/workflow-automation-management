@@ -19,11 +19,11 @@ Quatro papéis + um orquestrador (podem ser módulos/prompts, não precisam ser 
 
 | Papel | Função | Estado atual |
 |-------|--------|--------------|
-| **Coletor** | busca cards candidatos no Jira | ✅ validado (JQL no PB) |
-| **Validador** | aplica o gate de elegibilidade (regra v2) | ✅ validado |
-| **Montador** | escreve/atualiza a release no Notion (molde 1.110.0) | ✅ validado |
-| **Notificador** | comunica pendências dos reprovados | ⏳ pendente (sandbox) |
-| **Orquestrador** | coordena tudo + governa o Sync; segurança por ação, consolida, documenta erro | ✅ formalizado (skill `orquestrador` / **"Optimus Prime"**) |
+| **Coletor** | busca cards candidatos no Jira | validado (JQL no PB) |
+| **Validador** | aplica o gate de elegibilidade (regra v2) | validado |
+| **Montador** | escreve/atualiza a release no Notion (molde 1.110.0) | validado |
+| **Notificador** | comunica pendências dos reprovados | pendente (sandbox) |
+| **Orquestrador** | coordena tudo + governa o Sync; segurança por ação, consolida, documenta erro | formalizado (skill `orquestrador` / **"Optimus Prime"**) |
 
 ## 2. Objetivo
 
@@ -141,7 +141,7 @@ sequenceDiagram
     participant N as Notion MCP
     participant T as Notificador (sandbox)
 
-    R->>O: iniciar esteira (autonomo ate o Notion)
+    R->>O: iniciar esteira (autonomo ate o Sync Passo 1)
     O->>O: versao-alvo automatica (Release X.(Y+1).0)
     O->>J: coletar (JQL: PB, Incidente, status alvo)
     J-->>O: cards + campos
@@ -164,7 +164,7 @@ sequenceDiagram
         T-->>O: registro das notificacoes
     end
     O->>R: resumo consolidado (execucao)
-    Note over R,N: Sync/deploy segue sob OK do Ronan via sync-repos-from-master
+    Note over R,N: Passo 1 do Sync roda no executar de board unico; master/triggers sob OK do Ronan
 ```
 
 ### 6.1 Optimus Prime (orquestrador) — modos, gates e o Sync
@@ -174,22 +174,24 @@ skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
 
 - **`verificar`** — dry/seguro: roda a sequência sem tocar em nada (coletor → confere → montador
   **simula** o Notion → mostra o alvo do Sync + `make dry-run`). Só relatório.
-- **`executar`** — roda a esteira **autônoma até a documentação no Notion** (versão-alvo automática →
-  coletor → validador → montador cria a página **sem pedir OK**); **única pausa antes do Notion** é card
-  genuinamente ambíguo. **Para depois do Notion**: o Sync (`make run`) em diante segue com **gate de
-  segurança por ação** sob OK do Ronan. **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) —
+- **`executar`** (board único) — roda a esteira **autônoma incluindo o Sync Passo 1** (versão-alvo
+  automática → coletor → validador → montador cria a página **sem pedir OK** → edita o `repos.yaml` →
+  `make dry-run` → se limpo, **`make run`** que abre os PRs pré-prod); **única pausa antes do Passo 1** é
+  card genuinamente ambíguo. **Para depois do Passo 1**: merge, **master (Passo 2)** e **triggers (Passo
+  3)** seguem sob comando explícito do Ronan (com gate de segurança por ação). No alvo `todos os boards`,
+  a varredura **termina no Notion**. **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) —
   **incidente não é hotfix por padrão**; hotfix só quando o Ronan avisar.
 
 **Alvo (independente do modo):** **`<board>`** (um board, padrão) ou **`todos os boards`** — varre os
 três **em sequência, por prioridade (incidentes 1º)**, **isolados** (cada board → sua própria página no
 Notion; nunca misturar). No alvo `todos os boards` a varredura **termina no Notion**; o Sync fica
-**por-board e explícito** (fora do loop). Board sem filtro definido → **pula e reporta** "⏳ a definir".
+**por-board e explícito** (fora do loop). Board sem filtro definido → **pula e reporta** "a definir".
 Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar todos os boards`.
 
-**Gate de segurança por ação (Sync em diante):** toda ação do `sync-repos-from-master` roda antes em
-**dry-run**, parseia a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e
-para**; se limpo → **mostra e espera OK explícito** do Ronan antes do real. (Antes do Notion a esteira
-é autônoma; a única pausa é card genuinamente ambíguo.)
+**Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
+a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Passo 1**
+(board único): se limpo → **dispara o `make run` automaticamente** (sem OK humano). **Master (Passo 2) e
+triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do Ronan antes do real.
 
 **Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e ativa
 **apenas os repositórios de "Repositórios para Deploy"**; **o que não corresponder → comenta de volta**
@@ -197,17 +199,17 @@ para**; se limpo → **mostra e espera OK explícito** do Ronan antes do real. (
 
 **Fluxo de promoção de branches (nunca direto pra master; `make run` sempre com `target` explícito):**
 - **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): edita o YAML,
-  `make dry-run` → OK → `make run` (PRs). **Merge é do Ronan.**
-- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando do Ronan**;
-  por enquanto o Optimus Prime **só edita o YAML**.
-- **Passo 3** — `make run-triggers PR_TITLE="<versão>"` (ambientes dos clientes): **100% do Ronan**,
-  após OK do QA.
+  `make dry-run` e, se limpo, **`make run` automático** (PRs). **Sem OK humano entre dry-run e run.** Merge é do Ronan.
+- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override do Ronan**;
+  por padrão o Optimus Prime edita o YAML + `make dry-run`, e roda o `make run` de master só sob override.
+- **Passo 3** — `make run-triggers` (ambientes dos clientes; **não recebe `PR_TITLE`**): **100% do Ronan**,
+  após OK do QA (aprovação do build no GCP é dele).
 - Troca de `source`/`target` por passo é via **edição do YAML** (comentar/descomentar). Branches:
   `prerelease` → `teste_regressivo` → `master` (confirmar grafia exata antes do run real).
 
-**Diretrizes inquebráveis:** 🚫 **merge é só do Ronan** (manter `auto_merge=false`); 🚫 **deploy real
-(`make run-triggers`) é do Ronan** — Optimus Prime **para no `make run`**; 🧩 **hotfix** o Ronan
-conduz. Erros viram **`erros/AAAA-MM-DD-*.md`** (base de refino, corrigido só com OK do Ronan).
+**Diretrizes inquebráveis:** **merge é só do Ronan** (manter `auto_merge=false`); **master (Passo 2),
+deploy real (`make run-triggers`) e aprovação de build no GCP = do Ronan**; **hotfix** o Ronan conduz.
+Erros viram **`erros/AAAA-MM-DD-*.md`** (base de refino, corrigido só com OK do Ronan).
 
 ## 7. Modelo de card normalizado
 
@@ -312,7 +314,7 @@ elegibilidade:
 - **Desempenho & custo:** **coleta enxuta** (só os campos necessários, sem `description` em lote — puxar
   sob demanda); no Notion, localizar via `query_data_sources` (SQL) e **verificar uma vez ao final**;
   **rodar no modelo mais barato por padrão**, escalando só em card ambíguo (ver as skills, "Modelo
-  sugerido"). ⚠️ **Nunca** sacrificar o funcionamento por economia — na dúvida, mantém como está.
+  sugerido"). **Nunca** sacrificar o funcionamento por economia — na dúvida, mantém como está.
 
 ## 12. Escopo da 1ª versão × evoluções
 
