@@ -1,0 +1,41 @@
+{
+  "execution_id": "release-2026-07-21-002-sync-incidentes-passo3",
+  "date": "2026-07-21",
+  "release_version": "1.112.0",
+  "release_type": "Release",
+  "board": "Incidentes",
+  "trigger": "Optimus Prime make run-triggers — Sync Passo 3 (deploy nos ambientes dos clientes), comando explícito do Ronan",
+  "notion_page": "https://app.notion.com/p/3a319d892318818ea510f693709543f1",
+  "cards": ["PB-5822", "PB-5804", "PB-5770", "PB-5651", "PB-5599"],
+  "previous_execution": "release-2026-07-21-001-sync-incidentes-passo2",
+  "sync": {
+    "passo": 3,
+    "acao": "make run-triggers",
+    "project_id": "grt-app-prod",
+    "region": "global",
+    "source_branch": "master",
+    "dry_run_triggers": {"exit_code": 0, "resumo": "total=11 sucesso=0 erro=0 sem_alteracao=11 (skip remoto, esperado)"},
+    "run_triggers": {
+      "command": "make run-triggers",
+      "exit_code": 0,
+      "resumo": "total=11 sucesso=11 erro=0 falhas=nenhuma",
+      "builds": [
+        {"repo": "bernhoeft-grt-login-api", "trigger": "neoenergia-api-login", "build_id": "33e0f816-e14f-4cf5-a832-87154f95bf40"},
+        {"repo": "bernhoeft-grt-login-api", "trigger": "treinamento-api-login", "build_id": "62450985-2bd9-4628-8247-d0a3387232e8"},
+        {"repo": "bernhoeft-grt-login-api", "trigger": "vli-api-login", "build_id": "bb0951b1-ba4f-44f2-b7d9-d88abf398540"},
+        {"repo": "bernhoeft-grt-contractweb-front", "trigger": "neoenergia-front-contractweb", "build_id": "1d7be62f-f366-46df-96a4-2fe4fa7fe6be"},
+        {"repo": "bernhoeft-grt-contractweb-front", "trigger": "treinamento-front-contractweb", "build_id": "d2b9ed4c-e798-44d0-a08d-74881abae3f2"},
+        {"repo": "bernhoeft-grt-contractweb-front", "trigger": "vli-front-contractweb", "build_id": "03f0fbdc-0ce3-4877-8e2e-e59b5130c254"},
+        {"repo": "contractweb-v3", "trigger": "neoenergia-contractweb", "build_id": "e6621158-1ffa-44ba-ab7a-5635c191d63b"},
+        {"repo": "contractweb-v3", "trigger": "treinamento-contractweb", "build_id": "6fd92aa4-335f-419b-9b8d-adfda8979384"},
+        {"repo": "contractweb-v3", "trigger": "vli-contractweb", "build_id": "88b24432-851b-431b-9bd4-61ae410c0865"},
+        {"repo": "bernhoeft-grt-autocadastro-api", "trigger": "neoenergia-api-autocadastro", "build_id": "e2f7b2fd-a9f9-4c99-bd1d-d214beb0d6e0"},
+        {"repo": "bernhoeft-grt-autocadastro-api", "trigger": "vli-api-autocadastro", "build_id": "d75c1dd5-5eee-4582-b073-40549d2f247e"}
+      ]
+    }
+  },
+  "stopped_at": "Passo 3 concluído: 11 triggers Cloud Build disparados (deploy nos clientes). Aprovação de cada build no GCP é do Ronan. Pendente: pós-deploy (sync master -> develop/stage/prerelease) sob comando do Ronan.",
+  "status": "concluido_passo_3",
+  "errors": [],
+  "relatorio": "Optimus Prime disparou os 11 triggers do Passo 3 da 1.112.0 (incidentes) em grt-app-prod, sob comando explícito do Ronan (make run-triggers). Dry-run-triggers limpo antes. Aprovação dos builds no GCP = Ronan."
+}
