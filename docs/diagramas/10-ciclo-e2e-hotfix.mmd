@@ -1,0 +1,5 @@
+flowchart LR
+    Card["PB-5740 · Bug<br>Teste regressivo<br>repo autocadastro-front · PR #244"] --> Val["Aprovado (PR + repo)"]
+    Val --> Not["Notion · Hotfix 1.111.2"]
+    Not --> S1["Sync Passo 1<br>prerelease→teste_regressivo · PR #245"]
+    S1 --> Dep["Deploy em produção + clientes<br>Neoenergia · VLI"]

@@ -1,0 +1,5 @@
+flowchart LR
+    PR["prerelease"] -->|"Passo 1 · make run<br>Optimus roda · merge = Ronan"| TR["teste_regressivo"]
+    TR -->|"Passo 2 · comando do Ronan"| MA["master"]
+    MA -->|"Passo 3 · make run-triggers<br>100% Ronan + aprova build no GCP"| CL["Ambientes dos clientes<br>Neoenergia · VLI · ..."]
+    MA -.->|"Pós-deploy · make run PR_TITLE=Sync Master"| DV["develop · stage · prerelease"]

@@ -1,0 +1,8 @@
+flowchart TD
+    C["Card coletado"] --> Q1{"Tem PR + repositório?"}
+    Q1 -->|Sim| A["Aprovado — mudança de código"]
+    Q1 -->|Não| Q2{"Ação de dados = Sim?<br>PR/repo vazio ou 'N/A' / 'Apenas PROC'"}
+    Q2 -->|Não| Rp["Reprovado — sem PR, sem repo, sem ação de dados"]
+    Q2 -->|Sim| Q3{"Heurística só-banco:<br>assignee de banco OU descrição<br>cita proc / carga / query?"}
+    Q3 -->|Sim| A2["Aprovado — só banco/proc"]
+    Q3 -->|"Não / ambíguo"| P["Pausa — pergunta ao Ronan"]

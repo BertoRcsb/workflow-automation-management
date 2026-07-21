@@ -1,4 +1,4 @@
-# 🚀 Esteira Inteligente de Release Notes — Apresentação
+# Esteira Inteligente de Release Notes — Apresentação
 
 > **Workflow with Automation Assisted by Management** · Governança de deploy assistida por automação
 > **Jira → Notion → Deploy (GCP)**, conduzida pelo orquestrador **"Optimus Prime"**.
@@ -58,7 +58,7 @@ A esteira **não é um script que roda sozinho**: ela é um conjunto de instruç
 
 ```mermaid
 flowchart TB
-    subgraph Cerebro["🧠 Cérebro — Claude Code (obrigatório)"]
+    subgraph Cerebro["Cérebro — Claude Code (obrigatório)"]
         O["Orquestrador — Optimus Prime"]
     end
     subgraph Skills["Skills por papel"]
@@ -67,7 +67,7 @@ flowchart TB
         Mo["montador"]
         No["notificador · sandbox"]
     end
-    subgraph Bracos["🦾 Braços — ferramentas"]
+    subgraph Bracos["Braços — ferramentas"]
         MCP1["MCP Atlassian<br>Jira · read-only"]
         MCP2["MCP Notion"]
         MK["make<br>sync-repos-from-master"]
@@ -97,11 +97,11 @@ flowchart LR
 
 | Papel | Função | Estado |
 |---|---|---|
-| **coletor** | Busca cards no Jira (Atlassian MCP) e normaliza | ✅ |
-| **validador** | Gate de elegibilidade por conteúdo (regra v2 + heurística) | ✅ |
-| **montador** | Cria/atualiza a release/hotfix no Notion (molde padrão) | ✅ |
-| **notificador** | Comunica pendências a dev/PO/QA | ⏳ sandbox |
-| **orquestrador** | Coordena tudo + governa o Sync; segurança por ação | ✅ "Optimus Prime" |
+| **coletor** | Busca cards no Jira (Atlassian MCP) e normaliza | Concluído |
+| **validador** | Gate de elegibilidade por conteúdo (regra v2 + heurística) | Concluído |
+| **montador** | Cria/atualiza a release/hotfix no Notion (molde padrão) | Concluído |
+| **notificador** | Comunica pendências a dev/PO/QA | Em sandbox |
+| **orquestrador** | Coordena tudo + governa o Sync; segurança por ação | Concluído · "Optimus Prime" |
 
 ---
 
@@ -174,12 +174,12 @@ repositório** *ou* é **legitimamente só-banco**.
 ```mermaid
 flowchart TD
     C["Card coletado"] --> Q1{"Tem PR + repositório?"}
-    Q1 -->|Sim| A["✅ Aprovado — mudança de código"]
+    Q1 -->|Sim| A["Aprovado — mudança de código"]
     Q1 -->|Não| Q2{"Ação de dados = Sim?<br>PR/repo vazio ou 'N/A' / 'Apenas PROC'"}
-    Q2 -->|Não| Rp["❌ Reprovado — sem PR, sem repo, sem ação de dados"]
+    Q2 -->|Não| Rp["Reprovado — sem PR, sem repo, sem ação de dados"]
     Q2 -->|Sim| Q3{"Heurística só-banco:<br>assignee de banco OU descrição<br>cita proc / carga / query?"}
-    Q3 -->|Sim| A2["✅ Aprovado — só banco/proc"]
-    Q3 -->|"Não / ambíguo"| P["⏸️ Pausa — pergunta ao Ronan"]
+    Q3 -->|Sim| A2["Aprovado — só banco/proc"]
+    Q3 -->|"Não / ambíguo"| P["Pausa — pergunta ao Ronan"]
 ```
 
 > `"N/A"` **não** conta como link. A heurística "só-banco legítimo" foi validada em produção (caso PB-5778).
@@ -217,14 +217,14 @@ flowchart TD
     Parse -->|"erro · 1"| Err["Documenta em erros/AAAA-MM-DD-*.md<br>e PARA"]
     Parse -->|"limpo · 0"| Wait["Mostra e espera OK explícito do Ronan"]
     Wait --> Real["Executa o real (make run)"]
-    Real --> Guard["🚫 Merge · master · run-triggers = só o Ronan<br>auto_merge=false · nunca inventar dado"]
+    Real --> Guard["Merge · master · run-triggers = só o Ronan<br>auto_merge=false · nunca inventar dado"]
 ```
 
 **Guardrails inquebráveis**
-- 🚫 **Merge, master/prod e `run-triggers` = só o Ronan.**
-- 👁️ **`verificar` nunca executa** — só relatório.
-- 🧭 **Um board por release** — nunca misturar.
-- 🔒 **Privilégio mínimo** · **sem segredos no repositório** · **não inventar dados ausentes**.
+- **Merge, master/prod e `run-triggers` = só o Ronan.**
+- **`verificar` nunca executa** — só relatório.
+- **Um board por release** — nunca misturar.
+- **Privilégio mínimo** · **sem segredos no repositório** · **não inventar dados ausentes**.
 
 ---
 
@@ -234,7 +234,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Card["PB-5740 · Bug<br>Teste regressivo<br>repo autocadastro-front · PR #244"] --> Val["✅ Aprovado (PR + repo)"]
+    Card["PB-5740 · Bug<br>Teste regressivo<br>repo autocadastro-front · PR #244"] --> Val["Aprovado (PR + repo)"]
     Val --> Not["Notion · Hotfix 1.111.2"]
     Not --> S1["Sync Passo 1<br>prerelease→teste_regressivo · PR #245"]
     S1 --> Dep["Deploy em produção + clientes<br>Neoenergia · VLI"]

@@ -1,0 +1,5 @@
+flowchart LR
+    O(["Optimus Prime<br>orquestrador / maestro"]) -.coordena.-> C
+    C["coletor<br>busca + normaliza os cards"] --> Va["validador<br>gate de elegibilidade v2"]
+    Va --> Mo["montador<br>escreve a release no Notion"]
+    Mo --> No["notificador<br>pendências · sandbox"]

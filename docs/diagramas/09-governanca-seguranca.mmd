@@ -1,0 +1,7 @@
+flowchart TD
+    Ac["Ação real (Sync em diante)"] --> Dry["make dry-run"]
+    Dry --> Parse{"exit code + saída (chave=valor)"}
+    Parse -->|"erro · 1"| Err["Documenta em erros/AAAA-MM-DD-*.md<br>e PARA"]
+    Parse -->|"limpo · 0"| Wait["Mostra e espera OK explícito do Ronan"]
+    Wait --> Real["Executa o real (make run)"]
+    Real --> Guard["Merge · master · run-triggers = só o Ronan<br>auto_merge=false · nunca inventar dado"]

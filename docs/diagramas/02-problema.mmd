@@ -1,0 +1,7 @@
+flowchart TD
+    D["Dev conclui a tarefa"] --> M["Move o card no Jira"]
+    M --> St["Status: Teste regressivo / Pronto para deploy"]
+    St --> V{"Campos de deploy<br>preenchidos?"}
+    V -->|"Não — campos opcionais"| X["Time no escuro:<br>qual repo? qual PR?<br>ação de dados? infra? flags?"]
+    X --> R["Retrabalho · risco de deploy incompleto<br>· impossível automatizar o próximo passo"]
+    V -->|Sim| OK["Deploy confiável"]

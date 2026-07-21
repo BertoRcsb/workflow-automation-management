@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor R as Ronan
+    participant O as Optimus Prime
+    participant J as Jira MCP
+    participant N as Notion MCP
+    R->>O: Optimus Prime iniciar (board)
+    Note over O: Versão-alvo automática — Release X.(Y+1).0
+    O->>J: coletar cards (JQL do board)
+    J-->>O: cards normalizados
+    O->>O: validar por conteúdo (regra v2)
+    alt card genuinamente ambíguo
+        O->>R: pergunta (ÚNICA pausa antes do Notion)
+        R-->>O: decisão
+    end
+    O->>N: criar/atualizar a release (sem pedir OK)
+    N-->>O: page_id + url
+    O->>N: re-fetch (verificação do molde)
+    O->>R: resumo consolidado (salvo em execucoes/)
+    Note over R,N: PARA aqui — Sync/deploy é sob OK explícito do Ronan

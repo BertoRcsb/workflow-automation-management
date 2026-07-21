@@ -1,0 +1,19 @@
+flowchart TB
+    subgraph Cerebro["Cérebro — Claude Code (obrigatório)"]
+        O["Orquestrador — Optimus Prime"]
+    end
+    subgraph Skills["Skills por papel"]
+        C["coletor"]
+        Va["validador"]
+        Mo["montador"]
+        No["notificador · sandbox"]
+    end
+    subgraph Bracos["Braços — ferramentas"]
+        MCP1["MCP Atlassian<br>Jira · read-only"]
+        MCP2["MCP Notion"]
+        MK["make<br>sync-repos-from-master"]
+    end
+    O --> C & Va & Mo & No
+    C --> MCP1
+    Mo --> MCP2
+    O --> MK
