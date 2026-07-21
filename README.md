@@ -31,6 +31,7 @@ Invoque o orquestrador pelo comando:
 | **orquestrador** ("Optimus Prime") | governa tudo + o `sync-repos-from-master`, com segurança por ação |
 
 ## Documentação
+- **📊 Apresentação visual (diagramas Mermaid):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
 - **🍰 Receita de bolo (comandos):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
 - **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md)
 - **Plano geral:** [`spec/plan.md`](spec/plan.md) · **Tarefas:** [`spec/task.md`](spec/task.md)

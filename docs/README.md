@@ -6,6 +6,7 @@ Landing do repo: [`../README.md`](../README.md).
 ## O que é cada doc
 | Arquivo | O que é |
 |---|---|
+| [`APRESENTACAO.md`](APRESENTACAO.md) | **Apresentação visual** — diagramas Mermaid (arquitetura, fluxo, boards, governança) + exemplos reais, para stakeholders. |
 | [`COMANDOS.md`](COMANDOS.md) | **Guia operacional** — como rodar (receitas passo a passo, tabela "Sequência e gates", regras de ouro, mapa dos 3 boards). |
 | [`SETUP.md`](SETUP.md) | **Primeira vez / pós-clone** — instalar o Claude Code, conectar os MCPs, apontar o `sync-repos-from-master`. |
 
