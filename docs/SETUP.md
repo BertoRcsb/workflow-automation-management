@@ -42,12 +42,18 @@ Configure o `.env` dele (tokens Bitbucket/GCP) e rode `make setup` — **ver o R
 ## Como usar
 No Claude Code (com MCPs conectados), escreva:
 ```
-optimus prime verificar <board>     # DRY: mostra o que faria, sem executar nada
-optimus prime iniciar <board>       # roda a esteira (com gates de aprovação)
+optimus prime verificar <board>          # DRY: mostra o que faria, sem executar nada
+optimus prime iniciar <board>            # roda a esteira do board (com gates de aprovação)
+optimus prime verificar todos os boards  # DRY dos três (um bloco por board)
+optimus prime iniciar todos os boards    # varre os três, incidentes 1º, 1 Notion por board (para no Notion)
 ```
 - **`<board>`** = **incidentes** | **features** | **refatoração** (um por vez; **nunca misturar**).
+- **`todos os boards`** = varredura **sequencial por prioridade** (incidentes 1º), **isolada** (cada board
+  → sua própria release/hotfix no Notion). **Termina no Notion**; o Sync/deploy segue **por-board** depois.
+  Mapeamento: **incidentes** = `Incidente` · **features** = `Story` · **refatoração** = `Story`
+  (compartilha a população com features — o 3º/menos importante). Board sem mapeamento → **pulado e reportado**.
 - Se não informar o board, o Optimus **pergunta** qual é.
-- Roteiro completo dos passos e comandos: [`runbook.md`](runbook.md).
+- Roteiro completo dos passos e comandos: [`COMANDOS.md`](COMANDOS.md).
 
 ## Regras que o Optimus sempre respeita (guardrails)
 - 🚫 **Merge, master/prod e `run-triggers` = só o Ronan** (`auto_merge=false`); nada sobe sem OK.
