@@ -39,6 +39,34 @@ Para distinguir **banco legítimo** de **"código que esqueceu a PR"**:
 Caso-modelo **PB-5778**: `Ação de dados = Sim`, sem PR/repo, assignee **Alexandre
 Bolonhini** (banco) e descrição sobre corrigir a *procedure/seleção* → **APROVADO**.
 
+## Regras de dependência (aplicar DEPOIS da regra v2, antes de fechar o pacote)
+Nasceram do deploy truncado de **2026-07-22** (ver `erros/2026-07-22-deploy-truncado-dependencias.md`).
+São **duas informações diferentes** — um card pode cair numa, na outra, ou nas duas. Em ambas a ação é
+**exclusão automática**, **sem notificação**. **"Excluir" significa apenas: NÃO entrar na doc do Notion /
+no pacote de deploy** (deixar de fora) — **não** altera o card no Jira, **não** mexe em PR/branch, **não**
+apaga nada. Cards excluídos **só voltam com ordem explícita do Ronan, de um PO ou de um gestor**. Toda
+exclusão é **registrada** em `execucoes/` (card + qual regra). **Nunca incluir** irmão automaticamente —
+a automação só **deixa de fora** (direção segura).
+
+### D1 — Épico incompleto → segura os cards do épico
+- Todo card com `parent` (épico): checar se o **épico está completo**.
+- **Épico completo (definição operacional):** todos os filhos **não cancelados** estão em status de
+  deploy (`Teste regressivo` / `Pronto para deploy`) ou já deployados. Se **qualquer** filho não
+  cancelado ainda estiver em desenvolvimento/teste/code-review, o épico está **incompleto**.
+- Épico incompleto → **excluir do pacote todos os cards daquele épico** (não sobe parcial de épico).
+- Casos-modelo: [[epico-pb-5768-all-or-nothing]] (38 filhos, maioria em dev) e **PB-236** (irmão
+  PB-4786 reprovado/sem PR deixa o épico incompleto).
+
+### D2 — PR compartilhada → tudo ou nada no pacote
+- Para cada **PR usada por mais de um card** (mesma `pull_request`), levantar **todos** os cards que a usam.
+- **Todos no pacote** → ok. **Todos fora** → ok (nada a subir). **Parcial** (um ou mais dentro, um ou
+  mais fora) → **não subir**: **excluir do pacote** os cards que estavam dentro (a PR não sobe truncada).
+- Caso-modelo: PB-4726/4727 compartilham `#1048`/`#4910` com PB-5316 e `#195` com PB-5528 — se algum
+  ficasse de fora, todos saíam.
+
+> D1 é vínculo **estrutural** (épico); D2 é **mesmo código** (PR). Dados vêm do `coletor` (`epic` +
+> `pull_requests`). Definição de "épico completo" acima **confirmada pelo Ronan (2026-07-22)**: todos os filhos não-cancelados em status de deploy ou já deployados.
+
 ## Saída
 - **Aprovados:** chave, título, responsável, resumo, categoria, evidências, `checked_at`.
 - **Reprovados:** chave, título, responsável, `pending_items`, orientação, `checked_at`.

@@ -28,6 +28,18 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
   outro card** (`PB-XXXX`, ex.: "Pr no card PB-5651"), **resolver e herdar a PR/repo desse card
   referenciado** como PR **compartilhada** (registrar que é a mesma PR do card X). Só herda o que
   **existe** no card referenciado — **nunca inventa**; se lá também não houver PR, deixa vazio.
+- **Épico (parent):** ler o `parent` de cada card. Filhos do **mesmo épico** costumam compartilhar as
+  **mesmas PRs/repos** (validado: épico **PB-5159 "Melhorias na Tela de Análise"** →
+  PB-5157/5330/5331/5713 usam as mesmas 3 PRs: newcontract-front #1073, analysis-api #448, storage #609).
+  Capturar o épico para (1) tratar PRs repetidas como **PR compartilhada** (contar/deployar uma vez) e
+  (2) **sinalizar** quando irmãos do mesmo épico ficarem de fora do pacote (possível dependência — ver
+  [[pb-5853-retido-com-pb-5157]]). O `coletor` **expõe** o épico (`epic`) e o **grupo de cards por PR
+  compartilhada**; quem **decide excluir** é o `validador` (regras **D1 — épico incompleto** e **D2 — PR
+  compartilhada parcial**): exclusão **automática**, **sem notificação**; liberar só por **ordem explícita
+  do Ronan / PO / gestor**. Ver [[regras-dependencia-deploy]].
+- **Épicos all-or-nothing** (ex.: [[epico-pb-5768-all-or-nothing]] — "Refatoração Melhorias Onda 1") são
+  o caso extremo da **D1**: não montar/deployar parcial mesmo que filhos estejam em `Teste
+  regressivo`/`Pronto para deploy`. **Nunca incluir** irmão automaticamente — a automação só **exclui**.
 - **Não** valida nem escreve em destino — isso é do `validador` / `montador`.
 - **Um board por vez:** coletar de **UM** board por execução — **incidentes** *ou* **features** *ou*
   **refatoração** — **nunca misturar**. O board é **parâmetro** da coleta (não fixo). Misturar boards
@@ -77,6 +89,7 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   | Ação de dados (Sim/Não) | `customfield_12297` |
   | Merge realizado | `customfield_12401` |
   | Produto | `customfield_11993` |
+  | Épico (parent) | `parent` (chave + summary do épico) |
   | Ação de infra | **não existe ainda** (campo a criar) |
 
 - **Ferramentas:** `mcp__atlassian__searchJiraIssuesUsingJql`, `mcp__atlassian__getJiraIssue`
@@ -96,6 +109,7 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   "status": "Teste regressivo",
   "owner": { "name": "...", "account_id": "..." },
   "product": "NewContract",
+  "epic": { "key": "PB-5159", "summary": "Melhorias na Tela de Análise" },
   "summary": "...",
   "links": { "jira": "...", "repository": null, "pull_requests": [] },
   "deploy_fields": {
