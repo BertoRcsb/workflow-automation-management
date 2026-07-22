@@ -1,0 +1,17 @@
+{
+  "execution_id": "2026-07-22-003-cancelamento-1.113.0",
+  "date": "2026-07-22",
+  "tipo": "cancelamento",
+  "release_version": "1.113.0",
+  "board": "Features",
+  "decisao": "Deploy da 1.113.0 CANCELADO pelo Ronan — não vai acontecer.",
+  "motivo": "Deploy truncado por dependências entre cards (épico incompleto e PRs compartilhadas parciais). Origem: dev/PO moveram cards cedo demais para status de deploy. Ver erros/2026-07-22-deploy-truncado-dependencias.md.",
+  "estado_pendente": {
+    "sync_passo_1": "8 PRs abertos (prerelease -> teste_regressivo) permanecem abertos; NÃO mergeados (auto_merge=false). Decidir se fecha os PRs.",
+    "notion": "Página 1.113.0 continua com os cards; decidir se arquiva/anula.",
+    "repos_yaml": "sync-repos-from-master/repos.yaml está na config do Passo 1 da 1.113.0 (8 repos)."
+  },
+  "acao_preventiva": "Criadas regras D1 (épico incompleto) e D2 (PR compartilhada parcial) no validador — exclusão automática, sem notificação; liberar só por ordem explícita do Ronan/PO/gestor. Ver regras-dependencia-deploy.",
+  "status": "cancelado_aguardando_ronan",
+  "errors": ["ver erros/2026-07-22-deploy-truncado-dependencias.md"]
+}
