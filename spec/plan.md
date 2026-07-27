@@ -91,26 +91,26 @@ Forçar o preenchimento dos 5 campos como **condição para transicionar** o car
 
 ### 1.5 — Passos executáveis (checklist — executados por você)
 
-> **Você executa cada passo**; o assistente só descreve. Anotar os itens 📝.
+> **Você executa cada passo**; o assistente só descreve. Anotar os itens .
 
 **Passo 0 — Levantar o cenário (anotar)**
-- [ ] 📝 Nome e **chave** do projeto Jira (ex.: `NEWC-123` → chave `NEWC`).
-- [ ] 📝 Projeto é **Team-managed** ou **Company-managed**? → decide Caminho A vs B.
-- [ ] 📝 **Nível de acesso**: admin do site / admin do projeto / usuário comum?
-- [ ] 📝 Nome **exato** dos status alvo ("Teste Regressivo" / "Pronto para Deploy").
-- [ ] 📝 Nome **exato** da **transição** que leva a cada um.
+- [ ] Nome e **chave** do projeto Jira (ex.: `NEWC-123` → chave `NEWC`).
+- [ ] Projeto é **Team-managed** ou **Company-managed**? → decide Caminho A vs B.
+- [ ] **Nível de acesso**: admin do site / admin do projeto / usuário comum?
+- [ ] Nome **exato** dos status alvo ("Teste Regressivo" / "Pronto para Deploy").
+- [ ] Nome **exato** da **transição** que leva a cada um.
 
 **Passo 1 — Criar o campo "Ação de infra"**
 - [ ] *Settings → Issues → Custom fields → Create field*.
 - [ ] Tipo: **seleção Sim/Não** (não texto livre).
 - [ ] Nome: **"Ação de infra"**.
 - [ ] Associar à **tela (screen)** do tipo de issue do fluxo.
-- [ ] 📝 Anotar o `customfield_id`.
+- [ ] Anotar o `customfield_id`.
 
 **Passo 2 — Mapear os IDs dos 5 campos**
 - [ ] Obter `customfield_id` de cada campo via `https://SEU-SITE.atlassian.net/rest/api/3/field`
       (logado) ou *Settings → Issues → Custom fields*.
-- [ ] 📝 Anotar os 5 IDs.
+- [ ] Anotar os 5 IDs.
 
 **Passo 3 — Configurar o gate**
 - *Caminho A:* editar workflow → adicionar Validator *Field Required* nas transições →
@@ -120,7 +120,7 @@ Forçar o preenchimento dos 5 campos como **condição para transicionar** o car
 **Passo 4 — Testar o gate**
 - [ ] Card de teste sem campos → mover → deve **bloquear**.
 - [ ] Preencher os 5 → mover → deve **permitir**.
-- [ ] 📝 Registrar resultado.
+- [ ] Registrar resultado.
 
 ---
 

@@ -10,20 +10,22 @@ architecture** (referência: o próprio `sync-repos-from-master`). O **deploy re
 
 > **Sem clients Python bespoke** (spec §3): a orquestração é a **skill sobre os MCPs** (Atlassian/Notion)
 > + os `make` do `sync-repos-from-master`. Aciona-se com **"optimus prime iniciar"** no Claude Code
-> (dentro do PyCharm), com o Claude conectado e os MCPs ativos. **Autônomo até o Sync Passo 1** (board
-> único: dry-run + `make run` que abre os PRs pré-prod); **merge, master (Passo 2) e triggers (Passo 3) = Ronan**.
+> (dentro do PyCharm), com o Claude conectado e os MCPs ativos. **Autônomo até o `make dry-run` do Sync
+> Passo 1** (board único: doc no Notion + edita o `repos.yaml` + `make dry-run`); **o `make run` do Passo 1
+> (abre os PRs pré-prod), merge, master (Passo 2) e triggers (Passo 3) = Ronan**.
 
 ## Comandos
 Orquestrador (**Optimus Prime**), via slash command:
 ```
 /optimus-prime verificar   # dry/seguro, não toca em nada (só relatório)
-/optimus-prime executar    # board único: autônomo incluindo o Sync Passo 1 (dry-run + make run, PRs pré-prod)
+/optimus-prime executar    # board único: autônomo até o dry-run do Passo 1 (doc no Notion + edita YAML + dry-run); make run sob OK do Ronan
 ```
-No `executar` de um board, os passos 1–7 (versão-alvo automática → coletor → validador → montador **cria/atualiza
-o Notion sem pedir OK** → notificador sandbox → **Sync Passo 1**: edita o `repos.yaml`, `make dry-run` e, se
-limpo, **`make run`** automático → resumo) rodam **sem aprovação humana**. A **única pausa** é **card
-genuinamente ambíguo** (heurística só-banco não fecha, ou repo ≠ PR). **Merge, master (Passo 2) e triggers
-(Passo 3)** seguem **sob comando explícito do Ronan**. Guia operacional: [`docs/COMANDOS.md`](docs/COMANDOS.md).
+No `executar` de um board, os passos autônomos (versão-alvo automática → coletor → validador → montador
+**cria/atualiza o Notion sem pedir OK** → notificador sandbox → **Sync**: edita o `repos.yaml` e roda o
+`make dry-run` do Passo 1) rodam **sem aprovação humana** e terminam na mensagem única `Optimus Prime
+retornando com o resultado = Confira`. A **única pausa** é **card genuinamente ambíguo** (heurística
+só-banco não fecha, ou repo ≠ PR). **O `make run` do Passo 1 (abre os PRs pré-prod), merge, master
+(Passo 2) e triggers (Passo 3)** seguem **sob comando explícito do Ronan**. Guia operacional: [`docs/COMANDOS.md`](docs/COMANDOS.md).
 Comandos do `sync-repos-from-master` que o Optimus Prime dispara (sempre `dry-run` antes):
 ```
 make dry-run PR_TITLE="<versão>"            # simulação segura do sync
@@ -46,18 +48,21 @@ Sync (`repos.yaml` **guiado pela doc do Notion**) → `make run` → PR.
 
 ## Fluxo de promoção de branches (Sync)
 `make run` **sempre com `target` explícito**, **nunca direto pra master**:
-1. `prerelease → teste_regressivo` (pré-prod) — Optimus Prime roda; **merge é do Ronan**.
+1. `prerelease → teste_regressivo` (pré-prod) — Optimus Prime edita o YAML e roda o `make dry-run`; o
+   **`make run` (abre os PRs) e o merge são do Ronan**.
 2. `teste_regressivo → master` (prod) — **só sob comando do Ronan**; Optimus Prime só edita o YAML.
 3. `make run-triggers` (ambientes dos clientes) — **100% do Ronan**, após OK do QA.
 
 ## Guardrails inquebráveis
-- **Autonomia até o Sync Passo 1:** no `executar` de board único, passos 1–7 rodam **sem aprovação
-  humana** — inclui a doc no Notion, a edição do `repos.yaml` e, com dry-run limpo, o `make run` do
-  Passo 1. **Única pausa:** card genuinamente ambíguo. No alvo `todos os boards`, ainda termina no Notion.
-- **Merge/master/prod e `run-triggers` = só o Ronan** (`auto_merge=false`); nada sobe sem autorização.
-- **Gate por ação:** `dry-run` → parseia saída (`chave=valor`) + exit code (0 ok / 1 erro). **Passo 1:**
-  erro documenta em `erros/AAAA-MM-DD-*.md` e **para**; **limpo → dispara o `make run` automaticamente**.
-  **Master (Passo 2) e triggers (Passo 3):** limpo → mostra e pede **comando explícito** antes do real.
+- **Autonomia até o `make dry-run` do Sync Passo 1:** no `executar` de board único, os passos rodam **sem
+  aprovação humana** — inclui a doc no Notion, a edição do `repos.yaml` e o `make dry-run` do Passo 1 — e
+  terminam na mensagem única `Confira`. **O `make run` do Passo 1 é sob OK explícito do Ronan.** **Única
+  pausa:** card genuinamente ambíguo. No alvo `todos os boards`, ainda termina no Notion.
+- **`make run` (Passo 1 e Passo 2), merge/master/prod e `run-triggers` = só o Ronan** (`auto_merge=false`);
+  nada sobe sem autorização.
+- **Gate por ação:** `dry-run` → parseia saída (`chave=valor`) + exit code (0 ok / 1 erro); **erro
+  documenta em `erros/AAAA-MM-DD-*.md` e para**. **Todo `make run` (Passo 1 e Passo 2) e as triggers
+  (Passo 3):** limpo → mostra e pede **comando explícito** do Ronan antes do real.
 - **Não inventar dado**; privilégio mínimo (Jira leitura; Notion só a base de releases).
 - Execuções em `execucoes/*.json`; refino de skill/comando **só com OK do Ronan**.
 - **Commits:** Conventional Commits em inglês, só com OK; **sem remote externo**.

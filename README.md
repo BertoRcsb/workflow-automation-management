@@ -1,12 +1,12 @@
 # Workflow with Automation Assisted by Management
 
-> # ▶️ RODAR A ESTEIRA
-> ⚠️ **Precisa de um "cérebro" (Claude) ligado** — isto **não roda sozinho**. As skills/comandos só
+> # RODAR A ESTEIRA
+> **Precisa de um "cérebro" (Claude) ligado** — isto **não roda sozinho**. As skills/comandos só
 > executam com o **Claude Code conectado + MCPs ativos + projeto aberto**. O cérebro é o Claude; os
 > braços são os MCPs + o `make` do sync.
 > **Você fala/escreve:** `Optimus Prime, iniciar` → equivale a **`/optimus-prime executar`**
 > (ou **`/optimus-prime verificar`** para ensaiar em *dry*, sem tocar em nada).
-> **🍰 Guia operacional (comandos passo a passo + gates):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
+> **Guia operacional (comandos passo a passo + gates):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
 > **Primeira vez / configurar (clonou agora?):** [`docs/SETUP.md`](docs/SETUP.md)
 
 Governança de deploy assistida por automação: **Jira → Notion → Sync/Deploy (GCP)**, com o
@@ -18,7 +18,7 @@ orquestrador **"Optimus Prime"** conduzindo a esteira e o Ronan aprovando cada p
 Invoque o orquestrador pelo comando:
 ```
 /optimus-prime verificar     # dry/seguro: coleta, valida, simula Notion e Sync — NÃO toca em nada
-/optimus-prime executar      # autônomo até criar a doc no Notion; PARA antes do Sync (make run)
+/optimus-prime executar      # board único: autônomo até o make dry-run do Passo 1 (doc no Notion + edita YAML + dry-run); make run sob OK do Ronan
 ```
 
 ## Papéis (skills em `.claude/skills/`)
@@ -31,8 +31,8 @@ Invoque o orquestrador pelo comando:
 | **orquestrador** ("Optimus Prime") | governa tudo + o `sync-repos-from-master`, com segurança por ação |
 
 ## Documentação
-- **📊 Apresentação visual (diagramas Mermaid):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
-- **🍰 Receita de bolo (comandos):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
+- **Apresentação visual (diagramas Mermaid):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
+- **Receita de bolo (comandos):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
 - **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md)
 - **Plano geral:** [`spec/plan.md`](spec/plan.md) · **Tarefas:** [`spec/task.md`](spec/task.md)
 - **Guia técnico + comandos:** [`CLAUDE.md`](CLAUDE.md) · **Índice de docs:** [`docs/README.md`](docs/README.md)

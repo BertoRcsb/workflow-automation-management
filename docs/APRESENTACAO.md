@@ -21,7 +21,7 @@ no Notion e prepara o deploy** — com **governança rastreável** e o **control
 
 **Destaques**
 - **MCP-first, código mínimo** — orquestra ferramentas oficiais (Atlassian, Notion) e o `make` do deploy.
-- **Autônoma até o Notion**; deploy real e merges **sempre sob aprovação humana**.
+- **Autônoma até o `make dry-run` do Sync Passo 1** (board único); todo `make run`, Merge, Master e Triggers **sempre sob aprovação do Ronan**.
 - **Rastreável e idempotente** — cada execução registrada; nada silencioso.
 
 ---
@@ -68,15 +68,19 @@ A esteira **não é um script que roda sozinho**: ela é um conjunto de instruç
 
 ## 5. Fluxo de execução (modelo atual)
 
-No `iniciar`/`executar`, a esteira roda **autônoma até documentar a release no Notion** e **para antes do
-Sync**. A **única pausa antes do Notion** é um **card genuinamente ambíguo**.
+No `iniciar`/`executar` de **board único**, a esteira roda **autônoma até o `make dry-run` do Sync Passo
+1** (documenta a release no Notion → edita o `repos.yaml` → `make dry-run`). A **única pausa** é um
+**card genuinamente ambíguo**. No alvo `todos os boards`, a varredura **termina no Notion** (Sync
+por-board, depois). Ao fim do escopo autônomo, o Optimus emite **uma única** mensagem:
+`Optimus Prime retornando com o resultado = Confira`. O **`make run` do Passo 1** (abre os PRs pré-prod)
+só roda **depois**, sob OK do Ronan.
 
 ![Diagrama 5](diagramas/05-fluxo-execucao.png)
 
 **Destaques**
-- **Autonomia até o Notion** = velocidade sem perder rastreabilidade.
+- **Autonomia até o `make dry-run` do Sync Passo 1** (board único) = velocidade sem perder rastreabilidade.
 - **Incidente não é hotfix por padrão** — é Release comum; hotfix só quando o Ronan avisar.
-- Após o Notion, **tudo é sob aprovação** (ver §8 e §9).
+- Todo `make run` (Passo 1, Master, Triggers) e o Merge, **tudo é sob aprovação** do Ronan (ver §8 e §9).
 
 ---
 
@@ -116,7 +120,8 @@ repositório** *ou* é **legitimamente só-banco**.
 ![Diagrama 8](diagramas/08-promocao-branches.png)
 
 **Destaques**
-- **Passo 1** o Optimus pode abrir os PRs; **o merge é sempre do Ronan** (`auto_merge=false`).
+- **Passo 1** o Optimus edita o YAML e roda o `make dry-run`; o **`make run` (abre os PRs) e o merge são
+  do Ronan** (`auto_merge=false`).
 - **Passo 2 (master)** e **Passo 3 (triggers)** = **comando explícito do Ronan**; ele aprova os builds no GCP.
 - Após o deploy, a master é sincronizada de volta para as branches de trabalho.
 

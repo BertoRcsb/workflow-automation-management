@@ -32,13 +32,13 @@ não muda se as ferramentas mudarem — para trocar, reescreva só "Configuraç�
   **sem executar NENHUM comando** que mude algo: `coletor` (leitura) → `validador` → **rascunho**
   (aprovados × reprovados) → simula o Notion e mostra o alvo do Sync (`repos.yaml` + `make dry-run`).
   Entrega só **relatório/plano**.
-- **`executar`** (board único) — roda a esteira **autônoma incluindo o Sync Passo 1** (passos 1–7):
+- **`executar`** (board único) — roda a esteira **autônoma até o `make dry-run` do Sync Passo 1**:
   versão-alvo (automática) → `coletor` → `validador` → `montador` **cria/atualiza o Notion (real) sem
-  pedir aprovação** → `notificador` (sandbox) → **Sync Passo 1** (edita o `repos.yaml`, `make dry-run`;
-  se **limpo → dispara `make run` automaticamente**, abrindo os PRs pré-prod). **A única pausa antes do
-  Passo 1 é card genuinamente ambíguo** (ver passo 3). **Para depois do Passo 1:** merge, **master
-  (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do Ronan**. No alvo **`todos os
-  boards`**, a varredura ainda **termina no Notion** (Sync por-board e explícito, depois).
+  pedir aprovação** → `notificador` (sandbox) → **Sync** (edita o `repos.yaml` e roda `make dry-run`).
+  Ao terminar (dry-run limpo), emite a **mensagem única `Confira`** e **para**. **A única pausa antes
+  disso é card genuinamente ambíguo** (ver passo 3). **O `make run` do Passo 1** (abre os PRs pré-prod),
+  merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do Ronan**. No alvo
+  **`todos os boards`**, a varredura ainda **termina no Notion** (Sync por-board e explícito, depois).
 
 > **"Optimus Prime iniciar"** (ou só **"iniciar"**) = modo **`executar`**.
 
@@ -87,12 +87,13 @@ O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qu
      `make run`). **Repo faltando no YAML → para e reporta** (Ronan adiciona).
    - **Editar o `repos.yaml` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração**,
      **não pede OK para ler/editar** — só interrompe/reporta em caso de **discrepância** (repo faltando no
-     YAML, doc ambígua). No **Passo 1** o gate é **automatizado** (dry-run limpo → `make run` sem OK
-     humano); o **gate humano** fica em **master (Passo 2)** e **triggers (Passo 3)**.
+     YAML, doc ambígua). O `make dry-run` também é autônomo (simulação); o **gate humano** é **todo `make
+     run`**: Passo 1, master (Passo 2) e triggers (Passo 3).
    - **Fluxo de promoção (NUNCA direto pra master; `make run` sempre com `target` explícito):**
      - **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): ajusta o YAML,
-       `make dry-run` e **parseia**; **limpo (exit 0) → dispara `make run` automaticamente** (abre os PRs);
-       **erro (exit 1) → documenta em `erros/` e para**. **Sem OK humano entre dry-run e run.** Merge é do Ronan.
+       `make dry-run` e **parseia**; **erro (exit 1) → documenta em `erros/` e para**; **limpo (exit 0) →
+       emite a mensagem `Confira` e para**. **O `make run`** (abre os PRs) só **sob OK explícito do
+       Ronan**, depois da mensagem. Merge é do Ronan.
      - **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override
        explícito do Ronan**. Por padrão o Optimus Prime edita o YAML e roda `make dry-run`; o **`make run`
        de master só quando o Ronan mandar explicitamente**.
@@ -107,7 +108,29 @@ O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qu
        Cria os PRs; **merges do Ronan**.
    - **Governança:** master/prod, merges e aprovação de build = **sempre do Ronan**; o Optimus Prime
      **pergunta antes** de master (Passo 2) e das triggers (Passo 3).
-7. **Resumo consolidado** (§9) → exibe e salva em `execucoes/`.
+7. **Fechamento** → salva o resumo consolidado (§9) em `execucoes/` (trilha de auditoria em disco) e
+   emite ao Ronan **uma única mensagem de fechamento** (ver "Mensagem única de retorno").
+
+## Mensagem única de retorno (contrato de confiança)
+No `executar`, ao concluir **todo o escopo autônomo** — cards conferidos → Notion montado e conferido com
+**TODOS** os links reais → `repos.yaml` editado → `make dry-run` do Passo 1 **limpo** — o Optimus emite
+**exatamente uma** mensagem de fechamento, começando pela linha exata:
+
+```
+Optimus Prime retornando com o resultado = Confira
+```
+
+- É a **única saída conversacional de fechamento**: execução **silenciosa**, sem relatórios verbosos nem
+  perguntas de "posso avançar?" pelo caminho. Só **card genuinamente ambíguo** (passo 3) e **paradas por
+  erro** (documenta em `erros/` e para) interrompem.
+- **Na mesma** mensagem, logo abaixo da linha, listar os artefatos para o Ronan conferir: **URL da página
+  no Notion**, **repos ativados no `repos.yaml`** e o **resultado do `make dry-run`** do Passo 1.
+- **Contrato de confiança:** o Optimus só emite essa linha depois de ter **lido, conferido e montado
+  certo**; o Ronan **confere depois** da mensagem (a linha é o sinal de "escopo autônomo concluído").
+- **O `make run` do Passo 1** (abre os PRs pré-prod) só roda **depois**, sob **OK explícito do Ronan**.
+- No alvo **`todos os boards`**, o escopo autônomo **termina no Notion** → a mensagem sai **por board**,
+  ao fim de cada bloco (o Sync fica fora do loop).
+- **`verificar`** (dry) **não** emite essa linha — entrega só o relatório/plano.
 
 ## Configuração atual — MCPs + `make` do sync-repos-from-master
 - **Skills irmãs** (delegar, nunca reimplementar): `coletor`, `validador`, `montador`
@@ -145,14 +168,15 @@ barato por padrão (ex.: Haiku)**. Só **um ponto exige julgamento fino**: valid
 - **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master
   (Passo 2) e antes de disparar triggers (Passo 3). Pode **disparar** triggers sob comando explícito,
   mas a **aprovação do build no GCP é do Ronan** (após OK do QA).
-- **Autonomia até o Sync Passo 1** (board único): no `executar`, passos 1–7 rodam **sem aprovação
-  humana** — inclui criar a doc no Notion, editar o `repos.yaml` e, com dry-run limpo, disparar o
-  `make run` do Passo 1 (PRs pré-prod). **Única pausa antes disso:** card genuinamente ambíguo (passo 3).
-  No alvo `todos os boards`, ainda **termina no Notion**.
+- **Autonomia até o `make dry-run` do Sync Passo 1** (board único): no `executar`, os passos rodam **sem
+  aprovação humana** — inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run` do
+  Passo 1 — e terminam na mensagem `Confira`. **O `make run` do Passo 1 (abre os PRs) é sob OK explícito
+  do Ronan.** **Única pausa antes disso:** card genuinamente ambíguo (passo 3). No alvo `todos os boards`,
+  ainda **termina no Notion**.
 - **Segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run** (parseia saída
-  + exit code). **Passo 1:** erro → documenta e **para**; **limpo → dispara o `make run` automaticamente**.
-  **Master (Passo 2) e triggers (Passo 3):** erro → para; limpo → mostra e espera **comando explícito**
-  do Ronan antes do real.
+  + exit code); erro → documenta e **para**. **Todo `make run` (Passo 1 e Passo 2) e triggers (Passo 3):**
+  limpo → mostra e espera **comando explícito** do Ronan antes do real. O `make dry-run` e a edição do
+  `repos.yaml` são autônomos.
 - **Todo erro documentado**; refino de skill/comando **só com aprovação do Ronan** (sem correção
   silenciosa). Ver [[regra-nao-executar-sozinho]].
 - **Não inventar dado ausente** (§11); privilégio mínimo (Jira leitura; Notion só a base).
@@ -161,6 +185,9 @@ barato por padrão (ex.: Haiku)**. Só **um ponto exige julgamento fino**: valid
   **nunca misturar** numa release. Misturar só com **OK explícito do Ronan**.
 - **`verificar` nunca executa** — só apresenta o plano (o que faria); execução real só em
   `executar`/`iniciar`.
+- **Execução silenciosa + mensagem única:** no `executar`, nada de relatórios verbosos ou "posso
+  avançar?" pelo caminho; ao fim do escopo autônomo, **uma só** mensagem — `Optimus Prime retornando com
+  o resultado = Confira` + os links dos artefatos (ver "Mensagem única de retorno").
 
 ## Documentação de erro / refino
 - Cada erro → um arquivo **`erros/AAAA-MM-DD-<slug>.md`** no repo: comando + parâmetros, exit code,

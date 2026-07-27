@@ -33,9 +33,11 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
     `[PB-XXXX — <título do card>](https://bernhoeft.atlassian.net/browse/PB-XXXX) · <status>`.
     Enriquece a leitura. *(O "mention" nativo do Jira **não** é reproduzível via MCP — o link com título
     é o equivalente suportado e verificável no re-fetch.)*
-  - **Pull Requests:** URL da PR (código) **ou** `• APENAS PROC` (item só-banco).
+  - **Pull Requests:** **TODAS** as PRs do card (uma por linha / separadas — nunca só a primeira)
+    **ou** `• APENAS PROC` (item só-banco). Um card pode ter mais de uma PR/merge.
   - **Infra / Merge:** em branco até apurar (**não inventar**).
-- **Blocos:** Testes regressivos · Ambientes · Repositórios para Deploy · Participantes
+- **Blocos:** Testes regressivos · Ambientes · **Repositórios para Deploy** (listar **TODOS** os
+  repositórios reais citados nos cards aprovados, deduplicados — é o que guia o `repos.yaml`) · Participantes
   do Deploy (Dados: Alexandre Rudoi B. · QA: Dorgival Silva Filho · DevOps/Resp.:
   Yuri Stolai / Ronan Berto · sobreaviso: assignees do(s) card(s)).
 
@@ -43,8 +45,11 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
 - **Idempotência:** não duplicar card; se a página da versão já existe, **atualizar**
   (usar replace do conteúdo), não criar outra.
 - **Não inventar** Infra / Merge / repositório — deixar em branco.
+- **Fidelidade ao card:** a doc reflete **exatamente** os links reais dos cards — **todas** as PRs e
+  **todos** os repositórios (deduplicados), nunca só o primeiro. O Ronan **confia** nessa conferência.
 - **Verificação enxuta:** reler a página com `notion-fetch` **uma vez, ao final** (não a cada
-  linha/card) e conferir tabela + propriedades. Menos ida-e-volta = mais rápido.
+  linha/card) e conferir tabela + propriedades — inclusive que **todos** os links de cada card entraram.
+  Menos ida-e-volta = mais rápido.
 
 ## Evolução / próximos papéis (este escopo vai crescer)
 - **Categorias** na tabela/release.

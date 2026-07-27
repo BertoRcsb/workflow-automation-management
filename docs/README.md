@@ -13,13 +13,15 @@ Landing do repo: [`../README.md`](../README.md).
 ## Visão geral (1 parágrafo)
 A esteira transforma cards prontos do Jira em uma **release/hotfix documentada no Notion** e prepara a
 **sincronização de branches** no `sync-repos-from-master`. O maestro é o **Optimus Prime**: no `executar`
-roda **autônomo até o Notion** e **para** — o Sync/deploy em diante é **sob OK do Ronan**, com gate por
-ação. O deploy real e os merges são do Ronan.
+de board único roda **autônomo até o `make dry-run` do Sync Passo 1** (doc no Notion → edita o
+`repos.yaml` → `make dry-run`) e emite a mensagem única `Confira` — o `make run` do Passo 1 (abre os
+PRs), Merge, Master (Passo 2) e Triggers (Passo 3) são **sob OK do Ronan**, com gate por ação. O deploy
+real e os merges são do Ronan.
 
 ## Como usar (resumo — passo a passo em `COMANDOS.md`)
 ```
 Optimus Prime verificar <board|todos os boards>   # dry: coleta, valida, simula — NÃO toca em nada
-Optimus Prime iniciar   <board|todos os boards>   # autônomo até o Notion (para antes do Sync)
+Optimus Prime iniciar   <board|todos os boards>   # board único: autônomo até o make dry-run do Passo 1 (make run sob OK); todos os boards: até o Notion
 ```
 
 ## Configuração (IDs já públicos no repo)

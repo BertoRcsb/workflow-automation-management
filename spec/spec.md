@@ -174,13 +174,14 @@ skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
 
 - **`verificar`** — dry/seguro: roda a sequência sem tocar em nada (coletor → confere → montador
   **simula** o Notion → mostra o alvo do Sync + `make dry-run`). Só relatório.
-- **`executar`** (board único) — roda a esteira **autônoma incluindo o Sync Passo 1** (versão-alvo
-  automática → coletor → validador → montador cria a página **sem pedir OK** → edita o `repos.yaml` →
-  `make dry-run` → se limpo, **`make run`** que abre os PRs pré-prod); **única pausa antes do Passo 1** é
-  card genuinamente ambíguo. **Para depois do Passo 1**: merge, **master (Passo 2)** e **triggers (Passo
-  3)** seguem sob comando explícito do Ronan (com gate de segurança por ação). No alvo `todos os boards`,
-  a varredura **termina no Notion**. **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) —
-  **incidente não é hotfix por padrão**; hotfix só quando o Ronan avisar.
+- **`executar`** (board único) — roda a esteira **autônoma até o `make dry-run` do Sync Passo 1**
+  (versão-alvo automática → coletor → validador → montador cria a página **sem pedir OK** → edita o
+  `repos.yaml` → `make dry-run`); ao terminar (dry-run limpo) emite a **mensagem única `Confira`** e
+  **para**. **Única pausa antes disso** é card genuinamente ambíguo. **O `make run` do Passo 1** (abre os
+  PRs pré-prod), merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do
+  Ronan** (com gate de segurança por ação). No alvo `todos os boards`, a varredura **termina no Notion**.
+  **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) — **incidente não é hotfix por padrão**;
+  hotfix só quando o Ronan avisar.
 
 **Alvo (independente do modo):** **`<board>`** (um board, padrão) ou **`todos os boards`** — varre os
 três **em sequência, por prioridade (incidentes 1º)**, **isolados** (cada board → sua própria página no
@@ -189,23 +190,34 @@ Notion; nunca misturar). No alvo `todos os boards` a varredura **termina no Noti
 Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar todos os boards`.
 
 **Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
-a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Passo 1**
-(board único): se limpo → **dispara o `make run` automaticamente** (sem OK humano). **Master (Passo 2) e
-triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do Ronan antes do real.
+a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Todo `make run`
+(Passo 1 e Passo 2) e as triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do Ronan
+antes do real. O `make dry-run` e a edição do `repos.yaml` são autônomos.
 
 **Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e ativa
 **apenas os repositórios de "Repositórios para Deploy"**; **o que não corresponder → comenta de volta**
 (não entra no `make run`); **repo faltando → para e reporta** (Ronan adiciona).
 
 **Fluxo de promoção de branches (nunca direto pra master; `make run` sempre com `target` explícito):**
-- **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): edita o YAML,
-  `make dry-run` e, se limpo, **`make run` automático** (PRs). **Sem OK humano entre dry-run e run.** Merge é do Ronan.
+- **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): edita o YAML e roda
+  `make dry-run` (autônomo); **o `make run` (abre os PRs) é sob OK explícito do Ronan**, depois da
+  mensagem `Confira`. Merge é do Ronan.
 - **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override do Ronan**;
   por padrão o Optimus Prime edita o YAML + `make dry-run`, e roda o `make run` de master só sob override.
 - **Passo 3** — `make run-triggers` (ambientes dos clientes; **não recebe `PR_TITLE`**): **100% do Ronan**,
   após OK do QA (aprovação do build no GCP é dele).
 - Troca de `source`/`target` por passo é via **edição do YAML** (comentar/descomentar). Branches:
   `prerelease` → `teste_regressivo` → `master` (confirmar grafia exata antes do run real).
+
+**Mensagem única de retorno (contrato de confiança):** no `executar`, ao concluir **todo o escopo
+autônomo** (cards conferidos → Notion com **TODOS** os links reais → `repos.yaml` editado → `make dry-run`
+do Passo 1 limpo), o Optimus emite **exatamente uma** mensagem de fechamento, começando pela linha exata
+`Optimus Prime retornando com o resultado = Confira`, seguida (na mesma mensagem) dos artefatos para
+conferência (URL do Notion, repos ativados no YAML, resultado do `dry-run`). Execução **silenciosa** pelo
+caminho (sem "posso avançar?"); só card ambíguo e erros interrompem. **O `make run` do Passo 1** (abre os
+PRs pré-prod) só roda **depois**, sob OK explícito do Ronan. No alvo `todos os boards`, a mensagem sai
+**por board** (fim no Notion). `verificar` **não** emite essa linha. O Ronan confia na conferência do
+Optimus e **confere depois**.
 
 **Diretrizes inquebráveis:** **merge é só do Ronan** (manter `auto_merge=false`); **master (Passo 2),
 deploy real (`make run-triggers`) e aprovação de build no GCP = do Ronan**; **hotfix** o Ronan conduz.
@@ -215,6 +227,11 @@ Erros viram **`erros/AAAA-MM-DD-*.md`** (base de refino, corrigido só com OK do
 
 Contrato comum entre os agentes. **Nota:** a versão de destino **não** vem do card — é atribuída na
 montagem do pacote; por isso fica no resumo de execução (§9), não no card.
+
+> **Multi-link (fidelidade ao dado real):** `repositories` e `pull_requests` são **arrays** — um card
+> pode ter **mais de um repositório** e **mais de uma PR/merge**. Capturar **TODOS** os links reais do
+> card, nunca só o primeiro; deduplicar quando a PR/repo é compartilhada entre irmãos do mesmo épico;
+> **nunca inventar** e **nunca omitir**.
 
 ```json
 {
@@ -228,7 +245,7 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
   "category": "correcao",
   "links": {
     "jira": "https://bernhoeft.atlassian.net/browse/PB-5415",
-    "repository": "https://bitbucket.org/bernhoeft/contractweb-v3",
+    "repositories": ["https://bitbucket.org/bernhoeft/contractweb-v3"],
     "pull_requests": ["https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5164"]
   },
   "deploy_fields": {
@@ -261,6 +278,9 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
 | Merge realizado | Merge realizado? | `customfield_12401` |
 | Produto | Produto | `customfield_11993` |
 | Ação de infra | **não existe ainda** (a criar) | — |
+
+> **Os campos de PR (`customfield_12400`) e de repositório (`customfield_12399`) podem trazer mais de um
+> link** — o coletor extrai **todos** (arrays `pull_requests` / `repositories` do §7), nunca só o primeiro.
 
 ### 8.2 Notion (leitura + escrita)
 - **Database "Versões - NewContract":** data_source `23e19d89-2318-81ff-812d-000b6afb6b5a`;
@@ -310,7 +330,10 @@ elegibilidade:
 - **Idempotência:** não duplicar cards na release, não renotificar sem nova análise, não gerar duas versões do mesmo pacote.
 - **Intervenção humana:** revisão manual em critérios inconclusivos, dados contraditórios, exceção autorizada, evidências insuficientes. **O agente não inventa dados para preencher campo ausente.**
 - **Segurança (privilégio mínimo):** Jira leitura (`read:jira-work`); Notion só a base de Release Notes; notificação com permissão restrita; repositório leitura.
-- **Regra do projeto:** o assistente **não executa nada sem OK explícito do Ronan**; ele aprova cada passo.
+- **Regra do projeto:** no `executar` de board único, a esteira é **autônoma até o `make dry-run` do Sync
+  Passo 1** (inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run`), terminando na
+  mensagem `Confira`. OK **explícito do Ronan** fica reservado ao **`make run` (Passo 1 e Passo 2)**,
+  **Merge**, **Triggers (Passo 3)** e **card genuinamente ambíguo** — o resto roda sem aprovação humana.
 - **Desempenho & custo:** **coleta enxuta** (só os campos necessários, sem `description` em lote — puxar
   sob demanda); no Notion, localizar via `query_data_sources` (SQL) e **verificar uma vez ao final**;
   **rodar no modelo mais barato por padrão**, escalando só em card ambíguo (ver as skills, "Modelo

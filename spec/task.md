@@ -8,7 +8,8 @@
 - [x] Modo "todos os boards" + mapeamento dos 3 boards (incidentes = `Incidente`; features =
       `Story` sem "Refatoração"; refatoração = `Story` com "Refatoração").
 - [x] Guia operacional único `docs/COMANDOS.md` (receitas + tabela "Sequência e gates" + regras de ouro).
-- [x] Docs reconciliadas ao modelo "autônomo até o Notion; para antes do Sync".
+- [x] Docs reconciliadas ao modelo "autônomo até o make dry-run do Sync Passo 1" (board único); todo make run (Passo 1/2), Merge, Triggers sob OK do Ronan.
+- [x] Fidelidade multi-link (todos os repos/PRs por card) + mensagem única de retorno ("Confira") + contrato de confiança.
 - [x] Fluxo E2E validado: PB-5740 → Notion Hotfix `1.111.2` → Sync Passo 1 → PR #245 (**sem merge**).
 - [x] Gate de segurança por ação (dry-run → OK → real) + documentação de erro em `erros/`.
 - [x] Registro de execução em `execucoes/*.json`.

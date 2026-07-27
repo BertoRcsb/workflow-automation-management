@@ -24,6 +24,10 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
 - Pedir **só os campos necessários** — respostas grandes estouram o contexto; se
   precisar, salvar a resposta em arquivo e parsear.
 - Entregar cada item no **modelo normalizado** (abaixo).
+- **Capturar TODOS os links reais do card:** os campos de repositório e de PR/merge podem conter **mais
+  de um** link — extrair **todos** para `repositories` / `pull_requests` (arrays), **nunca só o primeiro**.
+  **Ordenar e deduplicar** (PR/repo compartilhada entre irmãos do mesmo épico conta uma vez). **Nunca
+  inventar** e **nunca omitir** — o que não existir no card fica vazio.
 - **PR por referência de card:** se o campo de PR **não** trouxer link do Bitbucket mas **referenciar
   outro card** (`PB-XXXX`, ex.: "Pr no card PB-5651"), **resolver e herdar a PR/repo desse card
   referenciado** como PR **compartilhada** (registrar que é a mesma PR do card X). Só herda o que
@@ -57,9 +61,9 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
 
 | # (prioridade) | board (nome no Jira) | projeto | issuetype | status alvo | JQL | estado |
 |---|-------|---------|-----------|-------------|-----|--------|
-| 1 | **Linha de frente** (= incidentes) | `PB` | `Incidente` | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Incidente AND status in ("Teste regressivo","Pronto para deploy")` | ✅ definido |
-| 2 | **Features** | `PB` | `Story` (sem "Refatoração" no título) | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Story AND summary !~ "Refatoração" AND status in ("Teste regressivo","Pronto para deploy")` | ✅ definido |
-| 3 | **Refatoração** | `PB` | `Story` (com "Refatoração" no título) | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Story AND summary ~ "Refatoração" AND status in ("Teste regressivo","Pronto para deploy")` | ✅ definido |
+| 1 | **Linha de frente** (= incidentes) | `PB` | `Incidente` | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Incidente AND status in ("Teste regressivo","Pronto para deploy")` | definido |
+| 2 | **Features** | `PB` | `Story` (sem "Refatoração" no título) | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Story AND summary !~ "Refatoração" AND status in ("Teste regressivo","Pronto para deploy")` | definido |
+| 3 | **Refatoração** | `PB` | `Story` (com "Refatoração" no título) | `Teste regressivo`, `Pronto para deploy` | `project = PB AND issuetype = Story AND summary ~ "Refatoração" AND status in ("Teste regressivo","Pronto para deploy")` | definido |
 
 > **Como o mapeamento foi cravado:** os três "boards" do Jira (*Projetos Bernhoeft › Linha de frente /
 > Features / Refatoração*) são **visões dentro do projeto `PB`** — o MCP **não expõe a API de
@@ -84,8 +88,8 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
 
   | Info | Campo |
   |------|-------|
-  | Link da PR | `customfield_12400` |
-  | Link do repositório | `customfield_12399` |
+  | Link da PR | `customfield_12400` (pode conter **múltiplos** URLs → extrair todos) |
+  | Link do repositório | `customfield_12399` (pode conter **múltiplos** URLs → extrair todos) |
   | Ação de dados (Sim/Não) | `customfield_12297` |
   | Merge realizado | `customfield_12401` |
   | Produto | `customfield_11993` |
@@ -111,7 +115,7 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   "product": "NewContract",
   "epic": { "key": "PB-5159", "summary": "Melhorias na Tela de Análise" },
   "summary": "...",
-  "links": { "jira": "...", "repository": null, "pull_requests": [] },
+  "links": { "jira": "...", "repositories": [], "pull_requests": [] },
   "deploy_fields": {
     "acao_dados": "Sim", "acao_infra": null, "merge_realizado": null,
     "apenas_proc": false, "proc_name": null

@@ -1,4 +1,4 @@
-# ⚙️ SETUP — configurar e usar o Optimus Prime (após clonar)
+# SETUP — configurar e usar o Optimus Prime (após clonar)
 
 Este projeto é **MCP-first**: a esteira roda **dentro do Claude Code** (o Claude opera os MCPs e segue
 as skills). **Não é um script standalone** — precisa do Claude conectado. Siga os passos abaixo.
@@ -43,7 +43,7 @@ Configure o `.env` dele (tokens Bitbucket/GCP) e rode `make setup` — **ver o R
 No Claude Code (com MCPs conectados), escreva:
 ```
 optimus prime verificar <board>          # DRY: mostra o que faria, sem executar nada
-optimus prime iniciar <board>            # roda a esteira do board (com gates de aprovação)
+optimus prime iniciar <board>            # board único: autônoma até o make dry-run do Passo 1 (make run sob OK do Ronan)
 optimus prime verificar todos os boards  # DRY dos três (um bloco por board)
 optimus prime iniciar todos os boards    # varre os três, incidentes 1º, 1 Notion por board (para no Notion)
 ```
@@ -56,10 +56,10 @@ optimus prime iniciar todos os boards    # varre os três, incidentes 1º, 1 Not
 - Roteiro completo dos passos e comandos: [`COMANDOS.md`](COMANDOS.md).
 
 ## Regras que o Optimus sempre respeita (guardrails)
-- 🚫 **Merge, master/prod e `run-triggers` = só o Ronan** (`auto_merge=false`); nada sobe sem OK.
-- 👁️ **`verificar` nunca executa** — só apresenta o plano.
-- 🧭 **Um board por vez** — nunca misturar (misturar só com OK explícito).
-- 🛡️ **Dry-run antes** de qualquer ação real; erros documentados em `erros/`; execuções em `execucoes/`.
+- **Merge, master/prod e `run-triggers` = só o Ronan** (`auto_merge=false`); nada sobe sem OK.
+- **`verificar` nunca executa** — só apresenta o plano.
+- **Um board por vez** — nunca misturar (misturar só com OK explícito).
+- **Dry-run antes** de qualquer ação real; erros documentados em `erros/`; execuções em `execucoes/`.
 
 ## O que NÃO vai no repo (você provê)
 Créditos do Claude · OAuth dos MCPs · acessos (Jira/Notion/Bitbucket/GCP) · `.env` do sync tool.
