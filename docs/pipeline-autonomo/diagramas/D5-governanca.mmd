@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph AUTO["Autonomo (sem aprovacao humana)"]
+        A1["Versao-alvo"]
+        A2["Coletor (Jira)"]
+        A3["Validador v2 + D1/D2"]
+        A4["Montador (Notion)"]
+        A5["Edita repos.yaml"]
+        A6["make dry-run Passo 1"]
+        A7["Mensagem Confira"]
+    end
+    subgraph GATE["Somente sob OK explicito do Ronan"]
+        G1["make run Passo 1<br>(abre PRs pre-prod)"]
+        G2["Passo 2 -> master"]
+        G3["Passo 3 -> run-triggers"]
+        G4["Merge (auto_merge=false)"]
+    end
+    A1 --> A2 --> A3 --> A4 --> A5 --> A6 --> A7
+    A7 -.OK do Ronan.-> G1 --> G2 --> G3
+    G1 -.-> G4
+    INV["Invariantes: nunca inventar dado; capturar TODOS os links;<br>make run sempre com target explicito; nunca direto pra master"]

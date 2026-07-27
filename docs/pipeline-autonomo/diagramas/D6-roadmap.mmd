@@ -1,0 +1,11 @@
+flowchart LR
+    P1["Passo 1<br>Scaffold do repo<br>Poetry + camadas + Makefile"]
+    P2["Passo 2<br>Dominio puro<br>models + rules + testes"]
+    P3["Passo 3<br>Adapter Jira<br>+ field_parsers"]
+    P4["Passo 4<br>Coletor + Validador<br>CLI verificar (marco E2E leitura)"]
+    P5["Passo 5<br>Adapter Notion<br>+ Montador"]
+    P6["Passo 6<br>Sync bridge + Orquestrador<br>CLI executar + Confira"]
+    P7["Passo 7<br>Promocao guardada<br>+ agendador + docs"]
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
+    P4 -. primeiro valor real .-> M1["Le e valida cards sem escrever"]
+    P6 -. esteira completa .-> M2["Notion + repos.yaml + dry-run"]

@@ -1,0 +1,21 @@
+flowchart TB
+    subgraph Trigger["Disparo (sem Claude)"]
+        SCHED["Agendador<br>cron / systemd"]
+        CLIcmd["Operador<br>optimus-prime executar"]
+    end
+    subgraph Optimus["optimus_prime (codigo Python)"]
+        CLI["interfaces/cli.py"]
+        ORQ["application/orchestrator.py<br>Optimus Prime"]
+    end
+    subgraph Ext["Integracoes externas (REST direto)"]
+        JIRA["Jira REST v3<br>read-only"]
+        NOTION["Notion API<br>base Versoes - NewContract"]
+        SYNC["sync-repos-from-master<br>make dry-run / run"]
+    end
+    SCHED --> CLI
+    CLIcmd --> CLI
+    CLI --> ORQ
+    ORQ -->|coleta cards| JIRA
+    ORQ -->|monta a doc| NOTION
+    ORQ -->|governa repos.yaml + aciona| SYNC
+    SYNC -->|abre PRs / triggers| GCP["Bitbucket / Cloud Build"]

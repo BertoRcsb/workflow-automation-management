@@ -1,0 +1,15 @@
+flowchart TB
+    START["Card coletado"] --> V2{"Regra v2:<br>tem PR + repositorio?"}
+    V2 -->|Sim| APR["Aprovado (mudanca de codigo)"]
+    V2 -->|Nao| SB{"So-banco legitimo?<br>acao_dados=Sim E<br>(owner in db_owners OU<br>descricao ~ proc/procedure/carga/selecao/query)"}
+    SB -->|Sim| APR2["Aprovado (APENAS PROC)"]
+    SB -->|Indeciso / repo != PR| AMB["AMBIGUO -> EXCLUI + reporta<br>(sem IA, nunca inventa)"]
+    SB -->|Nao| REP["Reprovado (sem PR, sem repo, sem acao de dados)"]
+    APR --> DEP{"Regras de dependencia"}
+    APR2 --> DEP
+    DEP --> D1{"D1: epico do card completo?<br>(todos os filhos nao cancelados em deploy)"}
+    D1 -->|Nao| EXD1["Exclui TODOS os cards do epico<br>(all-or-nothing)"]
+    D1 -->|Sim| D2{"D2: PR compartilhada adotada por inteiro?"}
+    D2 -->|Parcial| EXD2["Exclui os cards de dentro<br>(PR nao sobe truncada)"]
+    D2 -->|Sim| PKG["Entra no pacote (doc + repos.yaml)"]
+    NOTE["'N/A' e 'Apenas PROC' contam como vazio"]

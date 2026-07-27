@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant S as Agendador/Operador
+    participant O as Optimus Prime (codigo)
+    participant J as Jira REST
+    participant N as Notion API
+    participant Y as repos.yaml (sync-tool)
+    S->>O: optimus-prime executar (board)
+    Note over O: 1. Versao-alvo automatica Release X.(Y+1).0
+    O->>J: 2. coletar cards (JQL do board) + campos enxutos
+    J-->>O: cards normalizados (multi-link, epico)
+    O->>O: 3. validar v2 + so-banco + D1/D2
+    Note over O: card ambiguo -> EXCLUI e reporta (sem IA)
+    O->>N: 4. criar/atualizar a doc (async + poll + re-fetch)
+    N-->>O: page_id + url
+    O->>Y: 5. ativar so os repos de "Repositorios para Deploy"
+    O->>O: 6. make dry-run do Passo 1 (parseia chave=valor + exit)
+    O-->>S: 7. "Optimus Prime retornando com o resultado = Confira"
+    Note over S,Y: PARA aqui. make run / master / triggers = comando separado (OK do Ronan)

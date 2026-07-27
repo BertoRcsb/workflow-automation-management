@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Optimus Prime - Pipeline Autonomo</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         color: #1c2430; line-height: 1.5; font-size: 11pt; margin: 0; }
+  h1 { font-size: 22pt; color: #10233b; margin: 0 0 4px; }
+  h2 { font-size: 16pt; color: #10233b; border-bottom: 2px solid #cdd6e3; padding-bottom: 4px;
+       margin: 26px 0 10px; page-break-after: avoid; }
+  h3 { font-size: 12.5pt; color: #1b3a63; margin: 16px 0 6px; page-break-after: avoid; }
+  p, li { font-size: 11pt; }
+  code { background: #eef2f7; padding: 1px 4px; border-radius: 3px; font-size: 9.8pt;
+         font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+  .fig { text-align: center; margin: 14px 0 6px; page-break-inside: avoid; }
+  .fig img { max-width: 100%; border: 1px solid #dde3ec; border-radius: 6px; }
+  .cap { font-size: 9.5pt; color: #5b6b80; margin-top: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; }
+  th, td { border: 1px solid #cdd6e3; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef2f7; }
+  .passo { page-break-before: always; }
+  .box { background: #f6f8fb; border: 1px solid #dde3ec; border-left: 4px solid #2f6feb;
+         border-radius: 6px; padding: 10px 14px; margin: 10px 0; }
+  .warn { border-left-color: #d98324; background: #fdf7ef; }
+  .ok { border-left-color: #2e8b57; background: #f0f8f3; }
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check li { padding-left: 22px; position: relative; margin: 3px 0; }
+  ul.check li::before { content: "\2610"; position: absolute; left: 0; color: #2f6feb; font-size: 12pt; }
+  .cover { text-align: center; padding-top: 60mm; page-break-after: always; }
+  .cover .sub { font-size: 13pt; color: #45566b; margin-top: 8px; }
+  .cover .meta { margin-top: 40mm; font-size: 11pt; color: #45566b; }
+  .lead { font-size: 11.5pt; color:#2a3646; }
+  .small { font-size: 9.5pt; color: #5b6b80; }
+  .toc li { margin: 2px 0; }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="cover">
+  <h1>Optimus Prime</h1>
+  <div class="sub">Pipeline autonomo de release notes e sincronizacao<br>
+  (versao em codigo, sem dependencia do Claude)</div>
+  <div class="meta">
+    Documento de projeto e plano de construcao<br>
+    Versao 1.0 &middot; 27 de julho de 2026<br>
+    Autor: Ronan Berto &middot; Assistente: Optimus Prime
+  </div>
+</div>
+
+<!-- SUMARIO -->
+<h2>Sumario</h2>
+<ol class="toc">
+  <li>Sumario executivo</li>
+  <li>Visao geral do sistema (D1)</li>
+  <li>Arquitetura em camadas (D2)</li>
+  <li>Fluxo da esteira (D3)</li>
+  <li>Regras de negocio (D4)</li>
+  <li>Governanca e seguranca (D5)</li>
+  <li>Roadmap de construcao (D6)</li>
+  <li>Passo 1 - Scaffold do repositorio</li>
+  <li>Passo 2 - Dominio puro (regras)</li>
+  <li>Passo 3 - Adapter Jira + parsers</li>
+  <li>Passo 4 - Coletor + Validador + CLI verificar</li>
+  <li>Passo 5 - Adapter Notion + Montador</li>
+  <li>Passo 6 - Sync bridge + Orquestrador + CLI executar</li>
+  <li>Passo 7 - Promocao guardada + agendador + docs</li>
+  <li>Apendice A - Contratos e configuracao</li>
+  <li>Apendice B - Casos-modelo de teste</li>
+  <li>Riscos e Definition of Done</li>
+</ol>
+
+<!-- 1. SUMARIO EXECUTIVO -->
+<h2>1. Sumario executivo</h2>
+<p class="lead">Hoje o <code>workflow-automation-management</code> e um conjunto de instrucoes (skills em
+Markdown) que <strong>so roda dentro do Claude Code</strong>, com os MCPs Atlassian e Notion ligados por
+OAuth manual. Ele documenta releases no Notion e prepara a sincronizacao de branches acionando o
+<code>sync-repos-from-master</code>.</p>
+<p>Este documento define um <strong>gemeo autonomo</strong>: o mesmo papel "Optimus Prime", porem em
+<strong>codigo real</strong>, rodando como <strong>pipeline sem o Claude no meio</strong>. O sistema atual
+e <strong>preservado</strong> (fica como a versao assistida por IA); criamos um <strong>repositorio
+novo</strong>, separado, espelhando a arquitetura limpa ja provada no <code>sync-repos-from-master</code>.</p>
+
+<h3>O que muda</h3>
+<table>
+  <tr><th>Aspecto</th><th>Hoje (assistido por Claude)</th><th>Novo (pipeline autonomo)</th></tr>
+  <tr><td>Motor</td><td>Claude Code lendo skills</td><td>Codigo Python (Clean Architecture)</td></tr>
+  <tr><td>Jira / Notion</td><td>MCP + OAuth por pessoa</td><td>REST direto com token em <code>.env</code></td></tr>
+  <tr><td>Disparo</td><td>Comando no chat</td><td>CLI + agendador (cron/systemd)</td></tr>
+  <tr><td>Card ambiguo</td><td>Pergunta ao humano</td><td>Exclui e reporta (deterministico, sem IA)</td></tr>
+  <tr><td>Deploy (sync)</td><td>make sob OK do Ronan</td><td>Igual: make run/master/triggers sob OK</td></tr>
+</table>
+
+<h3>Premissas travadas</h3>
+<ul>
+  <li>Repositorio novo, <strong>Python 3.14 + Poetry</strong>, espelhando o <code>sync-repos-from-master</code>.</li>
+  <li>Execucao por <strong>CLI + agendador</strong> (cron/systemd), com comando unico no estilo do Sync.</li>
+  <li><strong>Card ambiguo</strong> (heuristica so-banco nao fecha, ou repositorio diferente da PR) e
+  <strong>excluido e reportado</strong> - 100% deterministico, sem chamada de IA em runtime.</li>
+  <li>Gates humanos por <strong>comando separado</strong>: <code>executar</code> vai so ate o
+  <code>make dry-run</code> do Passo 1 e emite a mensagem <code>Optimus Prime retornando com o resultado =
+  Confira</code>; <code>make run</code>, master e triggers ficam guardados sob OK do Ronan.</li>
+  <li>"Assignee de banco" deixa de ser conhecimento tacito e vira um cadastro <code>db_owners</code> na
+  configuracao.</li>
+</ul>
+
+<!-- 2. VISAO GERAL -->
+<h2>2. Visao geral do sistema</h2>
+<p>O "Optimus Prime" em codigo e o cerebro; os bracos continuam sendo Jira (leitura), Notion (escrita) e
+o <code>sync-repos-from-master</code> (deploy). O que antes exigia o Claude operando MCPs agora sao
+chamadas REST diretas e a orquestracao dos <code>make</code> do sync-tool.</p>
+<div class="fig"><img src="diagramas/D1-visao-geral.png" alt="Visao geral">
+  <div class="cap">D1 - Visao geral: disparo (agendador/operador) -&gt; Optimus Prime -&gt; Jira / Notion / sync-tool.</div></div>
+
+<!-- 3. ARQUITETURA -->
+<h2>3. Arquitetura em camadas</h2>
+<p>Clean/Hexagonal identica a referencia: direcao de dependencia
+<code>interfaces &rarr; application &rarr; domain &larr; infra</code>. O <code>domain</code> define
+contratos (ABCs) e regras puras sem I/O; o <code>infra</code> implementa os contratos (adapters REST); o
+<code>application</code> orquestra recebendo os contratos por injecao de dependencia.</p>
+<div class="fig"><img src="diagramas/D2-arquitetura-camadas.png" alt="Arquitetura em camadas">
+  <div class="cap">D2 - Camadas e modulos do pacote <code>optimus_prime</code>.</div></div>
+<p class="small">Padroes reusados do <code>sync-repos-from-master</code>: CLI com <code>argparse</code> e
+roteamento por primeiro argumento; <code>@dataclass(slots=True)</code> + <code>Literal</code> para status;
+<code>BaseAdapter.safe_call()</code> que converte falhas conhecidas em resultado normalizado sem quebrar o
+lote; adapters com <code>transport</code> injetavel (testaveis sem rede); saida <code>chave=valor</code> +
+exit code.</p>
+
+<!-- 4. FLUXO -->
+<h2>4. Fluxo da esteira</h2>
+<p>No <code>executar</code> de um board, a esteira roda de forma autonoma da coleta ate o
+<code>make dry-run</code> do Passo 1, encerrando na mensagem unica <code>Confira</code>. A unica excecao
+que interrompe e um erro; o card ambiguo nao pausa - e excluido e reportado.</p>
+<div class="fig"><img src="diagramas/D3-fluxo-esteira.png" alt="Fluxo da esteira">
+  <div class="cap">D3 - Sequencia dos passos 1 a 7; para no dry-run + Confira; make run e deploy sob OK do Ronan.</div></div>
+
+<!-- 5. REGRAS -->
+<h2>5. Regras de negocio</h2>
+<p>Toda a decisao de elegibilidade e dependencia vira codigo deterministico e testavel (camada
+<code>domain/rules.py</code>). A regra v2 (aprovar se tem PR+repositorio, ou se e legitimamente so-banco),
+a heuristica so-banco, e as regras de dependencia D1 (epico incompleto) e D2 (PR compartilhada parcial)
+sao aplicadas em sequencia; o card ambiguo e excluido e reportado.</p>
+<div class="fig"><img src="diagramas/D4-regras-validacao.png" alt="Regras de validacao">
+  <div class="cap">D4 - Elegibilidade v2 + so-banco + D1/D2 + tratamento deterministico do card ambiguo.</div></div>
+
+<!-- 6. GOVERNANCA -->
+<h2>6. Governanca e seguranca</h2>
+<p>A fronteira de autonomia e clara: tudo ate o <code>make dry-run</code> do Passo 1 roda sozinho; todo
+<code>make run</code> (Passo 1 e 2), o merge, o master e as triggers (Passo 3) exigem OK explicito do
+Ronan. O <code>auto_merge</code> permanece <code>false</code>; o <code>make run</code> sempre com
+<code>target</code> explicito, nunca direto para a master.</p>
+<div class="fig"><img src="diagramas/D5-governanca.png" alt="Governanca e seguranca">
+  <div class="cap">D5 - O que e autonomo vs. o que fica sob OK do Ronan; invariantes inquebraveis.</div></div>
+
+<!-- 7. ROADMAP -->
+<h2>7. Roadmap de construcao</h2>
+<p>A construcao e dividida em sete Passos sequenciais. O <strong>Passo 4</strong> entrega o primeiro valor
+real (le e valida cards sem escrever nada) e o <strong>Passo 6</strong> completa a esteira autonoma.</p>
+<div class="fig"><img src="diagramas/D6-roadmap.png" alt="Roadmap">
+  <div class="cap">D6 - Sequencia dos Passos 1 a 7 e os dois marcos de valor.</div></div>
+
+<!-- PASSO 1 -->
+<div class="passo">
+<h2>Passo 1 - Scaffold do repositorio</h2>
+<h3>Objetivo</h3>
+<p>Criar o repositorio novo com o esqueleto de Clean Architecture, ferramentas de qualidade e
+configuracao, espelhando o <code>sync-repos-from-master</code>. Nenhuma regra ainda; so a fundacao.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li>Criar o repo <code>workflow-automation-pipeline</code> (nome ajustavel) e o pacote <code>src/optimus_prime</code>.</li>
+  <li><code>pyproject.toml</code> (Poetry, Python 3.14): pyyaml; dev: pytest, pytest-cov, ruff, black.</li>
+  <li>Layout de pastas: <code>interfaces/ application/ domain/ infra/ shared/ tests/</code>.</li>
+  <li><code>Makefile</code>: alvos <code>setup lint format test verificar executar executar-todos promote-passo1 promote-master triggers</code>.</li>
+  <li><code>.env.example</code>, <code>pipeline.yaml.example</code>, <code>deploy_requirements.yaml</code>.</li>
+  <li>Hook <code>.githooks/pre-commit</code> (deps-check + test com cobertura minima 80%); ruff+black configurados.</li>
+</ul>
+<h3>Entregaveis</h3>
+<p>Repo instalavel (<code>make setup</code>), <code>make test</code> verde vazio, lint/format limpos.</p>
+<div class="box"><strong>Criterio de conclusao:</strong> <code>make setup</code> e <code>make test</code>
+rodam sem erro; estrutura de camadas criada; hook de pre-commit ativo.</div>
+<p class="small"><strong>Dependencias:</strong> nenhuma.</p>
+</div>
+
+<!-- PASSO 2 -->
+<div class="passo">
+<h2>Passo 2 - Dominio puro (regras)</h2>
+<h3>Objetivo</h3>
+<p>Codificar todo o "cerebro de decisao" como funcoes puras e modelos, sem nenhum I/O - a parte mais
+critica e a que ganha os testes mais fortes.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li><code>domain/models.py</code>: <code>Card</code>, <code>Links</code> (repositories e pull_requests como listas), <code>DeployFields</code>, <code>Epic</code>, <code>ValidationResult</code>, <code>ReleaseDoc</code>, <code>ExecutionSummary</code>.</li>
+  <li><code>domain/boards.py</code>: registro dos 3 boards com a JQL exata (incidentes 1o).</li>
+  <li><code>domain/rules.py</code>: <code>eligibility_v2</code>, <code>so_banco_legitimo</code>, <code>is_ambiguous</code>, <code>d1_epico_incompleto</code>, <code>d2_pr_parcial</code>, <code>next_version</code>.</li>
+  <li>Tratar <code>"N/A"</code> e <code>"Apenas PROC"</code> como vazio; deduplicar links.</li>
+  <li>Testes dos casos-modelo (ver Apendice B): PB-5778, PB-5599, PB-5159, PB-5768, D1, D2, ambiguo.</li>
+</ul>
+<h3>Entregaveis</h3>
+<p>Modulo <code>domain</code> completo e coberto por testes; zero dependencia de rede.</p>
+<div class="box ok"><strong>Criterio de conclusao:</strong> todos os casos-modelo passam; cobertura do
+<code>domain</code> proxima de 100%.</div>
+<p class="small"><strong>Dependencias:</strong> Passo 1.</p>
+</div>
+
+<!-- PASSO 3 -->
+<div class="passo">
+<h2>Passo 3 - Adapter Jira + parsers</h2>
+<h3>Objetivo</h3>
+<p>Falar com o Jira por REST direto (o que hoje o MCP faz), normalizando cada card no contrato do dominio,
+com atencao ao multi-link e a PR-por-referencia.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li><code>infra/jira/jira_client.py</code>: <code>urllib</code> + <code>transport</code> injetavel; auth Basic (email:token); <code>search</code> por JQL e <code>get issue</code> pedindo so os campos necessarios.</li>
+  <li><code>infra/jira/field_parsers.py</code>: extrair TODOS os URLs de <code>customfield_12399</code>/<code>12400</code>; deduplicar; resolver "Pr no card PB-XXXX" herdando PR/repo.</li>
+  <li>Ler o <code>parent</code> (epico) e, para D1, os filhos do epico e seus status.</li>
+  <li>Implementar a ABC <code>IssueSource</code> do dominio.</li>
+  <li>Testes com <code>transport</code> fake (respostas Jira gravadas) - sem rede.</li>
+</ul>
+<h3>Entregaveis</h3>
+<p>Adapter Jira testado que devolve <code>Card</code>s normalizados a partir de respostas reais gravadas.</p>
+<div class="box"><strong>Criterio de conclusao:</strong> dado um payload Jira de exemplo, o adapter produz
+o card normalizado correto (multi-link e PR-por-referencia inclusos).</div>
+<p class="small"><strong>Dependencias:</strong> Passo 2.</p>
+</div>
+
+<!-- PASSO 4 -->
+<div class="passo">
+<h2>Passo 4 - Coletor + Validador + CLI verificar</h2>
+<h3>Objetivo</h3>
+<p>Primeiro marco de valor real: ler e validar cards de um board de verdade, <strong>sem escrever nada</strong>.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li><code>application/collector.py</code>: monta a JQL do board, chama o <code>IssueSource</code>, normaliza.</li>
+  <li><code>application/validator.py</code>: aplica v2 + so-banco + D1/D2; separa aprovados/reprovados/excluidos/ambiguos.</li>
+  <li><code>application/reporter.py</code>: relatorio <code>chave=valor</code> + <code>ExecutionSummary</code> em <code>execucoes/</code>.</li>
+  <li><code>interfaces/cli.py</code>: comando <code>verificar BOARD=&lt;board&gt;</code> (dry, so leitura).</li>
+</ul>
+<h3>Entregaveis</h3>
+<p><code>make verificar BOARD=incidentes</code> lista cards normalizados e a separacao de decisao, contra o
+Jira real, sem tocar em Notion nem no YAML.</p>
+<div class="box ok"><strong>Criterio de conclusao:</strong> o <code>verificar</code> roda fim-a-fim de
+leitura e o resultado bate com a conferencia manual de um pacote conhecido.</div>
+<p class="small"><strong>Dependencias:</strong> Passo 3.</p>
+</div>
+
+<!-- PASSO 5 -->
+<div class="passo">
+<h2>Passo 5 - Adapter Notion + Montador</h2>
+<h3>Objetivo</h3>
+<p>Escrever/atualizar a pagina da versao no Notion no molde padrao, de forma idempotente.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li><code>infra/notion/notion_client.py</code>: query da ultima versao (data_source), criar/atualizar pagina; escrita assincrona com poll + re-fetch de verificacao.</li>
+  <li>Implementar a ABC <code>DocStore</code>.</li>
+  <li><code>application/assembler.py</code>: versao-alvo <code>X.(Y+1).0</code>; tabela (Item, Pull Requests, Banco, Infra, Merge); blocos fixos (Testes, Ambientes, Repositorios para Deploy, Participantes); todos os links por card.</li>
+  <li>Idempotencia: se a pagina da versao existe, atualiza (nao duplica).</li>
+  <li>Testes do montador com <code>DocStore</code> fake; testes do adapter com <code>transport</code> fake.</li>
+</ul>
+<h3>Entregaveis</h3>
+<p>Pagina montada corretamente na base de teste do Notion (<code>1.111.0 (teste)</code>).</p>
+<div class="box warn"><strong>Risco:</strong> a tabela do Notion via API sao blocos - e a integracao mais
+complexa. Ganha um modulo de template dedicado e testes proprios.</div>
+<p class="small"><strong>Dependencias:</strong> Passo 4.</p>
+</div>
+
+<!-- PASSO 6 -->
+<div class="passo">
+<h2>Passo 6 - Sync bridge + Orquestrador + CLI executar</h2>
+<h3>Objetivo</h3>
+<p>Fechar a esteira autonoma: governar o <code>repos.yaml</code>, rodar o <code>make dry-run</code> do
+Passo 1 e emitir a mensagem <code>Confira</code>.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li><code>infra/sync/make_sync_runner.py</code>: editar o <code>repos.yaml</code> em <code>$SYNC_REPO_PATH</code> (ativar so os repos de "Repositorios para Deploy", triggers comentados, resto comentado, repo faltando -&gt; para e reporta); <code>subprocess</code> do <code>make dry-run</code>; parsear <code>chave=valor</code> + exit code.</li>
+  <li>Implementar a ABC <code>SyncRunner</code>.</li>
+  <li><code>application/orchestrator.py</code>: encadeia versao-alvo -&gt; coletor -&gt; validador -&gt; montador -&gt; sync bridge (dry-run) -&gt; relatorio.</li>
+  <li><code>interfaces/cli.py</code>: <code>executar BOARD=&lt;board&gt;</code> e <code>executar-todos</code>; emite a linha <code>Confira</code> + artefatos; grava <code>execucoes/</code>.</li>
+  <li>Erros -&gt; post-mortem <code>erros/AAAA-MM-DD-slug.md</code>.</li>
+</ul>
+<h3>Entregaveis</h3>
+<p><code>make executar BOARD=incidentes</code> vai da coleta ao dry-run e encerra na mensagem
+<code>Confira</code>, sem abrir nenhum PR.</p>
+<div class="box ok"><strong>Criterio de conclusao:</strong> esteira completa autonoma ate o dry-run;
+<code>execucoes/</code> gravado; nenhum <code>make run</code> disparado sozinho.</div>
+<p class="small"><strong>Dependencias:</strong> Passo 5.</p>
+</div>
+
+<!-- PASSO 7 -->
+<div class="passo">
+<h2>Passo 7 - Promocao guardada + agendador + docs</h2>
+<h3>Objetivo</h3>
+<p>Entregar os comandos de promocao sob OK do Ronan, o agendamento e a documentacao do novo repo.</p>
+<h3>Subtarefas</h3>
+<ul class="check">
+  <li><code>make promote-passo1 VERSAO=...</code> (make run que abre os PRs pre-prod), <code>promote-master</code> (Passo 2), <code>triggers</code> (Passo 3) - todos guardados.</li>
+  <li>Garantir <code>auto_merge=false</code> e <code>target</code> explicito sempre.</li>
+  <li>Unit <code>systemd</code> (ou cron) chamando <code>make executar-todos</code> no horario definido.</li>
+  <li><code>README</code> + <code>spec</code> do novo repo (estilo do sync-tool); opcional: nota no repo atual apontando para o pipeline.</li>
+</ul>
+<h3>Entregaveis</h3>
+<p>Promocao funcional sob comando; agendamento ativo; documentacao publicada.</p>
+<div class="box ok"><strong>Criterio de conclusao:</strong> <code>promote-passo1</code> abre os PRs
+(<code>auto_merge=false</code>); o agendador dispara o <code>executar-todos</code>; docs completas.</div>
+<p class="small"><strong>Dependencias:</strong> Passo 6.</p>
+</div>
+
+<!-- APENDICE A -->
+<div class="passo">
+<h2>Apendice A - Contratos e configuracao</h2>
+<h3>Card normalizado (contrato de saida do coletor)</h3>
+<table>
+  <tr><th>Campo</th><th>Tipo</th><th>Observacao</th></tr>
+  <tr><td>card_id / title / issue_type / status</td><td>string</td><td>identidade do card</td></tr>
+  <tr><td>owner</td><td>{name, account_id}</td><td>assignee</td></tr>
+  <tr><td>product</td><td>string</td><td>customfield_11993</td></tr>
+  <tr><td>epic</td><td>{key, summary}</td><td>parent (para D1)</td></tr>
+  <tr><td>links.repositories</td><td>lista de string</td><td>customfield_12399 - todos os links</td></tr>
+  <tr><td>links.pull_requests</td><td>lista de string</td><td>customfield_12400 - todos os links</td></tr>
+  <tr><td>deploy_fields.acao_dados</td><td>Sim/Nao</td><td>customfield_12297</td></tr>
+  <tr><td>deploy_fields.merge_realizado</td><td>null</td><td>customfield_12401 (hoje vazio)</td></tr>
+  <tr><td>deploy_fields.apenas_proc / proc_name</td><td>bool / null</td><td>a extrair da descricao (backlog)</td></tr>
+</table>
+
+<h3>Identificadores e integracoes</h3>
+<table>
+  <tr><th>Item</th><th>Valor</th></tr>
+  <tr><td>Jira site / cloudId</td><td>bernhoeft.atlassian.net / f36e5519-1f88-4f71-a406-75326e86deda</td></tr>
+  <tr><td>Projeto / escopo</td><td>PB / read:jira-work (read-only)</td></tr>
+  <tr><td>Customfields</td><td>12399 repo, 12400 PR, 12297 acao dados, 12401 merge, 11993 produto</td></tr>
+  <tr><td>Notion data_source</td><td>23e19d89-2318-81ff-812d-000b6afb6b5a (props: Versao title, Tipo select)</td></tr>
+  <tr><td>Molde / base de teste</td><td>pagina 1.110.0 / 1.111.0 (teste)</td></tr>
+  <tr><td>Sync tool</td><td>$SYNC_REPO_PATH (default ../sync-repos-from-master)</td></tr>
+</table>
+
+<h3>Variaveis de ambiente (.env)</h3>
+<table>
+  <tr><th>Variavel</th><th>Uso</th></tr>
+  <tr><td>JIRA_EMAIL / JIRA_TOKEN</td><td>auth Basic no Jira REST</td></tr>
+  <tr><td>NOTION_TOKEN</td><td>Bearer na API do Notion</td></tr>
+  <tr><td>SYNC_REPO_PATH</td><td>caminho do sync-repos-from-master</td></tr>
+</table>
+
+<h3>JQL por board</h3>
+<table>
+  <tr><th>Prioridade</th><th>Board</th><th>JQL</th></tr>
+  <tr><td>1</td><td>Incidentes</td><td>project = PB AND issuetype = Incidente AND status in ("Teste regressivo","Pronto para deploy")</td></tr>
+  <tr><td>2</td><td>Features</td><td>project = PB AND issuetype = Story AND summary !~ "Refatoracao" AND status in (...)</td></tr>
+  <tr><td>3</td><td>Refatoracao</td><td>project = PB AND issuetype = Story AND summary ~ "Refatoracao" AND status in (...)</td></tr>
+</table>
+</div>
+
+<!-- APENDICE B -->
+<div class="passo">
+<h2>Apendice B - Casos-modelo de teste</h2>
+<table>
+  <tr><th>Caso</th><th>O que valida</th><th>Resultado esperado</th></tr>
+  <tr><td>PB-5778</td><td>So-banco legitimo (assignee de banco, descricao cita procedure, sem PR/repo)</td><td>Aprovado (APENAS PROC)</td></tr>
+  <tr><td>PB-5599</td><td>PR-por-referencia (herda PR de PB-5651)</td><td>Aprovado (PR herdada conta)</td></tr>
+  <tr><td>PB-5159</td><td>Filhos do mesmo epico compartilham as mesmas 3 PRs</td><td>PRs deduplicadas (contam uma vez)</td></tr>
+  <tr><td>PB-5768</td><td>Epico all-or-nothing (38 filhos) incompleto</td><td>D1: exclui todos os cards do epico</td></tr>
+  <tr><td>D1 generico</td><td>Irmao do epico ainda em dev</td><td>Exclui o epico do pacote</td></tr>
+  <tr><td>D2 generico</td><td>PR compartilhada adotada parcialmente</td><td>Exclui os cards de dentro</td></tr>
+  <tr><td>Ambiguo</td><td>Repositorio diferente da PR, ou so-banco indeciso</td><td>Exclui + reporta (sem IA)</td></tr>
+  <tr><td>N/A / Apenas PROC</td><td>Valores tratados como vazio</td><td>Nao contam como link valido</td></tr>
+</table>
+</div>
+
+<!-- RISCOS + DOD -->
+<div class="passo">
+<h2>Riscos e Definition of Done</h2>
+<h3>Riscos</h3>
+<ul>
+  <li><strong>Tabela do Notion via API</strong> (blocos + escrita assincrona) e a integracao mais complexa
+  - mitigada por modulo de template dedicado, uso da base de teste primeiro e re-fetch de verificacao.</li>
+  <li><strong>Grafia exata das branches</strong> (<code>prerelease</code>/<code>teste_regressivo</code>/<code>master</code>) a confirmar antes do run real.</li>
+  <li><strong>Campos sem fonte deterministica</strong> (Acao de Infra inexistente, Merge vazio, nome do proc) - ficam em branco, nunca inventados.</li>
+  <li><strong>Cadastro <code>db_owners</code></strong> precisa ser mantido atualizado (quem e responsavel de banco).</li>
+</ul>
+<h3>Definition of Done do projeto</h3>
+<ul class="check">
+  <li><code>make executar BOARD=&lt;board&gt;</code> roda sem Claude, da coleta ao dry-run, e emite <code>Confira</code>.</li>
+  <li>Regras (v2, so-banco, D1/D2, ambiguo) cobertas por testes; cobertura minima 80%.</li>
+  <li>Notion montado corretamente e idempotente; <code>repos.yaml</code> governado a partir da doc.</li>
+  <li>Promocao (<code>make run</code>/master/triggers) so sob OK do Ronan; <code>auto_merge=false</code>.</li>
+  <li>Agendador ativo; documentacao publicada; repo atual preservado.</li>
+</ul>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+flowchart TB
+    subgraph interfaces["interfaces (entrada)"]
+        CLI["cli.py<br>verificar | executar | promote-*"]
+    end
+    subgraph application["application (use cases)"]
+        ORQ["orchestrator.py"]
+        COL["collector.py"]
+        VAL["validator.py"]
+        ASM["assembler.py"]
+        SB["sync_bridge.py"]
+        REP["reporter.py"]
+    end
+    subgraph domain["domain (puro, sem I/O)"]
+        MOD["models.py"]
+        RUL["rules.py<br>v2, so-banco, D1/D2, ambiguo, next_version"]
+        BRD["boards.py (JQL)"]
+        ABC["ABCs: IssueSource, DocStore, SyncRunner"]
+    end
+    subgraph infra["infra (adapters)"]
+        JC["jira/jira_client.py + field_parsers.py"]
+        NC["notion/notion_client.py"]
+        MS["sync/make_sync_runner.py"]
+        CFG["config/config_loader.py"]
+    end
+    CLI --> application
+    application --> domain
+    infra -->|implementa| ABC
+    JC -.-> JIRA["Jira REST"]
+    NC -.-> NOTION["Notion API"]
+    MS -.-> SYNC["make do sync-tool"]
+    ORQ --> COL --> VAL --> ASM --> SB --> REP
