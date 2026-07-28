@@ -1,0 +1,37 @@
+{
+  "versao": "1.115.0",
+  "board": "features",
+  "passo": 1,
+  "descricao": "Sync Passo 1 — prerelease → teste_regressivo (pré-prod), dry-run",
+  "data_execucao": "2026-07-28T09:13:04Z",
+  "cards_aprovados": 10,
+  "notion_page": {
+    "titulo": "Release 1.115.0 - Features",
+    "url": "https://app.notion.com/p/3ab19d89231881b58fd2d0c9baa2d84d",
+    "propriedades": {
+      "Versão": "1.115.0",
+      "Tipo": "Release"
+    }
+  },
+  "yaml_config": {
+    "source": "prerelease",
+    "targets": ["teste_regressivo"],
+    "repos_ativos": [
+      "contractweb-v3",
+      "bernhoeft-grt-autocadastro-api",
+      "bernhoeft-grt-autocadastro-front",
+      "bernhoeft-grt-newcontract-front",
+      "bernhoeft-grt-storage"
+    ]
+  },
+  "dry_run_resultado": {
+    "exit_code": 0,
+    "status": "sucesso",
+    "total": 5,
+    "sucesso": 0,
+    "conflito": 0,
+    "erro": 0,
+    "sem_alteracao": 5
+  },
+  "observacao": "Nenhum repositório com mudanças em prerelease para teste_regressivo (Release 1.115.0 é apenas ações de banco/infra). Passo 1 pronto para make run sob OK do Ronan."
+}

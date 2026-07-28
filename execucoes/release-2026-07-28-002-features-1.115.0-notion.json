@@ -1,0 +1,42 @@
+{
+  "versao": "1.115.0",
+  "board": "features",
+  "etapa": "notion (redo do zero)",
+  "descricao": "Refação da Release 1.115.0 (Features) — coleta corrigida + doc no Notion. Parada no Notion por ordem do Ronan.",
+  "data_execucao": "2026-07-28T13:14:00Z",
+  "escopo": "So ate o Notion desta vez — repos.yaml e make NAO tocados.",
+  "excecao_ronan": "Aprovar TODOS os cards de Features em Teste regressivo + Pronto para deploy (override da regra v2 e das regras D1/D2).",
+  "correcao_coletor": "Primeira passada (Haiku) leu customfield_12400/12399 como string e perdeu todos os links; na verdade sao ADF (inlineCard). Reextraido do ADF — PRs/repos reais capturados.",
+  "notion_page": {
+    "titulo": "1.115.0",
+    "tipo": "Release",
+    "url": "https://app.notion.com/p/3ab19d89231881b58fd2d0c9baa2d84d",
+    "verificado_via_refetch": true
+  },
+  "cards_aprovados": [
+    {"card": "PB-5922", "status": "Teste regressivo", "epic": "PB-3224", "prs": [], "repos": []},
+    {"card": "PB-5833", "status": "Teste regressivo", "epic": "PB-5768", "prs": [], "repos": []},
+    {"card": "PB-5788", "status": "Teste regressivo", "epic": "PB-5768", "prs": [], "repos": []},
+    {"card": "PB-5786", "status": "Teste regressivo", "epic": "PB-5768", "prs": ["contractweb-front#1076"], "repos": ["bernhoeft-grt-contractweb-front"]},
+    {"card": "PB-5528", "status": "Teste regressivo", "epic": "PB-236", "prs": ["newcontract-front#1112", "sla-api#195"], "repos": ["bernhoeft-grt-newcontract-front", "bernhoeft-grt-sla-api"]},
+    {"card": "PB-5316", "status": "Pronto para deploy", "epic": "PB-236", "prs": ["newcontract-front#1048", "contractweb-v3#4910"], "repos": ["bernhoeft-grt-newcontract-front", "contractweb-v3"]},
+    {"card": "PB-4786", "status": "Teste regressivo", "epic": "PB-236", "prs": [], "repos": []},
+    {"card": "PB-4761", "status": "Pronto para deploy", "epic": "PB-4769", "prs": ["contractweb-front#1120", "login-api#369", "newcontract-front#972", "relatorios#804", "contractweb-v3#5202"], "repos": ["bernhoeft-grt-contractweb-front", "bernhoeft-grt-login-api", "bernhoeft-grt-newcontract-front", "bernhoeft-grt-relatorios", "contractweb-v3"]},
+    {"card": "PB-4727", "status": "Teste regressivo", "epic": "PB-236", "prs": ["newcontract-front#1048", "sla-api#195", "contractweb-v3#4910"], "repos": ["bernhoeft-grt-newcontract-front", "bernhoeft-grt-sla-api", "contractweb-v3"]},
+    {"card": "PB-4726", "status": "Pronto para deploy", "epic": "PB-236", "prs": ["newcontract-front#1048", "sla-api#195", "contractweb-v3#4910"], "repos": ["bernhoeft-grt-newcontract-front", "bernhoeft-grt-sla-api", "contractweb-v3"]}
+  ],
+  "repositorios_para_deploy": [
+    "bernhoeft-grt-contractweb-front",
+    "bernhoeft-grt-login-api",
+    "bernhoeft-grt-newcontract-front",
+    "bernhoeft-grt-relatorios",
+    "bernhoeft-grt-sla-api",
+    "contractweb-v3"
+  ],
+  "flags": [
+    "DEPENDENCIA D1: PB-5833/PB-5788/PB-5786 tem epico pai PB-5768 (Refatoracao Melhorias Onda 1 — all-or-nothing, 38 filhos). Incluidos por ordem explicita do Ronan (todos features em TR+PPD). Confira se ha risco.",
+    "PR compartilhada (D2): #195 (PB-5528, PB-4727, PB-4726), #1048 (PB-5316, PB-4727, PB-4726), #4910 (PB-5316, PB-4727, PB-4726) — todos os cards estao no pacote, entao nao ha truncamento.",
+    "4 cards sem PR/repo (PB-5922, PB-5833, PB-5788, PB-4786): documentados no pacote por ordem do Ronan, mas nao contribuem repositorio de deploy.",
+    "Titulos com '|' (SLA 2.0) foram gravados com barra larga japonesa para nao quebrar a tabela do Notion; o link/URL de cada card esta intacto."
+  ]
+}

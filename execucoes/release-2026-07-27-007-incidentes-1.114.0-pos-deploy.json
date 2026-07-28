@@ -1,0 +1,61 @@
+{
+  "versao": "1.114.0",
+  "board": "incidentes",
+  "etapa": "pós-deploy",
+  "descricao": "Sync pós-deploy (master → develop/stage/prerelease)",
+  "data_execucao": "2026-07-27T16:35:50Z",
+  "make_run_resultado": {
+    "exit_code": 0,
+    "status": "sucesso",
+    "total": 15,
+    "sucesso": 11,
+    "conflito": 0,
+    "erro": 0,
+    "sem_alteracao": 4
+  },
+  "prs_reutilizadas": [
+    {
+      "repo": "contractweb-v3",
+      "target": "prerelease",
+      "pr_id": "5237",
+      "pr_url": "https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5237"
+    },
+    {
+      "repo": "bernhoeft-grt-autocadastro-api",
+      "targets": [
+        {"target": "develop", "pr_id": "375", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-api/pull-requests/375"},
+        {"target": "stage", "pr_id": "376", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-api/pull-requests/376"},
+        {"target": "prerelease", "pr_id": "377", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-api/pull-requests/377"}
+      ]
+    },
+    {
+      "repo": "bernhoeft-grt-autocadastro-front",
+      "targets": [
+        {"target": "develop", "pr_id": "253", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/253"},
+        {"target": "stage", "pr_id": "254", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/254"},
+        {"target": "prerelease", "pr_id": "255", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/255"}
+      ]
+    },
+    {
+      "repo": "bernhoeft-grt-newcontract-front",
+      "targets": [
+        {"target": "develop", "pr_id": "1163", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-newcontract-front/pull-requests/1163"},
+        {"target": "stage", "pr_id": "1164", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-newcontract-front/pull-requests/1164"},
+        {"target": "prerelease", "pr_id": "1165", "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-newcontract-front/pull-requests/1165"}
+      ]
+    },
+    {
+      "repo": "bernhoeft-grt-storage",
+      "target": "prerelease",
+      "pr_id": "642",
+      "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-storage/pull-requests/642"
+    }
+  ],
+  "sem_alteracao": [
+    "contractweb-v3 → develop",
+    "contractweb-v3 → stage",
+    "bernhoeft-grt-storage → develop",
+    "bernhoeft-grt-storage → stage"
+  ],
+  "mensagem": "Pós-deploy concluído. 11 PRs (reutilizadas) para sincronizar master com develop/stage/prerelease. 4 branches sem alterações."
+}

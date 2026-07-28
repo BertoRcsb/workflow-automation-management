@@ -1,0 +1,40 @@
+{
+  "versao": "1.115.0",
+  "board": "Linha de frente (incidentes)",
+  "passo": 1,
+  "descricao": "Sync Passo 1 — prerelease → teste_regressivo (pré-prod), dry-run. Guiado pela doc 1.115.0/Incidentes no Notion.",
+  "data_execucao": "2026-07-28T13:35:38Z",
+  "modo": "iniciar/executar (board único, autônomo até o make dry-run)",
+  "notion_page": {
+    "titulo": "1.115.0",
+    "tipo": "Release",
+    "url": "https://app.notion.com/p/3ab19d8923188174a1abc3c7feba5a3d",
+    "verificado_via_refetch": true
+  },
+  "yaml_config": {
+    "arquivo": "../sync-repos-from-master/repos.yaml",
+    "source": "prerelease",
+    "targets": ["teste_regressivo"],
+    "auto_merge": false,
+    "editado": false,
+    "observacao": "repos.yaml já estava alinhado aos 4 repos da doc; nenhuma edição necessária, sem discrepância. triggers comentados.",
+    "repos_ativos": [
+      "bernhoeft-grt-contractweb-api",
+      "bernhoeft-grt-newcontract-front",
+      "bernhoeft-grt-analysis-api",
+      "bernhoeft-grt-storage"
+    ]
+  },
+  "comando": "make dry-run PR_TITLE=\"[Release] 1.115.0\"",
+  "dry_run_resultado": {
+    "exit_code": 0,
+    "status": "sucesso",
+    "total": 4,
+    "sucesso": 0,
+    "conflito": 0,
+    "erro": 0,
+    "sem_alteracao": 4,
+    "falhas_conflitos": "nenhuma"
+  },
+  "observacao": "Dry-run limpo (dry-run pula operações remotas, por isso sem_alteracao=4 é esperado). Passo 1 pronto para make run sob OK explícito do Ronan. Merge/master/triggers = Ronan."
+}

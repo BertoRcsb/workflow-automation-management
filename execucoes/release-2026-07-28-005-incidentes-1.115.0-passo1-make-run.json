@@ -1,0 +1,27 @@
+{
+  "versao": "1.115.0",
+  "board": "Linha de frente (incidentes)",
+  "passo": 1,
+  "descricao": "Sync Passo 1 — make run (prerelease → teste_regressivo). Abre os PRs pré-prod. Sob OK explícito do Ronan.",
+  "data_execucao": "2026-07-28T13:39:21Z",
+  "comando": "make run PR_TITLE=\"[Release] 1.115.0\"",
+  "autorizacao": "OK explícito do Ronan ('pode dar o make run do passo 1').",
+  "auto_merge": false,
+  "notion_page_url": "https://app.notion.com/p/3ab19d8923188174a1abc3c7feba5a3d",
+  "resultado": {
+    "exit_code": 0,
+    "total": 4,
+    "sucesso": 4,
+    "conflito": 0,
+    "erro": 0,
+    "sem_alteracao": 0,
+    "falhas_conflitos": "nenhuma"
+  },
+  "prs_criados": [
+    {"repo": "bernhoeft-grt-contractweb-api", "pr_id": 1198, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-contractweb-api/pull-requests/1198", "target": "teste_regressivo"},
+    {"repo": "bernhoeft-grt-newcontract-front", "pr_id": 1170, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-newcontract-front/pull-requests/1170", "target": "teste_regressivo"},
+    {"repo": "bernhoeft-grt-analysis-api", "pr_id": 466, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-analysis-api/pull-requests/466", "target": "teste_regressivo"},
+    {"repo": "bernhoeft-grt-storage", "pr_id": 644, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-storage/pull-requests/644", "target": "teste_regressivo"}
+  ],
+  "observacao": "PRs abertos, NÃO mergeados (auto_merge=false). Merge e master (Passo 2) = Ronan. Triggers (Passo 3) = Ronan, após OK do QA."
+}

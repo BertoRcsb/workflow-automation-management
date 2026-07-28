@@ -1,0 +1,36 @@
+{
+  "execucao_id": "release-2026-07-24-002-incidentes-1.114.0-passo1",
+  "data": "2026-07-24",
+  "orquestrador": "Optimus Prime",
+  "modo": "iniciar",
+  "board": "incidentes (Linha de frente)",
+  "versao_alvo": "1.114.0",
+  "etapa": "Sync Passo 1 (prerelease -> teste_regressivo, pre-prod)",
+  "guiado_por": "Doc Notion 1.114.0 (https://app.notion.com/p/3a319d89231881d791ffcba3cc345537)",
+  "repos_yaml": {
+    "source": "prerelease",
+    "target": "teste_regressivo",
+    "auto_merge": false,
+    "triggers": "comentados (Passo 3/prod, so apos OK do PO/QA)",
+    "repos_ativos": [
+      "contractweb-v3",
+      "bernhoeft-grt-autocadastro-api",
+      "bernhoeft-grt-autocadastro-front",
+      "bernhoeft-grt-newcontract-front",
+      "bernhoeft-grt-storage"
+    ]
+  },
+  "dry_run": {"codigo_saida": 0, "total": 5, "sucesso": 0, "conflito": 0, "erro": 0, "sem_alteracao": 5, "falhas_conflitos": "nenhuma"},
+  "run": {
+    "codigo_saida": 0, "total": 5, "sucesso": 5, "conflito": 0, "erro": 0, "sem_alteracao": 0,
+    "prs_criadas": [
+      {"repo": "contractweb-v3", "pr_id": 5228, "pr_url": "https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5228"},
+      {"repo": "bernhoeft-grt-autocadastro-api", "pr_id": 373, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-api/pull-requests/373"},
+      {"repo": "bernhoeft-grt-autocadastro-front", "pr_id": 251, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-autocadastro-front/pull-requests/251"},
+      {"repo": "bernhoeft-grt-newcontract-front", "pr_id": 1161, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-newcontract-front/pull-requests/1161"},
+      {"repo": "bernhoeft-grt-storage", "pr_id": 638, "pr_url": "https://bitbucket.org/bernhoeft/bernhoeft-grt-storage/pull-requests/638"}
+    ]
+  },
+  "parou_em": "Fim do Passo 1. Merge das PRs, Passo 2 (master/prod) e Passo 3 (triggers) = sob comando explicito do Ronan.",
+  "obs_pr_title": "PR_TITLE=1.114.0 (a versao ja existia no repos.yaml como Passo 2 de outra release; reescrito para o Passo 1 desta)."
+}

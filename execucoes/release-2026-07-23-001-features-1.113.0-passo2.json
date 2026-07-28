@@ -1,0 +1,45 @@
+{
+  "execution_id": "release-2026-07-23-001-features-1.113.0-passo2",
+  "date": "2026-07-23",
+  "release_version": "1.113.0",
+  "release_type": "Release",
+  "board": "Features",
+  "trigger": "Optimus Prime Passo 2 (teste_regressivo -> master), comando explícito do Ronan; teste_regressivo confirmado limpo",
+  "notion_page": "https://app.notion.com/p/3a319d89231881cbabbef650ec4a6a1d",
+  "contexto": "Pacote 1.113.0 reconstruído após incidente/cancelamento de 22/07: 5 cards limpos (PB-4761 + bloco PB-5159), sem o cluster PB-236 nem cards do PB-5768. sla-api removido (órfão).",
+  "cards": ["PB-4761", "PB-5157", "PB-5330", "PB-5331", "PB-5713"],
+  "sync": {
+    "passo": 2,
+    "source": "teste_regressivo",
+    "target": "master",
+    "repos_ativados": [
+      "bernhoeft-grt-login-api",
+      "bernhoeft-grt-contractweb-front",
+      "contractweb-v3",
+      "bernhoeft-grt-newcontract-front",
+      "bernhoeft-grt-analysis-api",
+      "bernhoeft-grt-relatorios",
+      "bernhoeft-grt-storage"
+    ],
+    "triggers": "comentados (Passo 3/prod, após OK do PO/QA)",
+    "auto_merge": false,
+    "dry_run": {"exit_code": 0, "resumo": "total=7 sucesso=0 conflito=0 erro=0 sem_alteracao=7 (skip remoto, esperado)"},
+    "run": {
+      "command": "make run PR_TITLE=\"[Release] 1.113.0\"",
+      "exit_code": 0,
+      "resumo": "total=7 sucesso=7 conflito=0 erro=0 sem_alteracao=0",
+      "prs": [
+        {"repo": "bernhoeft-grt-login-api", "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-login-api/pull-requests/377"},
+        {"repo": "bernhoeft-grt-contractweb-front", "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-contractweb-front/pull-requests/1150"},
+        {"repo": "contractweb-v3", "pr": "https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5223"},
+        {"repo": "bernhoeft-grt-newcontract-front", "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-newcontract-front/pull-requests/1145"},
+        {"repo": "bernhoeft-grt-analysis-api", "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-analysis-api/pull-requests/457"},
+        {"repo": "bernhoeft-grt-relatorios", "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-relatorios/pull-requests/871"},
+        {"repo": "bernhoeft-grt-storage", "pr": "https://bitbucket.org/bernhoeft/bernhoeft-grt-storage/pull-requests/633"}
+      ]
+    }
+  },
+  "stopped_at": "Passo 2 concluído: 7 PRs abertos (teste_regressivo -> master), aguardando MERGE do Ronan em prod. Passo 3 (make run-triggers) segue sob comando explícito do Ronan + aprovação de build no GCP após QA.",
+  "status": "concluido_passo_2",
+  "errors": []
+}
