@@ -9,3 +9,6 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# Execution logs (auditoria local, não versionada)
+execucoes/*.json
