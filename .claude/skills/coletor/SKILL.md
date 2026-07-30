@@ -55,6 +55,22 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
 ## Configuração atual — Jira via MCP Atlassian (read-only, escopo `read:jira-work`)
 - **cloudId:** `f36e5519-1f88-4f71-a406-75326e86deda` (bernhoeft.atlassian.net)
 
+### Parse de ADF para PR/repositório (correção do bug de links perdidos)
+Os campos `customfield_12400` (PR) e `customfield_12399` (repositório) chegam do Jira em **ADF
+(Atlassian Document Format)**, não como string. Não extrair como texto cru — ler a **estrutura ADF**
+recursivamente:
+- Nós `inlineCard` / `blockCard` com `attrs.url` → extrair `url`.
+- Marks `link` em nós de texto com `attrs.href` → extrair `href`.
+- Deduplicar URLs (PR/repo compartilhada entre irmãos do mesmo épico conta uma vez) e ordenar.
+- Registrar **por card quantos URLs foram extraídos** (`url_count`).
+
+**GATE-ADF (falso-vazio):** se um campo ADF tem **conteúdo não-vazio** mas a extração devolveu **0
+URLs** → falha de parse, **não** ausência real. Neste caso:
+- Re-extrair o campo **por card** (com `getJiraIssue` incluindo `description` + customfield cru).
+- Se ainda devolver 0, marcar `parse_failed: true` no card normalizado **em vez de `[]`** (não
+  silencioso).
+- Documentar qual card teve falha e qual foi o conteúdo ADF cru para debug.
+
 ### Registro de boards (fonte única — o board é config, não texto solto)
 Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **Ordem = prioridade**
 (incidentes sempre 1º). **Board sem JQL → pula e reporta** "filtro a definir" (não coleta, **não inventa**).
@@ -116,13 +132,21 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   "epic": { "key": "PB-5159", "summary": "Melhorias na Tela de Análise" },
   "summary": "...",
   "links": { "jira": "...", "repositories": [], "pull_requests": [] },
+  "parse_status": {
+    "parse_failed": false,
+    "pr_url_count": 2,
+    "repo_url_count": 1
+  },
   "deploy_fields": {
     "acao_dados": "Sim", "acao_infra": null, "merge_realizado": null,
     "apenas_proc": false, "proc_name": null
   }
 }
 ```
-A **versão de destino não vem do card** — é atribuída na montagem do pacote.
+- **versão de destino:** não vem do card — é atribuída na montagem do pacote.
+- **parse_status.parse_failed:** `true` se o campo ADF tinha conteúdo mas a extração zerou (re-extraído
+  e ainda 0). `false` caso contrário.
+- **parse_status.pr_url_count / repo_url_count:** contagem de URLs extraídas para debug/auditoria.
 
 ## Evolução / próximos papéis (este escopo vai crescer)
 - Ler PR do **painel Development** quando o campo estiver vazio (relacionado à "PR por referência de

@@ -1,7 +1,7 @@
 ---
 description: Optimus Prime — orquestra a esteira (coletor→validador→montador→Sync). No executar (board único) roda autônoma até o make dry-run do Sync Passo 1 (doc no Notion + edita YAML + dry-run) e emite a mensagem "Confira"; o make run do Passo 1, merge/master/triggers seguem sob OK do Ronan. Modos: verificar | executar. Alvo: <board> | todos os boards.
 argument-hint: iniciar | verificar | executar [todos os boards | <board>] [--card PB-XXXX] [--versao 1.111.2]
-allowed-tools: Bash, Read, Edit, mcp__atlassian__getJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraProjectIssueTypesMetadata, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-query-data-sources
+allowed-tools: Bash, Read, Edit, mcp__atlassian__getJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraProjectIssueTypesMetadata, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, mcp__notion__notion-query-data-sources
 ---
 
 Aja como o **Optimus Prime**, o orquestrador do `workflow-automation-management`. A fonte de

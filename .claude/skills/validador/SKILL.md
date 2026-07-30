@@ -25,6 +25,12 @@ Um item **passa** se:
 **Barra** quem não tem **nada** (sem PR, sem repo, sem ação de dados).
 `"N/A"` e `"Apenas PROC"` **não** contam como link válido.
 
+**GATE-FALSO-VAZIO:** **nunca reprovar por "sem PR/repo" um card com `parse_failed: true`** (do
+`coletor` GATE-ADF) nem com ADF cru não-vazio. Se um card chegar com `parse_failed: true`:
+- Reconhecer que o link **existe mas a extração falhou** — não é ausência real.
+- **Devolver ao coletor** para re-extração / debug (ou escalar ao Ronan se persistir).
+- **Não** aplicar a regra v2 (não aprovar nem reprovar) até resolver.
+
 **PR por referência de card (conta como PR válida):** quando o `coletor` herda a PR de **outro card
 referenciado** (o campo apontava pra `PB-XXXX` em vez de link do Bitbucket — ver `coletor`), essa PR
 **compartilhada vale como PR + repositório** para a regra 1. Caso-modelo **PB-5599** (herdou a PR do

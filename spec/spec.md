@@ -189,6 +189,23 @@ Notion; nunca misturar). No alvo `todos os boards` a varredura **termina no Noti
 **por-board e explícito** (fora do loop). Board sem filtro definido → **pula e reporta** "a definir".
 Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar todos os boards`.
 
+**Gates automáticos por passo (asserções duras — qualquer falha documenta em `erros/` e para):**
+- **GATE-VER-1 / GATE-VER-2 (Passo 1 — versão-alvo):** calcular a próxima versão pelo **maior número
+  semântico**, nunca por data; verificar que **não colide com página existente**. Impede reubo/fora-de-ordem.
+- **GATE-ADF (Passo 2 — coletor):** extrair URLs de PR/repo como **ADF estruturado**, não string;
+  detectar falso-vazio (campo ADF com conteúdo mas 0 URLs extraídas) e marcar `parse_failed: true`.
+- **GATE-FALSO-VAZIO (Passo 3 — validador):** **nunca reprovar** card com `parse_failed: true` ou ADF
+  cru não-vazio; devolver ao coletor ou escalar.
+- **GATE-CONJUNTO (Passo 4 — montador):** **antes de escrever**, reconciliar: o conjunto de cards a
+  montar **deve ser idêntico** aos aprovados do validador (mesmas chaves, mesma contagem). Nenhum card
+  "passa" sem ter saído do gate.
+- **GATE-MOLDE (Passo 4 — montador):** no re-fetch final, **colunas + blocos devem bater com a última
+  página do mesmo Tipo**. Restaura o critério de fidelidade ao padrão.
+- **GATE-LINKS (Passo 4 — montador):** no re-fetch, **nenhuma célula vazia onde o card tem link**. Pega
+  o sintoma de links perdidos.
+- **GATE-IDEMPOT (Passo 4 — montador):** se página já existe, **atualizar** (use `notion-update-page`),
+  nunca criar outra.
+
 **Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
 a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Todo `make run`
 (Passo 1 e Passo 2) e as triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do Ronan
@@ -241,12 +258,18 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
   "status": "Teste regressivo",
   "owner": { "name": "Weverton Ferreira", "account_id": "..." },
   "product": "NewContract",
+  "epic": { "key": "PB-5159", "summary": "Melhorias na Tela de Análise" },
   "summary": "...",
   "category": "correcao",
   "links": {
     "jira": "https://bernhoeft.atlassian.net/browse/PB-5415",
     "repositories": ["https://bitbucket.org/bernhoeft/contractweb-v3"],
     "pull_requests": ["https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5164"]
+  },
+  "parse_status": {
+    "parse_failed": false,
+    "pr_url_count": 1,
+    "repo_url_count": 1
   },
   "deploy_fields": {
     "acao_dados": "Nao",
@@ -263,6 +286,14 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
   }
 }
 ```
+
+**Novos campos (correção da causa-raiz A, ADF/links perdidos):**
+- **`epic`:** chave + resumo do épico (parent) — permite detectar cards irmãos com mesma PR/repo
+  (deduplicação via D1/D2) e sinalizar quando irmãos ficam fora (possível dependência).
+- **`parse_status`:** registra se a extração de PR/repo (customfield_12400/12399 em ADF) saiu com
+  sucesso ou falhou:
+  - `parse_failed: true` → o campo ADF tinha conteúdo mas a extração zerou (bug de parse; re-extrair).
+  - `pr_url_count` / `repo_url_count` → contagem de URLs extraídas (para debug/auditoria).
 
 ## 8. Mapeamento de dados
 
