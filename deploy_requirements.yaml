@@ -1,0 +1,12 @@
+epicos_all_or_nothing:
+  PB-5768:
+    nome: "Refatoração Melhorias Onda 1"
+    desc: "Todos os 38 filhos devem deploya juntos; segura mesmo com filhos em Teste regressivo"
+
+db_owners:
+  - "Alexandre Bolonhini"
+    desc: "Caso-modelo PB-5778 (só-banco legítimo com acao_dados=Sim)"
+  - "Alexandre Rudoi"
+    desc: "Participante Dados na 1.116.0"
+
+# espelho executavel: tools/rules.json (mantidos em sincronia)

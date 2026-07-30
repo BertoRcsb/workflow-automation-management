@@ -54,6 +54,8 @@ Sync (`repos.yaml` **guiado pela doc do Notion**) → `make run` → PR.
 3. `make run-triggers` (ambientes dos clientes) — **100% do Ronan**, após OK do QA.
 
 ## Guardrails inquebráveis
+- **Extração de links e gates D1/D2 = código determinístico em `tools/`** (o LLM não interpreta ADF);
+  MCP-first mantido para I/O e escrita.
 - **Autonomia até o `make dry-run` do Sync Passo 1:** no `executar` de board único, os passos rodam **sem
   aprovação humana** — inclui a doc no Notion, a edição do `repos.yaml` e o `make dry-run` do Passo 1 — e
   terminam na mensagem única `Confira`. **O `make run` do Passo 1 é sob OK explícito do Ronan.** **Única

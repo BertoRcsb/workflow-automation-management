@@ -43,10 +43,11 @@ A página segue **exatamente** este padrão, sem improviso.
 - **Item:** `[PB-XXXX — <título completo do card>](https://bernhoeft.atlassian.net/browse/PB-XXXX) · <status>`
   (ex.: `[PB-5811 — Impossibilidade de Readmissão de Colaborador](https://bernhoeft.atlassian.net/browse/PB-5811) · Pronto para deploy`).
   O "mention" nativo do Jira **não** é reproduzível via MCP — o link markdown com título é o equivalente suportado.
-- **Pull Requests:** **TODAS** as PRs do card (uma por linha / separadas, nunca só a primeira).
-  Formato compacto: `[<slug-do-repo> #<num>](<url-da-PR>)`
-  (ex.: `[contractweb-v3 #5184](https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5184)`).
-  **Só-banco:** `• APENAS PROC` (+ nome do proc quando disponível).
+- **Pull Requests:** renderizar **todas** as `links.pull_requests` do contrato como
+  `[<label>](<url>)`, **separadas por `<br>`** (o label já vem como `repo #num`). Nunca só a primeira;
+  a lista é a do contrato (produzido por `tools/optimus_extract.py`), não reinterpretar o card.
+  **Só-banco:** escrever `• APENAS PROC` **somente** quando `deploy_fields.apenas_proc == true` no
+  contrato. **Nunca** derivar de `acao_dados=Sim` + PR vazio (isso mascarava esquecimento de leitura).
   **Nenhuma PR:** deixar vazio (não escrever `—` na tabela — isso é pra depois dos blocos).
 - **Ação de Banco:** `Sim` / `Não` (de `deploy_fields.acao_dados` do card).
 - **Ação de Infra / Merge:** deixar em branco (`—`) até apurar (**nunca inventar**).
@@ -98,10 +99,12 @@ No re-fetch final, **conferir que as colunas e blocos batem com a última págin
 Se divergir → **PARA e documenta**. (Restaura o critério "(colunas iguais às versões anteriores)"
 removido no refactor do orquestrador.)
 
-### GATE-LINKS (nenhuma célula vazia onde o card tem link)
-No re-fetch, para **cada card que tem PR/repositório no contrato normalizado**, conferir que a
-célula **não está vazia / `—`** na página do Notion. Se encontrar vazio onde deveria ter link →
-**PARA e documenta** (pega o sintoma do PB-4786 na 1.117.0).
+### GATE-LINKS (célula bate exatamente com o contrato; APENAS PROC é suspeito)
+Usar `python3 tools/optimus_gates.py <contrato.json> tools/rules.json > gates.json` e montar a tabela
+a partir de `gates.json.rows` (a célula de PR vem pronta). No re-fetch final, para cada card conferir
+que a célula do Notion é **idêntica** a `rows[].pull_requests`. "• APENAS PROC" só é aceito quando
+`deploy_fields.apenas_proc == true`. Se `gates.json.errors` não estiver vazio (GATE-CROSSCHECK) →
+**PARA e documenta em `erros/`** (pega o PB-5528/5085/4969: APENAS PROC com PR real).
 
 ### GATE-IDEMPOT (sem duplicata)
 - Se a página da versão **já existe** → **atualizar (usar `notion-update-page`)**, nunca criar outra.

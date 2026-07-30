@@ -264,7 +264,7 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
   "links": {
     "jira": "https://bernhoeft.atlassian.net/browse/PB-5415",
     "repositories": ["https://bitbucket.org/bernhoeft/contractweb-v3"],
-    "pull_requests": ["https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5164"]
+    "pull_requests": [{"label": "contractweb-v3 #5164", "url": "https://bitbucket.org/bernhoeft/contractweb-v3/pull-requests/5164"}]
   },
   "parse_status": {
     "parse_failed": false,

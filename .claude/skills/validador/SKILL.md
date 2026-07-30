@@ -31,6 +31,10 @@ Um item **passa** se:
 - **Devolver ao coletor** para re-extração / debug (ou escalar ao Ronan se persistir).
 - **Não** aplicar a regra v2 (não aprovar nem reprovar) até resolver.
 
+**Execução determinística:** a regra v2, D1, D2 e o GATE-CROSSCHECK rodam em
+`python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json]`. O validador
+consome `gates.json`. `parse_failed` vira status "parse_failed" (nem aprova nem reprova).
+
 **PR por referência de card (conta como PR válida):** quando o `coletor` herda a PR de **outro card
 referenciado** (o campo apontava pra `PB-XXXX` em vez de link do Bitbucket — ver `coletor`), essa PR
 **compartilhada vale como PR + repositório** para a regra 1. Caso-modelo **PB-5599** (herdou a PR do
@@ -60,6 +64,10 @@ a automação só **deixa de fora** (direção segura).
   deploy (`Teste regressivo` / `Pronto para deploy`) ou já deployados. Se **qualquer** filho não
   cancelado ainda estiver em desenvolvimento/teste/code-review, o épico está **incompleto**.
 - Épico incompleto → **excluir do pacote todos os cards daquele épico** (não sobe parcial de épico).
+  A exclusão usa o motivo **"D1: épico X incompleto"** (registrado em `gates.json.excluidos_d1`).
+  Para D1 geral (fora de PB-5768) o orquestrador fornece `epic_status.json` = `{ "<epicKey>": {"completo": true|false} }`,
+  montado com uma JQL `parent = <epicKey>` por épico presente (completo = todos os filhos não-cancelados em status de deploy ou já deployados).
+  Épico all-or-nothing do `rules.json` é sempre incompleto até ordem explícita.
 - Casos-modelo: [[epico-pb-5768-all-or-nothing]] (38 filhos, maioria em dev) e **PB-236** (irmão
   PB-4786 reprovado/sem PR deixa o épico incompleto).
 

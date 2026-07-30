@@ -55,21 +55,18 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
 ## Configuração atual — Jira via MCP Atlassian (read-only, escopo `read:jira-work`)
 - **cloudId:** `f36e5519-1f88-4f71-a406-75326e86deda` (bernhoeft.atlassian.net)
 
-### Parse de ADF para PR/repositório (correção do bug de links perdidos)
-Os campos `customfield_12400` (PR) e `customfield_12399` (repositório) chegam do Jira em **ADF
-(Atlassian Document Format)**, não como string. Não extrair como texto cru — ler a **estrutura ADF**
-recursivamente:
-- Nós `inlineCard` / `blockCard` com `attrs.url` → extrair `url`.
-- Marks `link` em nós de texto com `attrs.href` → extrair `href`.
-- Deduplicar URLs (PR/repo compartilhada entre irmãos do mesmo épico conta uma vez) e ordenar.
-- Registrar **por card quantos URLs foram extraídos** (`url_count`).
-
-**GATE-ADF (falso-vazio):** se um campo ADF tem **conteúdo não-vazio** mas a extração devolveu **0
-URLs** → falha de parse, **não** ausência real. Neste caso:
-- Re-extrair o campo **por card** (com `getJiraIssue` incluindo `description` + customfield cru).
-- Se ainda devolver 0, marcar `parse_failed: true` no card normalizado **em vez de `[]`** (não
-  silencioso).
-- Documentar qual card teve falha e qual foi o conteúdo ADF cru para debug.
+### Parse de PR/repositório = tools/optimus_extract.py (determinístico, não fazer à mão)
+Os campos `customfield_12400` (PR) e `customfield_12399` (repositório) chegam em ADF. **O coletor NÃO
+interpreta ADF de cabeça.** Fluxo obrigatório:
+1. Buscar cada card com `getJiraIssue` usando **`responseContentFormat: "adf"`** e `fields` explícito
+   (os 6 campos da tabela + `parent` + `status` + `assignee` + `summary`). Nunca `markdown` para estes
+   campos (em markdown o inlineCard perde `attrs.url` e a extração zera).
+2. (Opcional, fecha "PR aberta pelo Dev") buscar `getJiraIssueRemoteIssueLinks` por card e salvar
+   `execucoes/<data>-<board>-remote.json` no formato `{ "PB-XXXX": ["<url PR>", ...] }`.
+3. Salvar o cru em `execucoes/<data>-<board>-raw.json` e rodar
+   `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json execucoes/<data>-<board>-remote.json > execucoes/<data>-<board>-contrato.json`.
+4. Usar o contrato do script como saída do coletor. GATE-ADF e o falso-vazio já são enforçados no
+   código (`parse_failed=true` quando o campo tem conteúdo e 0 URLs) — nunca emitir `[]` silencioso.
 
 ### Registro de boards (fonte única — o board é config, não texto solto)
 Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **Ordem = prioridade**
@@ -113,7 +110,7 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   | Ação de infra | **não existe ainda** (campo a criar) |
 
 - **Ferramentas:** `mcp__atlassian__searchJiraIssuesUsingJql`, `mcp__atlassian__getJiraIssue`
-  (usar `fields` explícito + `responseContentFormat: "markdown"`).
+  (usar `fields` explícito + `responseContentFormat: "adf"` para campos de PR/repo; coleta enxuta em lote pode seguir markdown).
 - **Coleta enxuta (rápida e barata):** peça **só os campos da tabela acima** (chave/summary/status/
   assignee + os customfields). **NÃO** traga `description` nem `*all` na busca em lote — é o que estoura
   o limite e força salvar-e-parsear. Precisa da descrição (heurística só-banco / card ambíguo)? Puxe
@@ -131,7 +128,7 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   "product": "NewContract",
   "epic": { "key": "PB-5159", "summary": "Melhorias na Tela de Análise" },
   "summary": "...",
-  "links": { "jira": "...", "repositories": [], "pull_requests": [] },
+  "links": { "jira": "...", "repositories": [], "pull_requests": [] },  // itens: { "label": "repo #num", "url": "https://.../pull-requests/N" }
   "parse_status": {
     "parse_failed": false,
     "pr_url_count": 2,

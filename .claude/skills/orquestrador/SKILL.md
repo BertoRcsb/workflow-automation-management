@@ -60,14 +60,20 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
    - **GATE-VER-1:** calcular pelo **maior número**, nunca por data de criação ("Criado em").
    - **GATE-VER-2 (anti-colisão):** a versão calculada **não pode já existir**. Se existir → PARA e
      reporta "numeração dessincronizada; OK do Ronan para decidir". (Isto impede reubo como na 1.117.0.)
-2. **Coletor** → cards do Jira normalizados (§7).  · **gate:** erro de leitura → documenta e **para**.
-3. **Validador** → aprovados × reprovados (regra v2 + heurística "só-banco"). **Segue sozinho nos casos
-   claros** (sem checkpoint de rascunho). · **gate/pausa SÓ em card genuinamente ambíguo** (heurística
-   só-banco não fecha, ou dado divergente tipo repo≠PR): pergunta ao Ronan — **nunca inventa**.
-4. **Montador** → **cria/atualiza a página no Notion no molde sem pedir OK** e **re-verifica via
-   re-fetch**.  · **gates:** (1) conjunto de cards = aprovados (GATE-CONJUNTO); (2) colunas/blocos =
-   últimas versões (GATE-MOLDE); (3) nenhuma célula vazia onde há link (GATE-LINKS);
-   (4) usar `notion-update-page` se página existe (GATE-IDEMPOT). Qualquer falha → documenta e **para**.
+2. **Coletor** → cards do Jira normalizados (§7). **Fluxo obrigatório:** fetch cada card com
+   `responseContentFormat: "adf"` → salva em `execucoes/<data>-<board>-raw.json` → roda
+   `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json > execucoes/<data>-<board>-contrato.json`.
+   **O LLM está proibido de derivar PR/repo/apenas_proc de cabeça.** O contrato é a saída do script.
+   · **gate:** erro de leitura ou script → documenta e **para**.
+3. **Validador** → roda `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json] > gates.json`.
+   Consome `gates.json` (aprovados_finais, exclusões, errors). **Segue sozinho nos casos claros.**
+   · **gate/pausa SÓ em card genuinamente ambíguo:** pergunta ao Ronan — **nunca inventa**.
+   **Se `errors` != [] (GATE-CROSSCHECK) → documenta em `erros/` e para.**
+4. **Montador** → usa `gates.json.rows` para montar a tabela; **cria/atualiza a página no Notion no molde
+   sem pedir OK** e **re-verifica via re-fetch**. · **gates:** (1) conjunto de cards = aprovados
+   (GATE-CONJUNTO); (2) colunas/blocos = últimas versões (GATE-MOLDE); (3) célula = contrato (GATE-LINKS,
+   `"• APENAS PROC"` só quando `deploy_fields.apenas_proc == true`); (4) usar `notion-update-page` se
+   página existe (GATE-IDEMPOT). Qualquer falha → documenta e **para**.
 5. **Notificador (sandbox)** → gera mensagens de pendência/deploy p/ dev/PO/QA; **mostra só pro Ronan**
    (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela doc do Notion**.
@@ -80,7 +86,8 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
      aprovação do build no GCP é do Ronan). Pós-deploy: `master→develop/stage/prerelease` (`PR_TITLE="Sync Master"`).
    - **Gate por ação:** `dry-run` → parseia saída (`chave=valor`) + exit code (0 ok / 1 erro); **erro →
      documenta em `erros/` e para**; **limpo → mensagem `Confira` e espera comando do Ronan**.
-7. **Fechamento** → salva o resumo consolidado (§9) em `execucoes/` (auditoria em disco) e emite ao
+7. **Fechamento** → persiste `execucoes/<data>-<board>-{raw,contrato,gates}.json` como passo contratado
+   (rastreabilidade); salva o resumo consolidado (§9) em `execucoes/` (auditoria em disco) e emite ao
    Ronan **uma única mensagem de fechamento** (ver abaixo).
 
 ## Mensagem única de retorno (contrato de confiança)
