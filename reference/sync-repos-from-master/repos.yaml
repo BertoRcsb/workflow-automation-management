@@ -1,36 +1,18 @@
-# ============================================================================
-# repos.yaml — CATALOGO CANONICO (sync-repos-from-master)
-# ----------------------------------------------------------------------------
-# COMO USAR (Optimus Prime): NUNCA reescreva/reformate/gere este arquivo.
-# A UNICA edicao permitida e alternar o caractere '#' de linhas que JA EXISTEM:
-#   - Passos 1/2: descomente APENAS 'name' + 'repository' dos repos do release;
-#     mantenha o 'triggers:' de cada repo COMENTADO. Recomente o resto.
-#   - Passo 3 (prod, apos OK PO/QA): descomente o bloco 'triggers:' do repo alvo.
-#   - source/targets: descomente SO o bloco do passo atual (Passo 1 fica ativo).
-# Se um repo/trigger nao existir aqui -> PARE e reporte (o Ronan adiciona). NUNCA crie a linha.
-# Este catalogo SO CRESCE: adicionar novos repos quando surgirem; nunca remover.
-# ============================================================================
-
 # Default settings applied to every repository listed below.
 defaults:
   # Provider currently supported by the application.
   provider: bitbucket
 
-  # --- source/targets POR PASSO: descomente SO o bloco do passo atual ---
-  # Passo 1 (pre-prod): prerelease -> teste_regressivo   [ATIVO por padrao]
-  source: prerelease
+  # Source branch used to open synchronization PRs.
+  source:  teste_regressivo
+
+  # Target branches that receive changes from the source branch.
   targets:
-    - teste_regressivo
-  # Passo 2 (prod): teste_regressivo -> master
-  # source: teste_regressivo
-  # targets:
-  #   - master
-  # Pos-deploy (propaga master de volta): master -> develop/stage/prerelease
-  # source: master
-  # targets:
-  #   - develop
-  #   - stage
-  #   - prerelease
+    - master
+#    - teste_regressivo
+#    - develop
+#    - stage
+#    - prerelease
 
   # When true, skip PR creation when there is no diff between source and target.
   open_pr_only_if_diff: true
@@ -41,91 +23,100 @@ defaults:
 # Default GCP context for triggers associated with repositories.
 cloud_build:
   defaults:
-    project_id: grt-app-prod
-    region: global
-    source:
-      branch: master
+     project_id: grt-app-prod
+     region: global
+     source:
+       branch: master
 
-# ============================================================================
-# CATALOGO DE REPOS — todos COMENTADOS por padrao.
-# Descomente 'name'+'repository' dos repos do release; 'triggers:' so no Passo 3.
-# ============================================================================
+# Repositories to process. Each item must use "workspace/repository" in repository.
 repos:
-  # --- contractweb-v3 ---
-  # - name: contractweb-v3
-  #   repository: bernhoeft/contractweb-v3
-  #   triggers:
-  #     - name: neoenergia-contractweb
-  #     - name: treinamento-contractweb
-  #     - name: vli-contractweb
+  # Minimal entry: uses every value from defaults.
+#  - name: bernhoeft-grt-login-api
+#    repository: bernhoeft/bernhoeft-grt-login-api
+#    triggers:
+#      - name: neoenergia-api-login
+#      - name: treinamento-api-login
+#      - name: vli-api-login
 
-  # --- bernhoeft-grt-contractweb-front ---
-  # - name: bernhoeft-grt-contractweb-front
-  #   repository: bernhoeft/bernhoeft-grt-contractweb-front
-  #   triggers:
-  #     - name: neoenergia-front-contractweb
-  #     - name: treinamento-front-contractweb
-  #     - name: vli-front-contractweb
+#  - name: bernhoeft-grt-contractweb-api
+#    repository: bernhoeft/bernhoeft-grt-contractweb-api
+#    triggers:
+#      - name: neoenergia-api-contractweb
+#      - name: vli-api-contractweb
+#      - name: treinamento-api-contractweb
 
-  # --- bernhoeft-grt-contractweb-api ---
-  # - name: bernhoeft-grt-contractweb-api
-  #   repository: bernhoeft/bernhoeft-grt-contractweb-api
-  #   # triggers: a confirmar com o Ronan (nenhuma observada nos logs)
+#  - name: bernhoeft-grt-contractweb-front
+#    repository: bernhoeft/bernhoeft-grt-contractweb-front
+#    triggers:
+#      - name: neoenergia-front-contractweb
+#      - name: treinamento-front-contractweb
+#      - name: vli-front-contractweb
 
-  # --- bernhoeft-grt-login-api ---
-  # - name: bernhoeft-grt-login-api
-  #   repository: bernhoeft/bernhoeft-grt-login-api
-  #   triggers:
-  #     - name: neoenergia-api-login
-  #     - name: treinamento-api-login
-  #     - name: vli-api-login
+  - name: contractweb-v3
+    repository: bernhoeft/contractweb-v3
+    triggers:
+       - name: neoenergia-contractweb
+       - name: treinamento-contractweb
+       - name: vli-contractweb
 
-  # --- bernhoeft-grt-newcontract-front ---
-  # - name: bernhoeft-grt-newcontract-front
-  #   repository: bernhoeft/bernhoeft-grt-newcontract-front
-  #   triggers:
-  #     - name: neoenergia-front-sla
-  #     - name: treinamento-front-sla
-  #     - name: vli-front-sla
+#  - name: bernhoeft-grt-autocadastro-api
+#    repository: bernhoeft/bernhoeft-grt-autocadastro-api
+#    triggers:
+#      - name: neoenergia-api-autocadastro
+#      - name: vli-api-autocadastro
 
-  # --- bernhoeft-grt-autocadastro-front ---
-  # - name: bernhoeft-grt-autocadastro-front
-  #   repository: bernhoeft/bernhoeft-grt-autocadastro-front
-  #   triggers:
-  #     - name: neoenergia-front-autocadastro
-  #     - name: vli-front-autocadastro
+#  - name: bernhoeft-grt-autocadastro-front
+#    repository: bernhoeft/bernhoeft-grt-autocadastro-front
+#    triggers:
+#      - name: neoenergia-front-autocadastro
+#      - name: vli-front-autocadastro
 
-  # --- bernhoeft-grt-autocadastro-api ---
-  # - name: bernhoeft-grt-autocadastro-api
-  #   repository: bernhoeft/bernhoeft-grt-autocadastro-api
-  #   triggers:
-  #     - name: neoenergia-api-autocadastro
-  #     - name: vli-api-autocadastro
+  - name: bernhoeft-grt-newcontract-front
+    repository: bernhoeft/bernhoeft-grt-newcontract-front
+    triggers:
+       - name: neoenergia-front-sla
+       - name: treinamento-front-sla
+       - name: vli-front-sla
 
-  # --- bernhoeft-grt-centraldocumentos-api ---
-  # - name: bernhoeft-grt-centraldocumentos-api
-  #   repository: bernhoeft/bernhoeft-grt-centraldocumentos-api
-  #   # triggers: a confirmar com o Ronan (nenhuma observada nos logs)
+#  - name: bernhoeft-grt-analysis-api
+#    repository: bernhoeft/bernhoeft-grt-analysis-api
+#    triggers:
+#      - name: neoenergia-api-analysis
+#      - name: treinamento-api-analysis
+#      - name: vli-api-analysis
 
-  # --- bernhoeft-grt-storage ---
-  # - name: bernhoeft-grt-storage
-  #   repository: bernhoeft/bernhoeft-grt-storage
-  #   triggers:
-  #     - name: neoenergia-api-storage
-  #     - name: treinamento-api-storage
-  #     - name: vli-api-storage
+#  - name: bernhoeft-grt-relatorios
+#    repository: bernhoeft/bernhoeft-grt-relatorios
+#    triggers:
+#      - name: neoenergia-api-relatorios
+#      - name: treinamento-api-relatorios
+#      - name: vli-api-relatorios
 
-  # --- bernhoeft-grt-sla-api ---
-  # - name: bernhoeft-grt-sla-api
-  #   repository: bernhoeft/bernhoeft-grt-sla-api
-  #   # triggers: a confirmar com o Ronan (nenhuma observada nos logs)
+#  - name: bernhoeft-grt-bi-api
+#    repository: bernhoeft/bernhoeft-grt-bi-api
+#    triggers:
+#      - name: neoenergia-api-bi
+#      - name: vli-api-bi
 
-  # --- bernhoeft-grt-analysis-api ---
-  # - name: bernhoeft-grt-analysis-api
-  #   repository: bernhoeft/bernhoeft-grt-analysis-api
-  #   # triggers: a confirmar com o Ronan (nenhuma observada nos logs)
+#  - name: bernhoeft-grt-centraldocumentos-api
+#    repository: bernhoeft/bernhoeft-grt-centraldocumentos-api
 
-  # --- bernhoeft-grt-relatorios ---
-  # - name: bernhoeft-grt-relatorios
-  #   repository: bernhoeft/bernhoeft-grt-relatorios
-  #   # triggers: a confirmar com o Ronan (nenhuma observada nos logs)
+#  - name: bernhoeft-grt-storage
+#    repository: bernhoeft/bernhoeft-grt-storage
+#    triggers:
+#      - name: neoenergia-api-storage
+#      - name: treinamento-api-storage
+#      - name: vli-api-storage
+
+#  - name: bernhoeft-grt-catraca
+#    repository: bernhoeft/bernhoeft-grt-catraca
+#    triggers:
+#      - name: neoenergia-api-catraca
+#      - name: vli-api-catraca
+
+#  - name: bernhoeft-grt-sla-api
+#    repository: bernhoeft/bernhoeft-grt-sla-api
+#    triggers:
+#      - name: neoenergia-api-sla
+#      - name: treinamento-api-sla
+#      - name: vli-api-sla

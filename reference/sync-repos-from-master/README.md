@@ -13,5 +13,6 @@ Regras:
 Restaurar o arquivo de trabalho a partir deste backup:
     cp reference/sync-repos-from-master/repos.yaml /home/ronan/sync-repos-from-master/repos.yaml
 
-Dados reais (repos + triggers) extraidos das execucoes iniciais do Ronan
-(execucoes/*.json, Passo 3). Ver o apendice do plano para a proveniencia.
+Conteudo = o repos.yaml REAL do sync-repos-from-master, fornecido pelo Ronan (o mais proximo do
+original). Substitui a reconstrucao anterior (que era inferida dos execucoes/*.json e tinha lacunas:
+faltavam bi-api e catraca; contractweb-api/analysis-api/relatorios/sla-api estavam sem triggers).

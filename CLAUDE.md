@@ -56,9 +56,12 @@ Sync (`repos.yaml` **guiado pela doc do Notion**) → `make run` → PR.
 ## Guardrails inquebráveis
 - **Extração de links e gates D1/D2 = código determinístico em `tools/`** (o LLM não interpreta ADF);
   MCP-first mantido para I/O e escrita.
-- **`repos.yaml` só comenta/descomenta:** o Optimus nunca reescreve/reformata/gera o `repos.yaml`; só
-  alterna o `#` de linhas existentes. Gate `tools/optimus_yaml_gate.py` reverte qualquer edição que não
-  seja só de comentário (backup antes; exit 1 → restaura e para).
+- **`repos.yaml` só comenta/descomenta + Sync inviolável:** o cwd é SEMPRE o workflow; NUNCA `cd` no
+  `sync-repos-from-master`. O Optimus só (1) alterna o `#` de linhas existentes em
+  `"$SYNC_REPO_PATH/repos.yaml"` e (2) roda `make -C "$SYNC_REPO_PATH" <alvo>`. Nunca reescreve/gera o
+  YAML nem cria outro arquivo no sync; `.env`/`credentials/` do sync são intocáveis; backup/erros/
+  execucoes ficam no workflow. Gate `tools/optimus_yaml_gate.py` reverte edição que não seja só de
+  comentário (backup antes; exit 1 → restaura e para).
 - **Autonomia até o `make dry-run` do Sync Passo 1:** no `executar` de board único, os passos rodam **sem
   aprovação humana** — inclui a doc no Notion, a edição do `repos.yaml` e o `make dry-run` do Passo 1 — e
   terminam na mensagem única `Confira`. **O `make run` do Passo 1 é sob OK explícito do Ronan.** **Única

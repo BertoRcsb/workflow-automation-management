@@ -205,9 +205,12 @@ Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar tod
   o sintoma de links perdidos.
 - **GATE-IDEMPOT (Passo 4 — montador):** se página já existe, **atualizar** (use `notion-update-page`),
   nunca criar outra.
-- **GATE-YAML (edição do `repos.yaml`):** a edição é só toggle de comentário. Backup antes; após editar,
-  `tools/optimus_yaml_gate.py <bak> <repos.yaml>` deve retornar exit 0. Exit 1 → restaura o backup,
-  documenta em `erros/` e para. Impede reescrita/reformatação/alteração de valores.
+- **GATE-YAML (edição do `repos.yaml`) + Sync inviolável:** cwd SEMPRE no workflow; NUNCA `cd` no sync.
+  Acionar o sync só por `make -C "$SYNC_REPO_PATH" <alvo>` e editar só `"$SYNC_REPO_PATH/repos.yaml"`
+  (toggle de `#`). Backup no workflow (`execucoes/repos.yaml.optimus-bak`) antes; após editar,
+  `tools/optimus_yaml_gate.py execucoes/repos.yaml.optimus-bak "$SYNC_REPO_PATH/repos.yaml"` deve
+  retornar exit 0. Exit 1 → restaura o backup, documenta em `erros/` (no workflow) e para. Backup/erros/
+  execucoes nunca dentro do sync; `.env`/`credentials/` do sync intocáveis.
 
 **Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
 a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Todo `make run`

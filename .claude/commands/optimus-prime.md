@@ -64,13 +64,19 @@ Se vazio, use **`verificar`**. **O `make run` do Passo 1** (abre os PRs pré-pro
    **O `make run` do Passo 1 só depois, sob OK do Ronan.**
 
 ## Guardrails (inquebráveis)
-- **`repos.yaml` é imutável (só toggle de comentário):** a ÚNICA edição permitida é alternar o `#` de
-  linhas que já existem (descomentar o que o passo precisa, recomentar o resto). NUNCA reescrever/
-  reformatar/gerar/reordenar, nem mudar `defaults`/`cloud_build`/valores, nem adicionar/remover linhas
-  ou anotações. **Antes** de editar: `cp repos.yaml repos.yaml.optimus-bak`. **Depois** de editar:
-  rodar `python3 tools/optimus_yaml_gate.py repos.yaml.optimus-bak repos.yaml`; **exit 1 → restaurar o
-  backup (`cp repos.yaml.optimus-bak repos.yaml`), documentar em `erros/AAAA-MM-DD-yaml-gate.md` e
-  PARAR**; exit 0 → seguir para `make dry-run`.
+- **Sync inviolável (ligação só por comando):** o cwd é SEMPRE o `workflow-automation-management`;
+  **NUNCA** faça `cd` para dentro do `sync-repos-from-master`. O Optimus toca no sync APENAS de dois
+  jeitos: (1) alternar o `#` de linhas já existentes em `"$SYNC_REPO_PATH/repos.yaml"` (nunca
+  reescrever/reformatar/reordenar/gerar, nem mudar `defaults`/`cloud_build`/valores, nem add/remove
+  linhas ou anotações); (2) rodar os alvos do Makefile via `make -C "$SYNC_REPO_PATH" <alvo>`
+  (`dry-run` | `run` | `dry-run-triggers` | `run-triggers` — NÃO existe `make sync`). **Nenhum outro
+  arquivo** é criado/editado dentro do sync. As autenticações do sync (`.env`, `credentials/`) são dele
+  — não tocar. TODO artefato (erros/, execucoes/, backup do YAML) fica no `workflow-automation-management`.
+- **`repos.yaml` — backup + gate SEMPRE no lado do workflow:** **antes** de editar:
+  `cp "$SYNC_REPO_PATH/repos.yaml" execucoes/repos.yaml.optimus-bak`. **Depois** de editar:
+  `python3 tools/optimus_yaml_gate.py execucoes/repos.yaml.optimus-bak "$SYNC_REPO_PATH/repos.yaml"`;
+  **exit 1 → restaurar (`cp execucoes/repos.yaml.optimus-bak "$SYNC_REPO_PATH/repos.yaml"`), documentar
+  em `erros/AAAA-MM-DD-yaml-gate.md` e PARAR**; exit 0 → seguir para `make -C "$SYNC_REPO_PATH" dry-run`.
 - **Autonomia até o `make dry-run` do Sync Passo 1** (board único): os passos rodam **sem aprovação
   humana** — inclui criar a doc no Notion, **editar o `repos.yaml`** e rodar o `make dry-run` do Passo 1
   — e terminam na mensagem `Confira`. **Não peça OK para ler/editar.** **O `make run` do Passo 1 (abre os
