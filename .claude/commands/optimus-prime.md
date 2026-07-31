@@ -43,10 +43,12 @@ Se vazio, use **`verificar`**. **O `make run` do Passo 1** (abre os PRs pré-pro
    via re-fetch** (divergência no re-fetch → documenta e para).
 5. **Notificador** → *pulado* (sandbox; ainda não existe).
 6. **Sync (`sync-repos-from-master`), guiado pela documentação:**
-   - Leia o doc da versão no Notion e ative no `repos.yaml` **só os repos de "Repositórios para
-     Deploy"** — ativando **só `name` + `repository`**; **`triggers:` ficam comentados** (são do
-     Passo 3/prod, após OK do PO/QA — o `make run` não os usa). **Comente todo o resto**. Repo
-     faltando → **pare e reporte**.
+   - Leia o doc da versão no Notion e **descomente no `repos.yaml`** (arquivo já existente, formato
+     catálogo) **apenas as linhas `name` + `repository`** dos repos de "Repositórios para Deploy";
+     mantenha os `triggers:` **comentados** (são do Passo 3/prod). Recomente os repos que não são do
+     release. **NUNCA reescreva, reformate, reordene, gere o arquivo, nem altere `defaults`/
+     `cloud_build`/valores; NUNCA adicione/remova linhas nem escreva anotações.** Só alterne o `#`.
+     Repo/linha ausente no catálogo → **pare e reporte** (o Ronan adiciona); nunca crie a linha.
    - **Editar o YAML é autônomo** (guiado pela doc): **não pergunte a cada alteração**, **não peça OK
      para ler/editar** — só reporte **discrepância**.
    - **Passo 1** (`source: prerelease` → `target: teste_regressivo`, pré-prod): edita o YAML, roda
@@ -62,6 +64,13 @@ Se vazio, use **`verificar`**. **O `make run` do Passo 1** (abre os PRs pré-pro
    **O `make run` do Passo 1 só depois, sob OK do Ronan.**
 
 ## Guardrails (inquebráveis)
+- **`repos.yaml` é imutável (só toggle de comentário):** a ÚNICA edição permitida é alternar o `#` de
+  linhas que já existem (descomentar o que o passo precisa, recomentar o resto). NUNCA reescrever/
+  reformatar/gerar/reordenar, nem mudar `defaults`/`cloud_build`/valores, nem adicionar/remover linhas
+  ou anotações. **Antes** de editar: `cp repos.yaml repos.yaml.optimus-bak`. **Depois** de editar:
+  rodar `python3 tools/optimus_yaml_gate.py repos.yaml.optimus-bak repos.yaml`; **exit 1 → restaurar o
+  backup (`cp repos.yaml.optimus-bak repos.yaml`), documentar em `erros/AAAA-MM-DD-yaml-gate.md` e
+  PARAR**; exit 0 → seguir para `make dry-run`.
 - **Autonomia até o `make dry-run` do Sync Passo 1** (board único): os passos rodam **sem aprovação
   humana** — inclui criar a doc no Notion, **editar o `repos.yaml`** e rodar o `make dry-run` do Passo 1
   — e terminam na mensagem `Confira`. **Não peça OK para ler/editar.** **O `make run` do Passo 1 (abre os

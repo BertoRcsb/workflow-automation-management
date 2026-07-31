@@ -78,8 +78,12 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
    (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela doc do Notion**.
    Gates (passo-a-passo completo em **`REFERENCE.md` §2**):
-   - Ativa no YAML **só os repos de "Repositórios para Deploy"** (`name`+`repository`; `triggers:`
-     comentados). **Repo faltando → para e reporta.**
+   - **Descomente no `repos.yaml`** (arquivo já existente, formato catálogo) **apenas as linhas
+     `name`+`repository`** dos repos de "Repositórios para Deploy"; mantenha `triggers:` **comentados**.
+     Recomente os repos que não são do release. **NUNCA reescreva, reformate, reordene, gere o arquivo,
+     nem altere `defaults`/`cloud_build`/valores; NUNCA adicione/remova linhas nem escreva anotações.**
+     Só alterne o `#`. Repo/linha ausente no catálogo → **para e reporta** (o Ronan adiciona); nunca
+     crie a linha.
    - **Editar o YAML + `make dry-run` = autônomo.** **Todo `make run` = OK explícito do Ronan.**
    - **Promoção NUNCA direto pra master; `make run` sempre com `target` explícito.** Passo 1
      `prerelease→teste_regressivo`; Passo 2 `→master` (só Ronan); Passo 3 `make run-triggers` (só Ronan;
@@ -117,6 +121,13 @@ exige julgamento fino**: validar **card ambíguo**.
   ou degradar a esteira; **na dúvida, mantém como está**.
 
 ## Guardrails (diretrizes inquebráveis)
+- **`repos.yaml` é imutável (só toggle de comentário):** a ÚNICA edição permitida é alternar o `#` de
+  linhas que já existem (descomentar o que o passo precisa, recomentar o resto). NUNCA reescrever/
+  reformatar/gerar/reordenar, nem mudar `defaults`/`cloud_build`/valores, nem adicionar/remover linhas
+  ou anotações. **Antes** de editar: `cp repos.yaml repos.yaml.optimus-bak`. **Depois** de editar:
+  rodar `python3 tools/optimus_yaml_gate.py repos.yaml.optimus-bak repos.yaml`; **exit 1 → restaurar o
+  backup (`cp repos.yaml.optimus-bak repos.yaml`), documentar em `erros/AAAA-MM-DD-yaml-gate.md` e
+  PARAR**; exit 0 → seguir para `make dry-run`.
 - **MERGE é só do Ronan** — Optimus Prime **nunca** mergeia (garantia: `auto_merge=false`).
 - **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master
   (Passo 2) e antes de disparar triggers (Passo 3). Pode **disparar** triggers sob comando explícito,

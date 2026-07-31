@@ -115,7 +115,7 @@ fica **fora do loop** (por-board e explícito, depois).
 | 4 | **Montador** | Notion (`create-pages` + re-fetch) | autônomo — **cria/atualiza no Notion sem OK** |
 | 5 | **Notificador** | *sandbox* (pulado por ora) | autônomo (só mostra pro Ronan) |
 | — | **↑ todos os boards PARAM AQUI (Notion)** · board único segue p/ 6.1 | | |
-| 6.0 | **Sync — edita `repos.yaml`** | ativa **só os repos da doc**; comenta o resto | autônomo (edição do YAML sem OK) |
+| 6.0 | **Sync — edita `repos.yaml`** | **descomenta** só os repos da doc; recomenta o resto — **nunca reescreve o YAML** (gate `optimus_yaml_gate.py`) | autônomo (edição do YAML sem OK) |
 | 6.1 | **Passo 1** `prerelease → teste_regressivo` | `make dry-run PR_TITLE="[…] X"` (autônomo → mensagem `Confira`) → `make run PR_TITLE="[…] X"` | dry-run autônomo; **`make run` sob OK do Ronan** → **Ronan mergeia** |
 | 6.2 | **Passo 2** `teste_regressivo → master` | edita YAML (source/target) → `make dry-run` → `make run` | **Ronan comanda** + OK → **Ronan mergeia** → **QA testa** |
 | 6.3 | **Passo 3** triggers (clientes) | descomenta `triggers:` → `make dry-run-triggers` → **`make run-triggers`** *(sem PR_TITLE)* | **Ronan comanda** (pós-QA) + **aprova os builds no GCP** |

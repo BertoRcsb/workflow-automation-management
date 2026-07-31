@@ -22,7 +22,7 @@ O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qu
 
 Governança do `repos.yaml`, **guiada pela documentação**:
 
-- **Lê o doc da versão no Notion** e ativa no `repos.yaml` **apenas os repositórios que constam em "Repositórios para Deploy"** — ativando **só `name` + `repository`**; **os `triggers:` ficam comentados** (triggers são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do Passo 1/2 **não os usa**). **Tudo que não corresponder → comenta de volta** (não entra no `make run`). **Repo faltando no YAML → para e reporta** (Ronan adiciona).
+- **Lê o doc da versão no Notion** e **descomenta as linhas já existentes de** `repos.yaml` **apenas os repositórios que constam em "Repositórios para Deploy"** — ativando **só `name` + `repository`**; **os `triggers:` ficam comentados** (triggers são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do Passo 1/2 **não os usa**). **Tudo que não corresponder → comenta de volta** (não entra no `make run`). **Nunca reescreve/reformata/gera o arquivo nem altera `defaults`/`cloud_build`; só alterna o `#`. Passa pelo gate `tools/optimus_yaml_gate.py` (exit 1 → restaura backup e para).** **Repo faltando no YAML → para e reporta** (Ronan adiciona).
 - **Editar o `repos.yaml` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração**, **não pede OK para ler/editar** — só interrompe/reporta em caso de **discrepância** (repo faltando no YAML, doc ambígua). O `make dry-run` também é autônomo (simulação); o **gate humano** é **todo `make run`**: Passo 1, master (Passo 2) e triggers (Passo 3).
 
 **Fluxo (NUNCA direto pra master; `make run` sempre com `target` explícito):**
@@ -63,7 +63,7 @@ Optimus Prime retornando com o resultado = Confira
   - `make run-triggers` → dispara os **triggers Cloud Build** (deploy nos ambientes dos clientes). **NÃO recebe `PR_TITLE`.** Disparado pelo Optimus Prime **sob comando explícito do Ronan**; a **aprovação do build no GCP** é do Ronan (após OK do QA).
   - Saída é **`chave=valor` parseável**; **exit code 0 = ok, 1 = erro** (usar para o gate).
   - **Branches (confirmar grafia exata):** `prerelease` → `teste_regressivo` → `master`. `make run` **sempre com `target` explícito**; trocar `source`/`targets` por passo é via **edição do YAML** (comentar/descomentar), ativando **só os repos da doc do Notion**.
-- **`repos.yaml`** (na raiz do sync tool): manter **`auto_merge=false`**; descomentar só o repo alvo.
+- **`repos.yaml`** (na raiz do sync tool): manter **`auto_merge=false`**; **descomente** só os repos da doc. **Edição = só toggle de `#`; nunca reescrever.**
 
 ---
 

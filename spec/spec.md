@@ -205,15 +205,22 @@ Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar tod
   o sintoma de links perdidos.
 - **GATE-IDEMPOT (Passo 4 — montador):** se página já existe, **atualizar** (use `notion-update-page`),
   nunca criar outra.
+- **GATE-YAML (edição do `repos.yaml`):** a edição é só toggle de comentário. Backup antes; após editar,
+  `tools/optimus_yaml_gate.py <bak> <repos.yaml>` deve retornar exit 0. Exit 1 → restaura o backup,
+  documenta em `erros/` e para. Impede reescrita/reformatação/alteração de valores.
 
 **Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
 a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Todo `make run`
 (Passo 1 e Passo 2) e as triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do Ronan
 antes do real. O `make dry-run` e a edição do `repos.yaml` são autônomos.
 
-**Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e ativa
-**apenas os repositórios de "Repositórios para Deploy"**; **o que não corresponder → comenta de volta**
-(não entra no `make run`); **repo faltando → para e reporta** (Ronan adiciona).
+**Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e
+**descomenta (no arquivo já existente, formato catálogo) apenas as linhas `name`+`repository`** dos
+repositórios de "Repositórios para Deploy"; mantenha `triggers:` comentados; **o que não corresponder →
+comenta de volta** (não entra no `make run`). **NUNCA reescreva/reformate/reordene/gere o arquivo nem
+altere `defaults`/`cloud_build`/valores; NUNCA adicione/remova linhas ou anotações.** Só alterne o `#`.
+**Passa pelo gate `tools/optimus_yaml_gate.py`** (exit 1 → restaura backup e para). **Repo faltando →
+para e reporta** (Ronan adiciona).
 
 **Fluxo de promoção de branches (nunca direto pra master; `make run` sempre com `target` explícito):**
 - **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): edita o YAML e roda
