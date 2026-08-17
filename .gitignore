@@ -12,3 +12,6 @@ Thumbs.db
 
 # Execution logs (auditoria local, não versionada)
 execucoes/*.json
+
+/erros
+/execucoes
