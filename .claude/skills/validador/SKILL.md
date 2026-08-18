@@ -94,7 +94,4 @@ a automação só **deixa de fora** (direção segura).
 ## Regra como config (evita hardcode)
 A regra vive em `tools/rules.json` (ver spec §10) — mudar a regra = editar o JSON, não a skill.
 
-## Evolução / próximos papéis (este escopo vai crescer)
-- **Revalidar** cards corrigidos.
-- **Categorias** (correção · banco · infra · melhoria · alteração técnica · pós-deploy).
-- Regras distintas por **tipo de ciclo**.
+> Evolução planejada deste papel: `docs/ROADMAP.md`.

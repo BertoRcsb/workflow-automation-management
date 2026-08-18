@@ -72,8 +72,4 @@ Isto impede a colisão/reubo de página que aconteceu na 1.117.0.
 - **Verificação enxuta:** reler a página com `notion-fetch` **uma vez, ao final** (não a cada
   linha/card) e aplicar GATE-MOLDE + GATE-LINKS. Menos ida-e-volta = mais rápido.
 
-## Evolução / próximos papéis (este escopo vai crescer)
-- **Categorias** na tabela/release.
-- **Nome do proc** nas linhas só-banco.
-- Preencher **Merge / Infra** quando a origem do dado estiver definida.
-- Trocar o destino sem mudar o papel: reescrever apenas "Configuração atual".
+> Evolução planejada deste papel: `docs/ROADMAP.md`.

@@ -9,6 +9,10 @@ Landing do repo: [`../README.md`](../README.md).
 | [`APRESENTACAO.md`](APRESENTACAO.md) | **Apresentação visual** — diagramas Mermaid (arquitetura, fluxo, boards, governança) + exemplos reais, para stakeholders. |
 | [`COMANDOS.md`](COMANDOS.md) | **Guia operacional** — como rodar (receitas passo a passo, tabela "Sequência e gates", regras de ouro, mapa dos 3 boards). |
 | [`SETUP.md`](SETUP.md) | **Primeira vez / pós-clone** — instalar o Claude Code, conectar os MCPs, apontar o `sync-repos-from-master`. |
+| [`GATES.md`](GATES.md) | **Índice dos gates** — o que é código determinístico, o que é asserção do LLM, o que é gate humano. |
+| [`ROADMAP.md`](ROADMAP.md) | **Evolução planejada** dos papéis (fonte única do backlog; mudança só com OK do Ronan). |
+| [`PROPOSTA.md`](PROPOSTA.md) | **Apresentação/histórico** — proposta original da solução. |
+| [`archive/`](archive/) | Plano e tarefas de julho/2026 (checklists concluídos, mantidos por histórico). |
 
 ## Visão geral (1 parágrafo)
 A esteira transforma cards prontos do Jira em uma **release/hotfix documentada no Notion** e prepara a

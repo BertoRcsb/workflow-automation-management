@@ -34,6 +34,6 @@ Invoque o orquestrador pelo comando:
 - **Apresentação visual (diagramas Mermaid):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
 - **Receita de bolo (comandos):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
 - **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md)
-- **Plano geral:** [`spec/plan.md`](spec/plan.md) · **Tarefas:** [`spec/task.md`](spec/task.md)
+- **Roadmap:** [`docs/ROADMAP.md`](docs/ROADMAP.md) · **Gates:** [`docs/GATES.md`](docs/GATES.md) · **Histórico (plano/tarefas de julho):** [`docs/archive/`](docs/archive/)
 - **Guia técnico + comandos:** [`CLAUDE.md`](CLAUDE.md) · **Índice de docs:** [`docs/README.md`](docs/README.md)
 - **Diretrizes p/ agentes:** [`AGENTS.md`](AGENTS.md) · **Apresentação:** [`docs/PROPOSTA.md`](docs/PROPOSTA.md)

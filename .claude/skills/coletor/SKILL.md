@@ -145,9 +145,4 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   e ainda 0). `false` caso contrário.
 - **parse_status.pr_url_count / repo_url_count:** contagem de URLs extraídas para debug/auditoria.
 
-## Evolução / próximos papéis (este escopo vai crescer)
-- Ler PR do **painel Development** quando o campo estiver vazio (relacionado à "PR por referência de
-  card", já documentada em "Responsabilidade").
-- Extrair o **nome do proc** da descrição (cards só-banco).
-- Outras fontes/ciclos: outros projetos, issue types (refatoração etc.), Bitbucket/GitHub direto.
-- Trocar a ferramenta sem mudar o papel: reescrever apenas "Configuração atual".
+> Evolução planejada deste papel: `docs/ROADMAP.md`.

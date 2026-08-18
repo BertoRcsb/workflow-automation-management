@@ -91,10 +91,6 @@ Optimus Prime retornando com o resultado = Confira
 
 ---
 
-## 6. Evolução / próximos papéis (este escopo vai crescer)
+## 6. Evolução / próximos papéis
 
-- Skill **`notificador`** de verdade (envio a dev/PO/QA por canal oficial).
-- **Leitura diária multi-board** (incidents + features + refatoração): varrer cards em "Teste regressivo"/"Pronto para deploy" com conclusão correta e montar todo dia (amplia o `coletor`).
-- Estudar (com o Ronan) se um dia o Optimus Prime poderá mergear/deployar com segurança.
-- Trocar as ferramentas sem mudar o papel: reescrever apenas "Configuração atual".
-- **Lean Loop (redução de custo):** mover I/O pesado (coleta do Jira, escrita dos `execucoes/*.json`) para passos determinísticos estilo `make` (como o Sync já é), deixando o LLM só para julgamento. Ver plano com o Ronan.
+Consolidado em **`docs/ROADMAP.md`** (fonte única do backlog de evolução).

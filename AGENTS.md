@@ -61,8 +61,6 @@ Optimus Prime (orquestrador)
 `tools/optimus_extract.py` · `optimus_gates.py` · `optimus_yaml_gate.py` ·
 `optimus_promotion_gate.py` · `optimus_triggers_gate.py` — ver `docs/GATES.md`.
 
-## Próximas etapas (não implementadas)
+## Próximas etapas
 
-1. Paralelismo entre subagentes independentes
-2. Notificador de produção (hoje sandbox)
-3. Integração com CI/CD (hoje manual via Ronan)
+Consolidadas em `docs/ROADMAP.md`.
