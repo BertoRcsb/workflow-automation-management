@@ -1,17 +1,15 @@
-#  Guia operacional — comandos do Optimus Prime
+# Guia operacional — comandos do Optimus Prime
 
-> **Guia operacional único** (como rodar). Comportamento canônico: [`../spec/spec.md`](../spec/spec.md).
+> **Guia operacional único** (como rodar). Comportamento canônico e guardrails:
+> [`../.claude/skills/orquestrador/SKILL.md`](../.claude/skills/orquestrador/SKILL.md) e
+> [`../spec/spec.md`](../spec/spec.md). Este arquivo não redefine regra — só ensina a usar.
 
 ## ANTES DE TUDO: isto precisa de um "cérebro" (Claude) ligado
 
-Este projeto **não é um script standalone** — não tem `main.py`, não tem `make run` que roda sozinho.
-Tudo aqui (skills, comando `/optimus-prime`, esteira) é **instrução** que só ganha vida quando há um
-**motor de execução — o Claude (Claude Code)** — lendo essas instruções e operando as ferramentas.
-
-> **Sem o Claude conectado, nada disto executa.** As skills carregam, mas não têm quem as rode.
-
-**O "cérebro" é o Claude; os "braços" são os MCPs + o `make` do `sync-repos-from-master`.** Por isso,
-**o passo 0 de qualquer receita é ligar o cérebro e os braços:**
+Este projeto **não é um script standalone** — não tem `main.py` que roda sozinho. Tudo aqui (skills,
+comando `/optimus-prime`, esteira) é **instrução** que só ganha vida com o **Claude Code** lendo-as e
+operando as ferramentas. **O "cérebro" é o Claude; os "braços" são os MCPs + o `make` do
+`sync-repos-from-master`.** Passo 0 de qualquer receita:
 
 | Ingrediente | O que é | Como garantir |
 |---|---|---|
@@ -21,65 +19,48 @@ Tudo aqui (skills, comando `/optimus-prime`, esteira) é **instrução** que só
 | **MCP Notion** | escrever a release/hotfix | `/mcp` → **Connected** |
 | **`sync-repos-from-master`** ao lado | abrir PRs / disparar deploy | clonado como irmão (`../`) ou `SYNC_REPO_PATH`, com `.env` configurado |
 
-> **Autônomo até o `make dry-run` do Sync Passo 1, não desassistido depois:** no `executar` de um board,
-> a esteira roda **sozinha até o `make dry-run`** (Passo 1: doc no Notion → edita `repos.yaml` →
-> `make dry-run`) e termina na mensagem única `Optimus Prime retornando com o resultado = Confira`. A
-> única pausa antes é **card genuinamente ambíguo**. **O `make run` do Passo 1** (abre os PRs pré-prod),
-> **merge, master/Passo 2, `run-triggers`/Passo 3** é **sempre seu** — o Claude pausa e espera comando.
-> No alvo `todos os boards`, a varredura ainda **termina no Notion**. Consome créditos por execução.
+> **Resumo do contrato:** no `executar` de um board, a esteira roda **sozinha até o `make dry-run` do
+> Sync Passo 1** e termina na mensagem única `Optimus Prime retornando com o resultado = Confira`.
+> Única pausa antes: card genuinamente ambíguo. **Todo `make run`, merge, master e triggers = seu.**
+> No alvo `todos os boards`, a varredura termina no Notion. Consome créditos por execução.
 
 ---
 
-##  Receita 1 — Ensaiar tudo sem risco (DRY)
+## Receita 1 — Ensaiar tudo sem risco (DRY)
 
 **Quando:** você quer ver o que a esteira faria, sem tocar em nada.
 
-1. Garanta o **passo 0** (cérebro + braços ligados, acima).
-2. Escreva no Claude:
-   ```
-   Optimus Prime verificar todos os boards
-   ```
-3. Leia o relatório: **3 blocos** (incidentes → features → refatoração), cada um com **aprovados ×
-   reprovados**. **Nada é alterado.**
+```
+Optimus Prime verificar todos os boards
+Optimus Prime verificar incidentes | features | refatoração   # um board só
+```
 
-> Variante de **um board só**: `Optimus Prime verificar incidentes` (ou `features` / `refatoração`).
+Leia o relatório (um bloco por board, aprovados × reprovados). **Nada é alterado.**
 
 ---
 
-##  Receita 2 — Rodar a esteira (iniciar)
+## Receita 2 — Rodar a esteira (iniciar)
 
 **Quando:** documentar a release no Notion e, num board único, deixar o `repos.yaml` editado e o
 `make dry-run` do Passo 1 conferido (o `make run` que abre os PRs fica para o seu OK).
 
-1. Garanta o **passo 0**.
-2. Escreva:
-   ```
-   Optimus Prime iniciar incidentes        # um board: vai ATÉ o make dry-run do Passo 1 (make run sob seu OK)
-   Optimus Prime iniciar todos os boards    # varredura: cada board vai só ATÉ o Notion
-   ```
-3. **Board único** — roda autônoma: versão-alvo automática → coletor → validador → montador
-   **cria/atualiza a página no Notion sem pedir OK** (+ re-fetch) → **Sync**: edita o `repos.yaml` (só os
-   repos da doc) e roda `make dry-run` do Passo 1. Se **limpo**, emite a mensagem `Confira` e **para**.
-   **Não pausa** na versão-alvo, no rascunho, no "posso criar", nem na edição do YAML/`make dry-run`. **O
-   `make run`** (abre os PRs `prerelease → teste_regressivo`) só **sob seu OK**, depois da mensagem.
-   - **Única pausa:** **card genuinamente ambíguo** (a heurística só-banco não fecha, ou o dado diverge
-     — ex.: repo ≠ PR). Aí o Optimus **pergunta** — nunca inventa.
-   - **Versão-alvo:** `Release` sequencial `X.(Y+1).0` por board. **Incidente NÃO é hotfix por
-     padrão** — hotfix só quando **você avisar**.
-4. **Depois da mensagem `Confira`:** você autoriza o **`make run` do Passo 1** (abre os PRs,
-   `auto_merge=false`). **Merge, master (Passo 2) e triggers (Passo 3)** também são seus — ver Receita 3.
-5. **Todos os boards:** a varredura **para no Notion**; o Sync é por-board, em dias diferentes
-   (incidentes primeiro) — Receita 3.
+```
+Optimus Prime iniciar incidentes         # um board: vai ATÉ o make dry-run do Passo 1
+Optimus Prime iniciar todos os boards    # varredura: cada board vai só ATÉ o Notion
+Optimus Prime, iniciar                   # pergunta o board
+```
+
+- **Versão-alvo:** `Release` sequencial `X.(Y+1).0` por board, automática. Incidente **não** é
+  hotfix por padrão — hotfix só quando você avisar (ou via `--versao`).
+- **Depois da mensagem `Confira`:** você autoriza o `make run` do Passo 1 (abre os PRs,
+  `auto_merge=false`). Merge, master (Passo 2) e triggers (Passo 3) também são seus — Receita 3.
 
 ---
 
-##  Receita 3 — Sincronizar/deployar (Sync) — os passos seus
+## Receita 3 — Sincronizar/deployar (Sync) — os passos seus
 
-**Quando:** abrir os PRs pré-prod (o `make run` do **Passo 1**, sob seu OK após a mensagem `Confira`),
-promover para master e deployar. Todos os `make run` são **sob seu comando**, com gate por ação
-(dry-run → parseia saída + exit code → **espera comando** → real): **Passo 1, master (Passo 2),
-triggers (Passo 3) e pós-deploy**.
-Comandos do `sync-repos-from-master`:
+**Quando:** abrir os PRs pré-prod, promover para master e deployar. Todo `make run` é **sob seu
+comando**, sempre com dry-run antes. Comandos do `sync-repos-from-master`:
 
 ```
 make dry-run PR_TITLE="[Release]/[Hotfix] <versão>"   # simulação segura (sempre antes)
@@ -88,86 +69,34 @@ make dry-run-triggers                                 # simula o deploy GCP
 make run-triggers                                     # deploy GCP (SEM PR_TITLE) — 100% seu, pós-QA
 ```
 
-Promoção de branches (**`make run` sempre com `target` explícito, nunca direto pra master**):
-1. **Passo 1** `prerelease → teste_regressivo` — Optimus edita o YAML e roda `make dry-run` (dentro do
-   `iniciar` de board único, até a mensagem `Confira`); o **`make run`** (abre os PRs) é **sob seu OK**;
-   **você mergeia**.
-2. **Passo 2** `teste_regressivo → master` — **você comanda**; Optimus edita o YAML + `make dry-run`, e
-   roda o `make run` de master **só sob seu override explícito**.
-3. **Passo 3** `make run-triggers` (ambientes dos clientes) — **100% seu**, e você **aprova os builds no GCP**.
-4. **Pós-deploy** `master → develop/stage/prerelease` — `make run PR_TITLE="Sync Master"`.
-   O pós-deploy **herda o mesmo conjunto de repos do ciclo anterior**; não reduz, não amplia e não troca a lista por interpretação local.
+Promoção de branches (`make run` sempre com `target` explícito, nunca direto pra master):
+
+1. **Passo 1** `prerelease → teste_regressivo` — Optimus edita o YAML e roda `make dry-run` (dentro
+   do `iniciar`); o `make run` é sob seu OK; **você mergeia**.
+2. **Passo 2** `teste_regressivo → master` — **você comanda**; Optimus edita YAML + `make dry-run`;
+   o `make run` de master só sob seu override explícito.
+3. **Passo 3** `make run-triggers` (ambientes dos clientes) — **100% seu**; você aprova os builds no GCP.
+4. **Pós-deploy** `master → develop/stage/prerelease` — `make run PR_TITLE="Sync Master"`; herda o
+   **mesmo conjunto de repos** do ciclo (mudança na lista = erro de sequência).
 
 ---
 
-##  Sequência e gates (o que roda por baixo)
-
-No `executar` de um board, os passos **1–5, 6.0–6.1 (só o `make dry-run`) e 7 rodam AUTÔNOMOS** (doc no
-Notion + edição do YAML + `make dry-run` do Passo 1, sem OK) e terminam na mensagem `Confira`. O **Gate
-(Ronan)** aparece em **todo `make run`** — a partir do Passo 1 (6.1). No alvo `todos os boards`, os
-passos 1–5 e 7 rodam **por board** (incidentes 1º, isolados) e a varredura **para no Notion** — o Passo 6
-fica **fora do loop** (por-board e explícito, depois).
+## Sequência e gates (o que roda por baixo)
 
 | # | Etapa | Comando por baixo | Autônomo? / Gate (Ronan) |
 |---|-------|-------------------|--------------------------|
-| 1 | **Versão-alvo** | lê a última no Notion; próxima `X.(Y+1).0` como `Release` | autônomo (incidente ≠ hotfix por padrão) |
-| 2 | **Coletor** | Atlassian MCP (`getJiraIssue` / JQL) | autônomo (erro de leitura → documenta e para) |
-| 3 | **Validador** | regra v2 + heurística só-banco | autônomo — **pausa SÓ em card genuinamente ambíguo** |
-| 4 | **Montador** | Notion (`create-pages` + re-fetch) | autônomo — **cria/atualiza no Notion sem OK** |
-| 5 | **Notificador** | *sandbox* (pulado por ora) | autônomo (só mostra pro Ronan) |
-| — | **↑ todos os boards PARAM AQUI (Notion)** · board único segue p/ 6.1 | | |
-| 6.0 | **Sync — edita `repos.yaml`** | **descomenta** só os repos da doc; recomenta o resto — **nunca reescreve o YAML** (gate `optimus_yaml_gate.py`) | autônomo (edição do YAML sem OK) |
-| 6.1 | **Passo 1** `prerelease → teste_regressivo` | `make dry-run PR_TITLE="[…] X"` (autônomo → mensagem `Confira`) → `make run PR_TITLE="[…] X"` | dry-run autônomo; **`make run` sob OK do Ronan** → **Ronan mergeia** |
-| 6.2 | **Passo 2** `teste_regressivo → master` | edita YAML (source/target) → `make dry-run` → `make run` | **Ronan comanda** + OK → **Ronan mergeia** → **QA testa** |
-| 6.3 | **Passo 3** triggers (clientes) | descomenta `triggers:` → `make dry-run-triggers` → **`make run-triggers`** *(sem PR_TITLE)* | **Ronan comanda** (pós-QA) + **aprova os builds no GCP** |
-| 6.4 | **Pós-deploy — sync de volta** | edita YAML `source: master`, `targets: [develop, stage, prerelease]` → **mantém os mesmos repos do ciclo ativo** → `make dry-run` → `make run` | **OK antes do `make run`** → **Ronan mergeia** |
+| 1 | **Versão-alvo** | próxima `X.(Y+1).0` pela última no Notion | autônomo |
+| 2 | **Coletor** | Atlassian MCP + `tools/optimus_extract.py` | autônomo (erro → documenta e para) |
+| 3 | **Validador** | `tools/optimus_gates.py` (regra v2 + D1/D2) | autônomo — pausa SÓ em card ambíguo |
+| 4 | **Montador** | Notion (create/update + re-fetch) | autônomo — sem pedir OK |
+| 5 | **Notificador** | *sandbox* | autônomo (só mostra pro Ronan) |
+| — | **↑ todos os boards PARAM AQUI (Notion)** · board único segue | | |
+| 6.0 | **Sync — edita `repos.yaml`** | toggle de `#` + gates determinísticos | autônomo |
+| 6.1 | **Passo 1** | `make dry-run` → mensagem `Confira` → `make run` | dry autônomo; **run sob seu OK** |
+| 6.2 | **Passo 2** (master) | edita YAML → `make dry-run` → `make run` | **você comanda** → QA testa |
+| 6.3 | **Passo 3** (triggers) | `make dry-run-triggers` → `make run-triggers` | **você comanda** + aprova builds GCP |
+| 6.4 | **Pós-deploy** | mesmos repos → `make run PR_TITLE="Sync Master"` | **OK antes do run** |
 | 7 | **Resumo** | grava `execucoes/release-AAAA-MM-DD-NNN.json` | autônomo |
 
----
-
-##  Cola rápida (todos os comandos)
-
-```
-# DRY (não toca em nada)
-Optimus Prime verificar todos os boards
-Optimus Prime verificar incidentes | features | refatoração
-
-# EXECUTAR (board único: até o make dry-run do Passo 1 + mensagem Confira; todos os boards: até o Notion)
-Optimus Prime iniciar todos os boards
-Optimus Prime iniciar incidentes | features | refatoração
-Optimus Prime, iniciar            # pergunta o board
-
-# Também disparam a esteira:
-"iniciar deploy" · "montar e preparar a release" · "rodar a esteira"
-
-# Sync/Deploy (no sync-repos-from-master; sempre dry-run antes, sob OK do Ronan)
-make dry-run / make run PR_TITLE="[Release]/[Hotfix] <versão>"
-make dry-run-triggers / make run-triggers
-```
-
-##  Regras de ouro (o cérebro nunca quebra)
-- **Autônomo até o `make dry-run` do Sync Passo 1** (board único): os passos rodam **sem pedir OK** —
-  doc no Notion, edição do YAML e o `make dry-run` do Passo 1 — e terminam na mensagem `Confira`. **O
-  `make run` do Passo 1 é sob seu OK.** **Única pausa antes:** card genuinamente ambíguo. No alvo `todos
-  os boards`, ainda para no Notion.
-- **Gate por ação:** `dry-run` antes de toda ação real → parseia saída + exit code (0 ok / 1 erro); erro
-  → documenta em `erros/` e **para**. **Todo `make run` (Passo 1, master/Passo 2) e triggers (Passo 3):**
-  limpo → mostra e **espera comando explícito** antes do real.
-- **`make run` (Passo 1 e Passo 2), merge, master/prod e `run-triggers` = só o Ronan**
-  (`auto_merge=false`). O Optimus **sempre pergunta antes** de qualquer `make run`.
-- **Pós-deploy não reclassifica repos:** o sync `master → develop/stage/prerelease` reutiliza a seleção de repos já validada
-  nos passos anteriores; se a lista mudar, isso é erro de sequência, não comportamento normal.
-- **`verificar` nunca executa** — só relatório.
-- **Um board por release** — a varredura "todos os boards" é sequencial e isolada (nunca mistura).
-- **Não inventa dado**; privilégio mínimo (Jira leitura; Notion só a base de releases).
-- **`make run` sempre com `target` explícito**; **nunca** direto pra master. `make run-triggers`
-  **não recebe `PR_TITLE`**. Convenção do `PR_TITLE`: `[Release]`/`[Hotfix] <versão>`; pós-deploy = `Sync Master`.
-
-## Mapeamento dos boards (o que cada um coleta no Jira — projeto PB)
-| Prioridade | Board | Filtro (JQL) |
-|---|---|---|
-| 1º | **Linha de frente / incidentes** | `issuetype = Incidente` |
-| 2º | **Features** | `issuetype = Story AND summary !~ "Refatoração"` |
-| 3º | **Refatoração** | `issuetype = Story AND summary ~ "Refatoração"` |
-
-Status alvo dos três: `Teste regressivo`, `Pronto para deploy`. Detalhe e refino: `.claude/skills/coletor/SKILL.md`.
+Índice completo dos gates (o que é script, o que é LLM): [`GATES.md`](GATES.md).
+Mapeamento dos boards (JQL, prioridade): `.claude/skills/coletor/SKILL.md`, "Registro de boards".
