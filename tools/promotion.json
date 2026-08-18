@@ -1,0 +1,11 @@
+{
+  "_doc": "Matriz de promocao de branches do Sync. Fonte unica da verdade do GATE-PROMO (tools/optimus_promotion_gate.py). Mudar regra = editar este arquivo, nunca o codigo (spec secao 10).",
+  "branches": ["prerelease", "teste_regressivo", "master", "develop", "stage"],
+  "steps": {
+    "passo1": { "source": "prerelease", "targets": ["teste_regressivo"] },
+    "passo2": { "source": "teste_regressivo", "targets": ["master"] },
+    "pos-deploy": { "source": "master", "targets": ["develop", "stage", "prerelease"] }
+  },
+  "prod_targets": ["master"],
+  "prod_requires_source": "teste_regressivo"
+}
