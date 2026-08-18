@@ -3,6 +3,11 @@
 .vscode/
 *.iml
 
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
 # Generated previews
 *.preview.html
 
@@ -10,8 +15,9 @@
 .DS_Store
 Thumbs.db
 
-# Execution logs (auditoria local, não versionada)
-execucoes/*.json
-
+# Auditoria local, não versionada
 /erros
 /execucoes
+
+# Exports descartáveis
+*.zip

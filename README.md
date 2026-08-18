@@ -36,4 +36,4 @@ Invoque o orquestrador pelo comando:
 - **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md)
 - **Plano geral:** [`spec/plan.md`](spec/plan.md) · **Tarefas:** [`spec/task.md`](spec/task.md)
 - **Guia técnico + comandos:** [`CLAUDE.md`](CLAUDE.md) · **Índice de docs:** [`docs/README.md`](docs/README.md)
-- **Diretrizes p/ agentes:** [`AGENTS.md`](AGENTS.md) · **Apresentação:** [`PROPOSTA.md`](PROPOSTA.md)
+- **Diretrizes p/ agentes:** [`AGENTS.md`](AGENTS.md) · **Apresentação:** [`docs/PROPOSTA.md`](docs/PROPOSTA.md)

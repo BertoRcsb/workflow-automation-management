@@ -1,7 +1,7 @@
 # Workflow with Automation Assisted by Management — Plano de Execução
 
 > Orquestração Jira → Notion → Deploy (GCP). Governança simplificada e rastreável.
-> Documento operacional (checklist). Visão de apresentação: ver `PROPOSTA.md`.
+> Documento operacional (checklist). Visão de apresentação: ver `docs/PROPOSTA.md`.
 
 ## Contexto
 

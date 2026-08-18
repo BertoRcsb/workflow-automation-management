@@ -2,7 +2,7 @@
 
 > Documento **vivo** (v1, 2026-07-13). Funde a spec "Esteira Inteligente para Montagem de Pacotes
 > de Deploy" com o que **validamos no 1º teste E2E**. Base de origem das **skills**.
-> Relacionados: `workflow-with-automation-assisted-by-management.md` (plano geral), `PROPOSTA.md`,
+> Relacionados: `workflow-with-automation-assisted-by-management.md` (plano geral), `docs/PROPOSTA.md`,
 > e o doc original `esteira-inteligente-para-montagem-de-pacotes-de-deploy.md`.
 >
 > **Escopo (não é só incidentes):** a esteira abrange (ou abrangerá) os boards de **incidents,
@@ -355,7 +355,7 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
 }
 ```
 
-## 10. Regra de validação como config (`deploy_requirements.yaml`)
+## 10. Regra de validação como config (`tools/deploy_requirements.yaml`)
 
 Exemplo de externalização da regra v2 (evita hardcode; mudar regra = editar YAML):
 

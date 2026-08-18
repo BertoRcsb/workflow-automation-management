@@ -92,7 +92,7 @@ a automação só **deixa de fora** (direção segura).
   card ambíguo** (heurística só-banco não fecha, ou dado divergente tipo repo ≠ PR) — aí pausa e pergunta.
 
 ## Regra como config (evita hardcode)
-Externalizar a regra em `deploy_requirements.yaml` (ver spec §10) — mudar a regra =
+Externalizar a regra em `tools/deploy_requirements.yaml` (ver spec §10) — mudar a regra =
 editar o YAML, não a skill.
 
 ## Evolução / próximos papéis (este escopo vai crescer)
