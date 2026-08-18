@@ -77,26 +77,21 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
 5. **Notificador (sandbox)** → gera mensagens de pendência/deploy p/ dev/PO/QA; **mostra só pro Ronan**
    (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela doc do Notion**.
-   Gates (passo-a-passo completo em **`REFERENCE.md` §2**):
-   - **Descomente no `repos.yaml`** (arquivo já existente, formato catálogo) **apenas as linhas
-     `name`+`repository`** dos repos de "Repositórios para Deploy"; mantenha `triggers:` **comentados**.
-     Recomente os repos que não são do release. **NUNCA reescreva, reformate, reordene, gere o arquivo,
-     nem altere `defaults`/`cloud_build`/valores; NUNCA adicione/remova linhas nem escreva anotações.**
-     Só alterne o `#`. Repo/linha ausente no catálogo → **para e reporta** (o Ronan adiciona); nunca
-     crie a linha.
-   - **Editar o YAML + `make dry-run` = autônomo.** **Todo `make run` = OK explícito do Ronan.**
-   - **Promoção NUNCA direto pra master; `make run` sempre com `target` explícito.** Passo 1
-     `prerelease→teste_regressivo`; Passo 2 `→master` (só Ronan); Passo 3 `make run-triggers` (só Ronan;
-     aprovação do build no GCP é do Ronan). Pós-deploy: `master→develop/stage/prerelease` (`PR_TITLE="Sync Master"`).
-   - **GATE-PROMO (obrigatório antes de TODO `make`):** logo após editar o YAML e **antes** de qualquer
-     `make dry-run`/`make run`/triggers, rodar
-     `python3 tools/optimus_promotion_gate.py "$SYNC_REPO_PATH/repos.yaml" --step <passo1|passo2|pos-deploy>`.
-     Exit 0 → segue; **exit 1 → NÃO roda o `make`, restaura o backup, documenta em `erros/` e para.** É a
-     barreira determinística do "nunca direto pra master" (bloqueia `prerelease→master` e afins). O
-     `source` muda por passo (Passo 1 `prerelease`, Passo 2 `teste_regressivo`, pós-deploy `master`) — o
-     GATE-YAML aceita essa troca de escalar; o GATE-PROMO valida se o par é seguro.
-   - **Gate por ação:** `dry-run` → parseia saída (`chave=valor`) + exit code (0 ok / 1 erro); **erro →
-     documenta em `erros/` e para**; **limpo → mensagem `Confira` e espera comando do Ronan**.
+   Fluxo obrigatório em **DOIS comandos** via o driver `tools/optimus_sync.py` (que encadeia GATE-YAML →
+   GATE-PROMO → GATE-TRIGGERS → `make`, restaura backup e documenta em `erros/` sozinho em caso de falha):
+   1. `python3 tools/optimus_sync.py backup` — **ANTES** de editar o `repos.yaml`.
+   2. Edite o YAML: **descomente apenas as linhas `name`+`repository`** dos repos de "Repositórios para
+      Deploy"; recomente os que não são do release; `triggers:` **comentados** (são do Passo 3). **Só
+      alterne o `#`** (+ o escalar `defaults.source`/`targets` ao trocar de passo). Repo ausente no
+      catálogo → **para e reporta** (o Ronan adiciona); nunca crie a linha.
+   3. `python3 tools/optimus_sync.py dry-run --step <passo1|passo2|pos-deploy> --pr-title "<título>"`.
+      **Exit 0 → mensagem `Confira` e espera o Ronan; exit 1 → o driver já restaurou/documentou — PARE.**
+   - **Editar o YAML + `dry-run` = autônomo.** **`run`/`run-triggers` (mesmo driver) = OK explícito do
+     Ronan.** Passo 1 `prerelease→teste_regressivo`; Passo 2 `→master` (só Ronan); Passo 3
+     `run-triggers` (só Ronan; aprovação do build no GCP é dele). Pós-deploy:
+     `master→develop/stage/prerelease` (`--pr-title "Sync Master"`). Sintaxe completa: **`REFERENCE.md` §2**.
+   - **PROIBIDO chamar `make` direto no sync ou rodar os gates soltos nesta etapa** — sempre pelo driver
+     (é ele que garante ordem, restauração e documentação).
 7. **Fechamento** → persiste `execucoes/<data>-<board>-{raw,contrato,gates}.json` como passo contratado
    (rastreabilidade); salva o resumo consolidado (§9) em `execucoes/` (auditoria em disco) e emite ao
    Ronan **uma única mensagem de fechamento** (ver abaixo).
@@ -136,17 +131,13 @@ exige julgamento fino**: validar **card ambíguo**.
   (`dry-run` | `run` | `dry-run-triggers` | `run-triggers` — NÃO existe `make sync`). **Nenhum outro
   arquivo** é criado/editado dentro do sync. As autenticações do sync (`.env`, `credentials/`) são dele
   — não tocar. TODO artefato (erros/, execucoes/, backup do YAML) fica no `workflow-automation-management`.
-- **`repos.yaml` — backup + gate SEMPRE no lado do workflow:** **antes** de editar:
-  `cp "$SYNC_REPO_PATH/repos.yaml" execucoes/repos.yaml.optimus-bak`. **Depois** de editar:
-  `python3 tools/optimus_yaml_gate.py execucoes/repos.yaml.optimus-bak "$SYNC_REPO_PATH/repos.yaml"`;
-  **exit 1 → restaurar (`cp execucoes/repos.yaml.optimus-bak "$SYNC_REPO_PATH/repos.yaml"`), documentar
-  em `erros/AAAA-MM-DD-yaml-gate.md` e PARAR**; exit 0 → seguir para `make -C "$SYNC_REPO_PATH" dry-run`.
-- **GATE-PROMO antes de todo `make` (nunca direto pra master):** nenhuma chamada `make dry-run`/`make
-  run`/triggers acontece sem antes `python3 tools/optimus_promotion_gate.py "$SYNC_REPO_PATH/repos.yaml"
-  --step <passo>` retornar exit 0. O gate só aprova pares da whitelist (`tools/promotion.json`) e bloqueia
-  `master` vindo de fonte ≠ `teste_regressivo` (ex.: `prerelease→master`), self-sync e passo divergente.
-  Exit 1 → restaura backup, documenta em `erros/` e **para**. Ao trocar de passo, ajuste **ambos**
-  `source` **e** `targets` no YAML antes de rodar o gate.
+- **Toda ação no sync passa pelo driver `tools/optimus_sync.py`** (nunca `make` direto, nunca gates
+  soltos): `backup` antes de editar; `dry-run`/`run`/`dry-run-triggers`/`run-triggers` depois. O driver
+  encadeia **GATE-YAML** (edição = só toggle de `#` + escalar `source`), **GATE-PROMO** (whitelist
+  `tools/promotion.json`; bloqueia `prerelease→master`, self-sync e passo divergente — nunca direto pra
+  master) e **GATE-TRIGGERS** (triggers comentados fora do Passo 3; presentes e sem órfão no Passo 3);
+  qualquer exit 1 → ele restaura o backup (quando aplicável), documenta em `erros/` e o Optimus **PARA**.
+  Ao trocar de passo, ajuste **ambos** `source` **e** `targets` no YAML antes do `dry-run`.
 - **MERGE é só do Ronan** — Optimus Prime **nunca** mergeia (garantia: `auto_merge=false`).
 - **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master
   (Passo 2) e antes de disparar triggers (Passo 3). Pode **disparar** triggers sob comando explícito,

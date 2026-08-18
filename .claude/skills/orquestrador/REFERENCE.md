@@ -25,15 +25,20 @@ Governança do `repos.yaml`, **guiada pela documentação**:
 - **Lê o doc da versão no Notion** e **descomenta as linhas já existentes de** `repos.yaml` **apenas os repositórios que constam em "Repositórios para Deploy"** — ativando **só `name` + `repository`**; **os `triggers:` ficam comentados** (triggers são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do Passo 1/2 **não os usa**). **Tudo que não corresponder → comenta de volta** (não entra no `make run`). **Nunca reescreve/reformata/gera o arquivo nem altera `defaults`/`cloud_build`; só alterna o `#`. Passa pelo gate `tools/optimus_yaml_gate.py` (exit 1 → restaura backup e para).** **Repo faltando no YAML → para e reporta** (Ronan adiciona).
 - **Editar o `repos.yaml` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração**, **não pede OK para ler/editar** — só interrompe/reporta em caso de **discrepância** (repo faltando no YAML, doc ambígua). O `make dry-run` também é autônomo (simulação); o **gate humano** é **todo `make run`**: Passo 1, master (Passo 2) e triggers (Passo 3).
 
-**GATE-PROMO (determinístico, antes de TODO `make`):** ao mudar de passo, ajuste **`source` E `targets`**
-no YAML e rode **antes** de qualquer `make`:
+**Driver único (`tools/optimus_sync.py`) — sintaxe completa.** Toda ação no sync roda por ele; ele
+encadeia GATE-YAML → GATE-PROMO → GATE-TRIGGERS → `make`, e em falha restaura o backup e documenta em
+`erros/` sozinho (exit 1 = pare):
 ```
-python3 tools/optimus_promotion_gate.py "$SYNC_REPO_PATH/repos.yaml" --step <passo1|passo2|pos-deploy>
+python3 tools/optimus_sync.py backup                                             # ANTES de editar o YAML
+python3 tools/optimus_sync.py dry-run  --step <passo1|passo2|pos-deploy> --pr-title "<título>"
+python3 tools/optimus_sync.py run      --step <passo1|passo2|pos-deploy> --pr-title "<título>"   # só sob OK do Ronan
+python3 tools/optimus_sync.py dry-run-triggers                                   # Passo 3
+python3 tools/optimus_sync.py run-triggers                                       # Passo 3 — só sob OK do Ronan
 ```
-Exit 0 → segue; exit 1 → restaura o backup, documenta em `erros/` e **para** (não roda o `make`). O gate
-só aprova os pares da whitelist (`tools/promotion.json`) e bloqueia `prerelease→master`, self-sync, branch
-desconhecida e passo divergente. Foi criado após o incidente **2026-08-04** (target trocado pra `master`
-com `source` ainda em `prerelease`).
+Ao mudar de passo, ajuste **`source` E `targets`** no YAML antes do `dry-run`. O GATE-PROMO só aprova os
+pares da whitelist (`tools/promotion.json`) e bloqueia `prerelease→master`, self-sync, branch desconhecida
+e passo divergente (criado após o incidente **2026-08-04**). O GATE-TRIGGERS exige triggers comentados
+fora do Passo 3 e presentes/sem órfão no Passo 3 (incidente **2026-08-12**).
 
 **Fluxo (NUNCA direto pra master; `make run` sempre com `target` explícito):**
 
