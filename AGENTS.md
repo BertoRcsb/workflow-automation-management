@@ -21,7 +21,7 @@ As ferramentas permitidas/proibidas de cada um estão no **frontmatter do própr
 ## Hierarquia de execução
 
 ```
-Ronan
+Usuário
   ↓
 /optimus-prime
   ↓
@@ -41,7 +41,7 @@ Optimus Prime (orquestrador)
 3. **Subagentes nunca chamam subagentes** — só o Optimus Prime invoca Agent.
 4. **Optimus valida antes de avançar** — consome o contrato de handoff (abaixo) de cada subagente.
 5. **Falha interrompe** — gate falha → documenta em `erros/` e para; card ambíguo → pergunta ao
-   Ronan; sem retry automático (máximo uma repetição por erro de formato).
+   usuário; sem retry automático (máximo uma repetição por erro de formato).
 
 ## Contrato de handoff (formato mínimo, sem schema complexo)
 

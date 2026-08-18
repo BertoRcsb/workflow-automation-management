@@ -1,5 +1,11 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart LR
-    Card["PB-5740 · Bug<br>Teste regressivo<br>repo autocadastro-front · PR #244"] --> Val["Aprovado (PR + repo)"]
-    Val --> Not["Notion · Hotfix 1.111.2"]
-    Not --> S1["Sync Passo 1<br>prerelease→teste_regressivo · PR #245"]
-    S1 --> Dep["Deploy em produção + clientes<br>Neoenergia · VLI"]
+    Card{{"PB-5740 · Bug<br>Teste regressivo<br>repo autocadastro-front · PR #244"}}:::io --> Val["Aprovado (PR + repo)"]:::det
+    Val --> Not{{"Notion · Hotfix 1.111.2"}}:::io
+    Not --> S1[["Sync Passo 1<br>prerelease→teste_regressivo · PR #245"]]:::det
+    S1 --> Dep(["Deploy em produção + clientes<br>Neoenergia · VLI"]):::humano
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A

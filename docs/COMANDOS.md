@@ -83,13 +83,13 @@ Promoção de branches (`make run` sempre com `target` explícito, nunca direto 
 
 ## Sequência e gates (o que roda por baixo)
 
-| # | Etapa | Comando por baixo | Autônomo? / Gate (Ronan) |
+| # | Etapa | Comando por baixo | Autônomo? / Gate (usuário) |
 |---|-------|-------------------|--------------------------|
 | 1 | **Versão-alvo** | próxima `X.(Y+1).0` pela última no Notion | autônomo |
 | 2 | **Coletor** | Atlassian MCP + `tools/optimus_extract.py` | autônomo (erro → documenta e para) |
 | 3 | **Validador** | `tools/optimus_gates.py` (regra v2 + D1/D2) | autônomo — pausa SÓ em card ambíguo |
 | 4 | **Montador** | Notion (create/update + re-fetch) | autônomo — sem pedir OK |
-| 5 | **Notificador** | *sandbox* | autônomo (só mostra pro Ronan) |
+| 5 | **Notificador** | *sandbox* | autônomo (só mostra pro usuário) |
 | — | **↑ todos os boards PARAM AQUI (Notion)** · board único segue | | |
 | 6.0 | **Sync — edita `repos.yaml`** | toggle de `#` + gates determinísticos | autônomo |
 | 6.1 | **Passo 1** | `make dry-run` → mensagem `Confira` → `make run` | dry autônomo; **run sob seu OK** |

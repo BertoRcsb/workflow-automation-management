@@ -56,7 +56,7 @@ flowchart LR
     E --> G[Montador]
     G --> H[Release Notes no Notion]
     F --> I[Notificador - sandbox]
-    I --> J[Responsavel - por ora so o Ronan]
+    I --> J[Responsavel - por ora so o usuario]
 ```
 
 ## 5. Agentes
@@ -67,16 +67,16 @@ Busca no Jira os cards candidatos e os normaliza (ver modelo em §7).
 - **Config atual:** projeto `PB`; `issuetype = Incidente`; status `Teste regressivo`, `Pronto para deploy`.
 - **Um board por ciclo — NUNCA misturar:** coletar de **um** board por execução (**incidentes** *ou*
   **features** *ou* **refatoração**); o board é **parâmetro** da coleta. Cada board → sua própria
-  release/hotfix. Misturar boards só com **OK explícito do Ronan** ("avisaremos ao Optimus"). Hoje: incidentes/PB.
+  release/hotfix. Misturar boards só com **OK explícito do usuário** ("avisaremos ao Optimus"). Hoje: incidentes/PB.
 - **Registro de boards (config, não texto solto):** cada board tem projeto/issuetype/status/JQL numa
   tabela na skill `coletor` ("Configuração atual"), com **ordem = prioridade**. Mapeamento **confirmado**
   (os 3 "boards" são visões dentro do `PB`; o MCP não expõe a API de boards, então o issuetype foi
-  inferido pela população em status de deploy + OK do Ronan): **1º Linha de frente/incidentes = `Incidente`**
+  inferido pela população em status de deploy + OK do usuário): **1º Linha de frente/incidentes = `Incidente`**
   · **2º Features = `Story`** · **3º Refatoração = `Story`** (menos importante). Status alvo iguais nos três.
 - **Features × Refatoração (critério fino confirmado):** ambos são `Story`; a separação é **pelo
   título** — **Refatoração** = `summary ~ "Refatoração"` (cards `FRONT -`/`BACK -`/`Triagem -
   Refatoração ...`); **Features** = o complemento (`summary !~ "Refatoração"`). Refatoração é o 3º/menos
-  importante. Card no board errado = refino do filtro (com OK do Ronan) — **nunca inventar** critério.
+  importante. Card no board errado = refino do filtro (com OK do usuário) — **nunca inventar** critério.
 - **Varredura "todos os boards":** o orquestrador pode varrer os três **em sequência, por prioridade**
   (incidentes 1º), rodando a esteira **isolada por board** (coleta→validação→**Notion próprio**). Isso
   **reforça** a regra "nunca misturar" (cada board = sua release/hotfix); **não** é misturar. A varredura
@@ -122,7 +122,7 @@ Cria/atualiza a página da versão no Notion, no **molde 1.110.0**.
 - **Verificação:** reler a página após escrever (já praticado).
 
 ### 5.4 Notificador
-Comunica pendências dos reprovados. **Guardrail:** **sandbox** — só o Ronan por enquanto; **sem**
+Comunica pendências dos reprovados. **Guardrail:** **sandbox** — só o usuário por enquanto; **sem**
 pingar Alexandre/Yuri sem ok explícito.
 - **Canais possíveis:** Teams · e-mail · comentário no card · Notion. **Atenção:** o token do Jira
   hoje é **read-only** (`read:jira-work`) → comentar no card exigiria ampliar escopo.
@@ -133,7 +133,7 @@ pingar Alexandre/Yuri sem ok explícito.
 
 ```mermaid
 sequenceDiagram
-    actor R as Ronan (aprova)
+    actor R as Usuario (aprova)
     participant O as Orquestrador
     participant J as Atlassian MCP (read-only)
     participant V as Validador
@@ -160,11 +160,11 @@ sequenceDiagram
         M-->>O: release atualizada
     end
     alt existem reprovados
-        O->>T: notificar pendencias (so Ronan)
+        O->>T: notificar pendencias (so usuario)
         T-->>O: registro das notificacoes
     end
     O->>R: resumo consolidado (execucao)
-    Note over R,N: Passo 1 do Sync roda no executar de board unico; master/triggers sob OK do Ronan
+    Note over R,N: Passo 1 do Sync roda no executar de board unico; master/triggers sob OK do usuario
 ```
 
 ### 6.1 Optimus Prime (orquestrador) — modos, gates e o Sync
@@ -179,9 +179,9 @@ skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
   `repos.yaml` → `make dry-run`); ao terminar (dry-run limpo) emite a **mensagem única `Confira`** e
   **para**. **Única pausa antes disso** é card genuinamente ambíguo. **O `make run` do Passo 1** (abre os
   PRs pré-prod), merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do
-  Ronan** (com gate de segurança por ação). No alvo `todos os boards`, a varredura **termina no Notion**.
+  usuário** (com gate de segurança por ação). No alvo `todos os boards`, a varredura **termina no Notion**.
   **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) — **incidente não é hotfix por padrão**;
-  hotfix só quando o Ronan avisar.
+  hotfix só quando o usuário avisar.
 
 **Alvo (independente do modo):** **`<board>`** (um board, padrão) ou **`todos os boards`** — varre os
 três **em sequência, por prioridade (incidentes 1º)**, **isolados** (cada board → sua própria página no
@@ -224,7 +224,7 @@ Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar tod
 
 **Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
 a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Todo `make run`
-(Passo 1 e Passo 2) e as triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do Ronan
+(Passo 1 e Passo 2) e as triggers (Passo 3):** se limpo → **mostra e espera comando explícito** do usuário
 antes do real. O `make dry-run` e a edição do `repos.yaml` são autônomos.
 
 **Governança do `repos.yaml` (guiada pela documentação):** lê o **doc da versão no Notion** e
@@ -233,15 +233,15 @@ repositórios de "Repositórios para Deploy"; mantenha `triggers:` comentados; *
 comenta de volta** (não entra no `make run`). **NUNCA reescreva/reformate/reordene/gere o arquivo nem
 altere `defaults`/`cloud_build`/valores; NUNCA adicione/remova linhas ou anotações.** Só alterne o `#`.
 **Passa pelo gate `tools/optimus_yaml_gate.py`** (exit 1 → restaura backup e para). **Repo faltando →
-para e reporta** (Ronan adiciona).
+para e reporta** (usuário adiciona).
 
 **Fluxo de promoção de branches (nunca direto pra master; `make run` sempre com `target` explícito):**
 - **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): edita o YAML e roda
-  `make dry-run` (autônomo); **o `make run` (abre os PRs) é sob OK explícito do Ronan**, depois da
-  mensagem `Confira`. Merge é do Ronan.
-- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override do Ronan**;
+  `make dry-run` (autônomo); **o `make run` (abre os PRs) é sob OK explícito do usuário**, depois da
+  mensagem `Confira`. Merge é do usuário.
+- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override do usuário**;
   por padrão o Optimus Prime edita o YAML + `make dry-run`, e roda o `make run` de master só sob override.
-- **Passo 3** — `make run-triggers` (ambientes dos clientes; **não recebe `PR_TITLE`**): **100% do Ronan**,
+- **Passo 3** — `make run-triggers` (ambientes dos clientes; **não recebe `PR_TITLE`**): **100% do usuário**,
   após OK do QA (aprovação do build no GCP é dele).
 - Troca de `source`/`target` por passo é via **edição do YAML** (comentar/descomentar). Branches:
   `prerelease` → `teste_regressivo` → `master` (confirmar grafia exata antes do run real).
@@ -252,13 +252,13 @@ do Passo 1 limpo), o Optimus emite **exatamente uma** mensagem de fechamento, co
 `Optimus Prime retornando com o resultado = Confira`, seguida (na mesma mensagem) dos artefatos para
 conferência (URL do Notion, repos ativados no YAML, resultado do `dry-run`). Execução **silenciosa** pelo
 caminho (sem "posso avançar?"); só card ambíguo e erros interrompem. **O `make run` do Passo 1** (abre os
-PRs pré-prod) só roda **depois**, sob OK explícito do Ronan. No alvo `todos os boards`, a mensagem sai
-**por board** (fim no Notion). `verificar` **não** emite essa linha. O Ronan confia na conferência do
+PRs pré-prod) só roda **depois**, sob OK explícito do usuário. No alvo `todos os boards`, a mensagem sai
+**por board** (fim no Notion). `verificar` **não** emite essa linha. O usuário confia na conferência do
 Optimus e **confere depois**.
 
-**Diretrizes inquebráveis:** **merge é só do Ronan** (manter `auto_merge=false`); **master (Passo 2),
-deploy real (`make run-triggers`) e aprovação de build no GCP = do Ronan**; **hotfix** o Ronan conduz.
-Erros viram **`erros/AAAA-MM-DD-*.md`** (base de refino, corrigido só com OK do Ronan).
+**Diretrizes inquebráveis:** **merge é só do usuário** (manter `auto_merge=false`); **master (Passo 2),
+deploy real (`make run-triggers`) e aprovação de build no GCP = do usuário**; **hotfix** o usuário conduz.
+Erros viram **`erros/AAAA-MM-DD-*.md`** (base de refino, corrigido só com OK do usuário).
 
 ## 7. Modelo de card normalizado
 
@@ -372,7 +372,7 @@ branches segue o mesmo padrão em `tools/promotion.json` (GATE-PROMO).
 - **Segurança (privilégio mínimo):** Jira leitura (`read:jira-work`); Notion só a base de Release Notes; notificação com permissão restrita; repositório leitura.
 - **Regra do projeto:** no `executar` de board único, a esteira é **autônoma até o `make dry-run` do Sync
   Passo 1** (inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run`), terminando na
-  mensagem `Confira`. OK **explícito do Ronan** fica reservado ao **`make run` (Passo 1 e Passo 2)**,
+  mensagem `Confira`. OK **explícito do usuário** fica reservado ao **`make run` (Passo 1 e Passo 2)**,
   **Merge**, **Triggers (Passo 3)** e **card genuinamente ambíguo** — o resto roda sem aprovação humana.
 - **Desempenho & custo:** **coleta enxuta** (só os campos necessários, sem `description` em lote — puxar
   sob demanda); no Notion, localizar via `query_data_sources` (SQL) e **verificar uma vez ao final**;

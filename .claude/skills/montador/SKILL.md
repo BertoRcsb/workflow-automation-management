@@ -30,7 +30,7 @@ A página segue **exatamente** o template versionado em **`templates/release-not
 colunas da tabela, blocos, checkboxes e participantes), sem improviso. Leia o template ANTES de montar.
 A célula de PR vem pronta de `gates.json.rows[].pull_requests` — nunca reinterpretar o card.
 Ação de Infra / Merge ficam `—` até apurar (**nunca inventar**). Mudar o molde = editar o template
-(com OK do Ronan).
+(com OK do usuário).
 
 ## Gates (asserções duras — param e documentam, nunca "passam" dado errado)
 
@@ -68,7 +68,7 @@ Isto impede a colisão/reubo de página que aconteceu na 1.117.0.
 ## Guardrails
 - **Não inventar** Infra / Merge / repositório — deixar em branco.
 - **Fidelidade ao card:** a doc reflete **exatamente** os links reais dos cards — **todas** as PRs e
-  **todos** os repositórios (deduplicados), nunca só o primeiro. O Ronan **confia** nessa conferência.
+  **todos** os repositórios (deduplicados), nunca só o primeiro. O usuário **confia** nessa conferência.
 - **Verificação enxuta:** reler a página com `notion-fetch` **uma vez, ao final** (não a cada
   linha/card) e aplicar GATE-MOLDE + GATE-LINKS. Menos ida-e-volta = mais rápido.
 

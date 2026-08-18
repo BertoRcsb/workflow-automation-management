@@ -1,7 +1,7 @@
 # Template canônico da página de versão no Notion (Release e Hotfix)
 
 > **Fonte única do molde** (GATE-MOLDE do montador). O re-fetch final compara a página criada contra
-> ESTA estrutura, campo a campo. Mudar o molde = editar este arquivo (com OK do Ronan), nunca improvisar
+> ESTA estrutura, campo a campo. Mudar o molde = editar este arquivo (com OK do usuário), nunca improvisar
 > na montagem. Exemplo canônico que originou o template: página 1.114.0 (Release) / 1.111.1 (Hotfix).
 
 ## Metadados

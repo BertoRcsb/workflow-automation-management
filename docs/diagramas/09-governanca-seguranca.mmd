@@ -1,7 +1,14 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart TD
-    Ac["Ação real (Sync em diante)"] --> Dry["make dry-run"]
-    Dry --> Parse{"exit code + saída (chave=valor)"}
-    Parse -->|"erro · 1"| Err["Documenta em erros/AAAA-MM-DD-*.md<br>e PARA"]
-    Parse -->|"limpo · 0"| Wait["Mostra e espera OK explícito do Ronan"]
-    Wait --> Real["Executa o real (make run)"]
-    Real --> Guard["Merge · master · run-triggers = só o Ronan<br>auto_merge=false · nunca inventar dado"]
+    Ac["Ação real (Sync em diante)"]:::llm --> DRV[["driver tools/optimus_sync.py<br>backup → GATE-YAML → GATE-PROMO → GATE-TRIGGERS"]]:::det
+    DRV -->|"gate falhou"| Err["restaura backup · documenta em<br>erros/AAAA-MM-DD-*.md · PARA"]:::alerta
+    DRV -->|"gates ok"| Dry[["make dry-run"]]:::det
+    Dry -->|"erro · exit 1"| Err
+    Dry -->|"limpo · exit 0"| Wait(["mostra e espera OK explícito do usuário"]):::humano
+    Wait --> Real[["executa o real (make run)"]]:::det
+    Real --> Guard(["merge · master · run-triggers = só o usuário<br>auto_merge=false · nunca inventar dado"]):::humano
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A

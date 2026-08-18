@@ -10,19 +10,19 @@
 > **Primeira vez / configurar (clonou agora?):** [`docs/SETUP.md`](docs/SETUP.md)
 
 Governança de deploy assistida por automação: **Jira → Notion → Sync/Deploy (GCP)**, com o
-orquestrador **"Optimus Prime"** conduzindo a esteira e o Ronan aprovando cada passo crítico.
+orquestrador **"Optimus Prime"** conduzindo a esteira e o usuário aprovando cada passo crítico.
 
-> **Automação assiste, gestão controla.** Nada mergeia nem sobe pra prod sem o Ronan.
+> **Automação assiste, gestão controla.** Nada mergeia nem sobe pra prod sem o usuário.
 
 ## Como usar (quick start)
 ```
 /optimus-prime verificar     # dry/seguro: coleta, valida, simula Notion e Sync — NÃO toca em nada
-/optimus-prime executar      # board único: autônomo até o dry-run do Sync Passo 1 → mensagem "Confira"; make run sob OK do Ronan
+/optimus-prime executar      # board único: autônomo até o dry-run do Sync Passo 1 → mensagem "Confira"; make run sob OK do usuário
 ```
 
 ## Fluxo (quem faz o quê)
 ```
-Ronan → /optimus-prime → Optimus Prime (orquestrador)
+Usuário → /optimus-prime → Optimus Prime (orquestrador)
           ├→ Coletor      (subagente) — Jira → contrato via tools/optimus_extract.py
           ├→ Validador    (subagente) — regra v2 + D1/D2 via tools/optimus_gates.py
           ├→ Montador     (subagente) — página no Notion no molde templates/release-notion.md

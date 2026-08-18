@@ -1,8 +1,14 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart TD
-    C["Card coletado"] --> Q1{"Tem PR + repositório?"}
-    Q1 -->|Sim| A["Aprovado — mudança de código"]
-    Q1 -->|Não| Q2{"Ação de dados = Sim?<br>PR/repo vazio ou 'N/A' / 'Apenas PROC'"}
-    Q2 -->|Não| Rp["Reprovado — sem PR, sem repo, sem ação de dados"]
-    Q2 -->|Sim| Q3{"Heurística só-banco:<br>assignee de banco OU descrição<br>cita proc / carga / query?"}
-    Q3 -->|Sim| A2["Aprovado — só banco/proc"]
-    Q3 -->|"Não / ambíguo"| P["Pausa — pergunta ao Ronan"]
+    C["Card coletado"]:::io --> Q1{"Tem PR + repositório?"}:::det
+    Q1 -->|Sim| A["Aprovado — mudança de código"]:::det
+    Q1 -->|Não| Q2{"Ação de dados = Sim?<br>PR/repo vazio ou 'N/A' / 'Apenas PROC'"}:::det
+    Q2 -->|Não| Rp["Reprovado — sem PR,<br>sem repo, sem ação de dados"]:::alerta
+    Q2 -->|Sim| Q3{"Heurística só-banco:<br>assignee de banco OU descrição<br>cita proc / carga / query?"}:::det
+    Q3 -->|Sim| A2["Aprovado — só banco/proc"]:::det
+    Q3 -->|"Não / ambíguo"| P(["Pausa — pergunta ao usuário"]):::humano
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A

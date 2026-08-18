@@ -1,5 +1,5 @@
 ---
-description: Optimus Prime — orquestra a esteira (coletor→validador→montador→Sync). No executar (board único) roda autônoma até o make dry-run do Sync Passo 1 e emite a mensagem "Confira"; make run/merge/master/triggers = OK do Ronan. Modos: verificar | executar. Alvo: <board> | todos os boards.
+description: Optimus Prime — orquestra a esteira (coletor→validador→montador→Sync). No executar (board único) roda autônoma até o make dry-run do Sync Passo 1 e emite a mensagem "Confira"; make run/merge/master/triggers = OK do usuário. Modos: verificar | executar. Alvo: <board> | todos os boards.
 argument-hint: iniciar | verificar | executar [todos os boards | <board>] [--card PB-XXXX] [--versao 1.111.2]
 allowed-tools: Agent, Bash, Read, Edit, mcp__notion__notion-fetch, mcp__notion__notion-query-data-sources
 ---

@@ -137,7 +137,7 @@ Pilares que atravessam todas as fases:
 ## 7. Escopo desta etapa e forma de trabalho
 
 - **Foco imediato:** Fase 1 — o gate no Jira (incluindo criar o campo "Ação de infra").
-- **Modelo de trabalho:** o planejamento define os passos; **a execução é feita pelo Ronan**,
+- **Modelo de trabalho:** o planejamento define os passos; **a execução é feita pelo usuário**,
   passo a passo. A automação assiste; a gestão (pessoas + processo) permanece no controle —
   daí o nome *Workflow with Automation Assisted by Management*.
 

@@ -29,7 +29,7 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
 - Impor **segurança por ação** e **aprovação humana** nos passos que mudam algo.
 - **Consolidar** o resultado (resumo §9) e **documentar erros** para refino.
 - **Não** faz o trabalho dos outros papéis (sempre delega às skills). **Não** mergeia
-  nem faz deploy real (é do Ronan).
+  nem faz deploy real (é do usuário).
 
 ## Modos (verificar / executar)
 - **`verificar`** — **apresenta ANTES o que vai fazer** (todos os passos + os comandos que rodaria),
@@ -41,7 +41,7 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
   pedir aprovação** → `notificador` (sandbox) → **Sync** (edita o `repos.yaml` e roda `make dry-run`).
   Ao terminar (dry-run limpo), emite a **mensagem única `Confira`** e **para**. **A única pausa antes
   disso é card genuinamente ambíguo** (ver passo 3). **O `make run` do Passo 1** (abre os PRs pré-prod),
-  merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do Ronan**.
+  merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do usuário**.
 - **`todos os boards`** — alvo (parâmetro, separado do modo): varre os três **isolados**, incidentes
   1º, **terminando no Notion** (Sync fica fora do loop). Sem alvo, **pergunta** qual board.
   Detalhe (ordem, split Features×Refatoração, board sem mapeamento): **`REFERENCE.md` §1**.
@@ -52,15 +52,15 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
 > No alvo **`todos os boards`**, os passos **1–5 e 7 rodam por board** (incidentes 1º), **isolados**;
 > o passo **6 (Sync)** fica **fora do loop** (por-board e explícito, depois). A versão-alvo é
 > **automática por board** como **`Release` sequencial** (`X.(Y+1).0`); **incidente NÃO é hotfix por
-> padrão** (release comum) — hotfix só quando o Ronan avisar.
+> padrão** (release comum) — hotfix só quando o usuário avisar.
 
 1. **Versão-alvo (automática, determinística):** consulta **TODAS** as páginas da base
    (`notion-query-data-sources`), salva o resultado em `execucoes/<data>-versoes-dump.json` e roda
    `python3 tools/optimus_next_version.py execucoes/<data>-versoes-dump.json`. **O LLM não calcula a
    versão de cabeça** — usa a `proxima=` da saída como `Release` por board (incidentes 1º). O script
    enforça **GATE-VER-1** (maior número semântico, nunca data de criação) e **GATE-VER-2** (anti-colisão;
-   exit 1 → PARA e reporta "numeração dessincronizada; OK do Ronan para decidir"). **Incidente NÃO é
-   hotfix por padrão**; **hotfix só quando o Ronan avisar**.
+   exit 1 → PARA e reporta "numeração dessincronizada; OK do usuário para decidir"). **Incidente NÃO é
+   hotfix por padrão**; **hotfix só quando o usuário avisar**.
 2. **Coletor** → cards do Jira normalizados (§7). **Fluxo obrigatório:** fetch cada card com
    `responseContentFormat: "adf"` → salva em `execucoes/<data>-<board>-raw.json` → roda
    `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json > execucoes/<data>-<board>-contrato.json`.
@@ -68,14 +68,14 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
    · **gate:** erro de leitura ou script → documenta e **para**.
 3. **Validador** → roda `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json] > gates.json`.
    Consome `gates.json` (aprovados_finais, exclusões, errors). **Segue sozinho nos casos claros.**
-   · **gate/pausa SÓ em card genuinamente ambíguo:** pergunta ao Ronan — **nunca inventa**.
+   · **gate/pausa SÓ em card genuinamente ambíguo:** pergunta ao usuário — **nunca inventa**.
    **Se `errors` != [] (GATE-CROSSCHECK) → documenta em `erros/` e para.**
 4. **Montador** → usa `gates.json.rows` para montar a tabela; **cria/atualiza a página no Notion no molde
    sem pedir OK** e **re-verifica via re-fetch**. · **gates:** (1) conjunto de cards = aprovados
    (GATE-CONJUNTO); (2) colunas/blocos = últimas versões (GATE-MOLDE); (3) célula = contrato (GATE-LINKS,
    `"• APENAS PROC"` só quando `deploy_fields.apenas_proc == true`); (4) usar `notion-update-page` se
    página existe (GATE-IDEMPOT). Qualquer falha → documenta e **para**.
-5. **Notificador (sandbox)** → gera mensagens de pendência/deploy p/ dev/PO/QA; **mostra só pro Ronan**
+5. **Notificador (sandbox)** → gera mensagens de pendência/deploy p/ dev/PO/QA; **mostra só pro usuário**
    (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela doc do Notion**.
    Fluxo obrigatório em **DOIS comandos** via o driver `tools/optimus_sync.py` (que encadeia GATE-YAML →
@@ -84,18 +84,18 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
    2. Edite o YAML: **descomente apenas as linhas `name`+`repository`** dos repos de "Repositórios para
       Deploy"; recomente os que não são do release; `triggers:` **comentados** (são do Passo 3). **Só
       alterne o `#`** (+ o escalar `defaults.source`/`targets` ao trocar de passo). Repo ausente no
-      catálogo → **para e reporta** (o Ronan adiciona); nunca crie a linha.
+      catálogo → **para e reporta** (o usuário adiciona); nunca crie a linha.
    3. `python3 tools/optimus_sync.py dry-run --step <passo1|passo2|pos-deploy> --pr-title "<título>"`.
-      **Exit 0 → mensagem `Confira` e espera o Ronan; exit 1 → o driver já restaurou/documentou — PARE.**
+      **Exit 0 → mensagem `Confira` e espera o usuário; exit 1 → o driver já restaurou/documentou — PARE.**
    - **Editar o YAML + `dry-run` = autônomo.** **`run`/`run-triggers` (mesmo driver) = OK explícito do
-     Ronan.** Passo 1 `prerelease→teste_regressivo`; Passo 2 `→master` (só Ronan); Passo 3
-     `run-triggers` (só Ronan; aprovação do build no GCP é dele). Pós-deploy:
+     usuário.** Passo 1 `prerelease→teste_regressivo`; Passo 2 `→master` (só usuário); Passo 3
+     `run-triggers` (só usuário; aprovação do build no GCP é dele). Pós-deploy:
      `master→develop/stage/prerelease` (`--pr-title "Sync Master"`). Sintaxe completa: **`REFERENCE.md` §2**.
    - **PROIBIDO chamar `make` direto no sync ou rodar os gates soltos nesta etapa** — sempre pelo driver
      (é ele que garante ordem, restauração e documentação).
 7. **Fechamento** → persiste `execucoes/<data>-<board>-{raw,contrato,gates}.json` como passo contratado
    (rastreabilidade); salva o resumo consolidado (§9) em `execucoes/` (auditoria em disco) e emite ao
-   Ronan **uma única mensagem de fechamento** (ver abaixo).
+   usuário **uma única mensagem de fechamento** (ver abaixo).
 
 ## Mensagem única de retorno (contrato de confiança)
 No `executar`, ao concluir **todo o escopo autônomo** (cards conferidos → Notion montado e conferido com
@@ -119,7 +119,7 @@ exige julgamento fino**: validar **card ambíguo**.
 - **Haiku (padrão):** `coletor`, `montador`, e o validador nos **casos claros** (cada skill declara
   "Modelo sugerido: barato").
 - **Escala só na ambiguidade:** card ambíguo (heurística só-banco não fecha, ou repo≠PR) → o Optimus
-  **pausa e pede o veredito ao Ronan**, que decide ali (ou sobe pra modelo mais forte se quiser).
+  **pausa e pede o veredito ao usuário**, que decide ali (ou sobe pra modelo mais forte se quiser).
 - **Regra de ouro:** **desempenho atual vem primeiro.** Economizar modelo/token **nunca** pode quebrar
   ou degradar a esteira; **na dúvida, mantém como está**.
 
@@ -139,25 +139,25 @@ exige julgamento fino**: validar **card ambíguo**.
   master) e **GATE-TRIGGERS** (triggers comentados fora do Passo 3; presentes e sem órfão no Passo 3);
   qualquer exit 1 → ele restaura o backup (quando aplicável), documenta em `erros/` e o Optimus **PARA**.
   Ao trocar de passo, ajuste **ambos** `source` **e** `targets` no YAML antes do `dry-run`.
-- **MERGE é só do Ronan** — Optimus Prime **nunca** mergeia (garantia: `auto_merge=false`).
-- **Master/prod = governança do Ronan.** **Sempre pergunte/confirme antes** de ir pra master
+- **MERGE é só do usuário** — Optimus Prime **nunca** mergeia (garantia: `auto_merge=false`).
+- **Master/prod = governança do usuário.** **Sempre pergunte/confirme antes** de ir pra master
   (Passo 2) e antes de disparar triggers (Passo 3). Pode **disparar** triggers sob comando explícito,
-  mas a **aprovação do build no GCP é do Ronan** (após OK do QA).
+  mas a **aprovação do build no GCP é do usuário** (após OK do QA).
 - **Autonomia até o `make dry-run` do Sync Passo 1** (board único): no `executar`, os passos rodam **sem
   aprovação humana** — inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run` do
   Passo 1 — e terminam na mensagem `Confira`. **O `make run` do Passo 1 (abre os PRs) é sob OK explícito
-  do Ronan.** **Única pausa antes disso:** card genuinamente ambíguo (passo 3). No alvo `todos os boards`,
+  do usuário.** **Única pausa antes disso:** card genuinamente ambíguo (passo 3). No alvo `todos os boards`,
   ainda **termina no Notion**.
 - **Segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run** (parseia saída
   + exit code); erro → documenta e **para**. **Todo `make run` (Passo 1 e Passo 2) e triggers (Passo 3):**
-  limpo → mostra e espera **comando explícito** do Ronan antes do real. O `make dry-run` e a edição do
+  limpo → mostra e espera **comando explícito** do usuário antes do real. O `make dry-run` e a edição do
   `repos.yaml` são autônomos.
-- **Todo erro documentado**; refino de skill/comando **só com aprovação do Ronan** (sem correção
+- **Todo erro documentado**; refino de skill/comando **só com aprovação do usuário** (sem correção
   silenciosa). Ver [[regra-nao-executar-sozinho]].
 - **Não inventar dado ausente** (§11); privilégio mínimo (Jira leitura; Notion só a base).
-- **Hotfix** → identificar e **devolver ao Ronan** para ele conduzir.
+- **Hotfix** → identificar e **devolver ao usuário** para ele conduzir.
 - **Um board por vez** — coletar de UM board (incidentes/features/refatoração) por execução;
-  **nunca misturar** numa release. Misturar só com **OK explícito do Ronan**.
+  **nunca misturar** numa release. Misturar só com **OK explícito do usuário**.
 - **`verificar` nunca executa** — só apresenta o plano; execução real só em `executar`/`iniciar`.
 - **Execução silenciosa + mensagem única:** no `executar`, nada de relatórios verbosos ou "posso
   avançar?" pelo caminho; ao fim do escopo autônomo, **uma só** mensagem — `Optimus Prime retornando com

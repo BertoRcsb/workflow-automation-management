@@ -1,7 +1,13 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart TD
-    D["Dev conclui a tarefa"] --> M["Move o card no Jira"]
-    M --> St["Status: Teste regressivo / Pronto para deploy"]
-    St --> V{"Campos de deploy<br>preenchidos?"}
-    V -->|"Não — campos opcionais"| X["Time no escuro:<br>qual repo? qual PR?<br>ação de dados? infra? flags?"]
-    X --> R["Retrabalho · risco de deploy incompleto<br>· impossível automatizar o próximo passo"]
-    V -->|Sim| OK["Deploy confiável"]
+    D(["Dev conclui a tarefa"]):::humano --> M["Move o card no Jira"]:::io
+    M --> St["Status: Teste regressivo /<br>Pronto para deploy"]:::io
+    St --> V{"Campos de deploy<br>preenchidos?"}:::io
+    V -->|"Não — campos opcionais"| X["Time no escuro:<br>qual repo? qual PR?<br>ação de dados? infra? flags?"]:::alerta
+    X --> R["Retrabalho · risco de deploy incompleto<br>· impossível automatizar o próximo passo"]:::alerta
+    V -->|Sim| OK["Deploy confiável"]:::det
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A

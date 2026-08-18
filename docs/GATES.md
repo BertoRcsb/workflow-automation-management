@@ -11,7 +11,7 @@
 | **GATE-ADF / falso-vazio** | `optimus_extract.py` | Extração de PR/repo do ADF; `parse_failed=true` quando o campo tem conteúdo e 0 URLs (nunca `[]` silencioso) | contrato marca o card; validador não aprova nem reprova |
 | **Regra v2 + D1 + D2** | `optimus_gates.py` | Elegibilidade por conteúdo; exclusão por épico incompleto (D1) e PR compartilhada parcial (D2, fixpoint) | card excluído/ambíguo registrado em `gates.json` |
 | **GATE-CROSSCHECK** | `optimus_gates.py` | Nunca "APENAS PROC" onde há PR; nunca aprovar `parse_failed` | exit 1 → documenta e para |
-| **GATE-VER-1/VER-2** | `optimus_next_version.py` | Versão-alvo pelo maior semver numérico (nunca data); anti-colisão | exit 1 → decisão do Ronan |
+| **GATE-VER-1/VER-2** | `optimus_next_version.py` | Versão-alvo pelo maior semver numérico (nunca data); anti-colisão | exit 1 → decisão do usuário |
 | **GATE-YAML** | `optimus_yaml_gate.py` (via driver) | Edição do `repos.yaml` = só toggle de `#` (+ escalar `defaults.source` por passo) | driver restaura backup, documenta, para |
 | **GATE-PROMO** | `optimus_promotion_gate.py` (via driver) | Par `source→targets` na whitelist (`promotion.json`); nunca direto pra master; sem self-sync; passo esperado = detectado | driver restaura backup, documenta, para |
 | **GATE-TRIGGERS** | `optimus_triggers_gate.py` (via driver) | Triggers comentados fora do Passo 3 (`--expect none`); presentes e sem órfão no Passo 3 (`--expect present`) | driver documenta, para |
@@ -30,7 +30,7 @@
 
 | Gate | Regra |
 |---|---|
-| **Gate por ação** | Todo `make run`/`run-triggers` (Passo 1, 2, 3 e pós-deploy) = **comando explícito do Ronan**; dry-run limpo → mensagem `Confira` e espera. Merge e aprovação de build no GCP = Ronan. |
+| **Gate por ação** | Todo `make run`/`run-triggers` (Passo 1, 2, 3 e pós-deploy) = **comando explícito do usuário**; dry-run limpo → mensagem `Confira` e espera. Merge e aprovação de build no GCP = usuário. |
 
 Candidatos a virar código: GATE-CONJUNTO e GATE-LINKS (comparação mecânica de conjuntos/strings a
 partir do `gates.json` + dump do re-fetch). GATE-MOLDE exige entender a estrutura da página — fica no LLM.

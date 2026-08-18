@@ -1,8 +1,14 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart TD
-    S["Optimus Prime iniciar todos os boards"] --> B1["1º · Linha de frente / incidentes<br>issuetype = Incidente"]
-    B1 --> R1["Release + Notion próprios"]
-    R1 --> B2["2º · Features<br>Story sem 'Refatoração' no título"]
-    B2 --> R2["Release + Notion próprios"]
-    R2 --> B3["3º · Refatoração<br>Story com 'Refatoração' no título"]
-    B3 --> R3["Release + Notion próprios"]
-    R3 --> F["3 releases isoladas · Sync depois, por board (dias diferentes)"]
+    S(["Optimus Prime iniciar todos os boards"]):::humano --> B1["1º · Linha de frente / incidentes<br>issuetype = Incidente"]:::llm
+    B1 --> R1["Release + Notion próprios"]:::io
+    R1 --> B2["2º · Features<br>Story sem 'Refatoração' no título"]:::llm
+    B2 --> R2["Release + Notion próprios"]:::io
+    R2 --> B3["3º · Refatoração<br>Story com 'Refatoração' no título"]:::llm
+    B3 --> R3["Release + Notion próprios"]:::io
+    R3 --> F["3 releases isoladas · Sync depois,<br>por board (dias diferentes)"]:::det
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A

@@ -1,19 +1,20 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","actorBkg":"#E8ECFB","actorBorder":"#4C5FD5","actorTextColor":"#2A3577","signalColor":"#5A6B7B","signalTextColor":"#2D3B48","noteBkgColor":"#FFF3D6","noteBorderColor":"#B7791F","noteTextColor":"#7B4B12","labelBoxBkgColor":"#EDF1F5","labelBoxBorderColor":"#5A6B7B"}}}%%
 sequenceDiagram
-    actor R as Ronan
+    actor U as Usuário
     participant O as Optimus Prime
-    participant J as Jira MCP
-    participant N as Notion MCP
-    R->>O: Optimus Prime iniciar (board)
-    Note over O: Versão-alvo automática — Release X.(Y+1).0
-    O->>J: coletar cards (JQL do board)
+    participant J as Jira (MCP)
+    participant N as Notion (MCP)
+    participant S as Sync (driver + make)
+    U->>O: /optimus-prime executar (board)
+    Note over O: versão-alvo determinística — X.(Y+1).0
+    O->>J: coleta (JQL do board) + extração de PR/repo (código)
     J-->>O: cards normalizados
-    O->>O: validar por conteúdo (regra v2)
+    O->>O: valida por conteúdo (regra v2 + D1/D2)
     alt card genuinamente ambíguo
-        O->>R: pergunta (ÚNICA pausa antes do Notion)
-        R-->>O: decisão
+        O->>U: pergunta (única pausa do escopo autônomo)
+        U-->>O: decisão
     end
-    O->>N: criar/atualizar a release (sem pedir OK)
-    N-->>O: page_id + url
-    O->>N: re-fetch (verificação do molde)
-    O->>R: resumo consolidado (salvo em execucoes/)
-    Note over R,N: PARA aqui — Sync/deploy é sob OK explícito do Ronan
+    O->>N: documenta a release (molde canônico, sem pedir OK)
+    O->>S: edita repos.yaml + make dry-run do Passo 1 (3 gates antes)
+    O->>U: "Confira" — URL do Notion · repos ativados · dry-run
+    Note over U,S: daqui em diante, gate por ação — make run, merge, master e triggers = OK do usuário

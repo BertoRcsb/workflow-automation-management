@@ -28,7 +28,7 @@ Um item **passa** se:
 **GATE-FALSO-VAZIO:** **nunca reprovar por "sem PR/repo" um card com `parse_failed: true`** (do
 `coletor` GATE-ADF) nem com ADF cru não-vazio. Se um card chegar com `parse_failed: true`:
 - Reconhecer que o link **existe mas a extração falhou** — não é ausência real.
-- **Devolver ao coletor** para re-extração / debug (ou escalar ao Ronan se persistir).
+- **Devolver ao coletor** para re-extração / debug (ou escalar ao usuário se persistir).
 - **Não** aplicar a regra v2 (não aprovar nem reprovar) até resolver.
 
 **Execução determinística:** a regra v2, D1, D2 e o GATE-CROSSCHECK rodam em
@@ -54,7 +54,7 @@ Nasceram do deploy truncado de **2026-07-22** (ver `erros/2026-07-22-deploy-trun
 São **duas informações diferentes** — um card pode cair numa, na outra, ou nas duas. Em ambas a ação é
 **exclusão automática**, **sem notificação**. **"Excluir" significa apenas: NÃO entrar na doc do Notion /
 no pacote de deploy** (deixar de fora) — **não** altera o card no Jira, **não** mexe em PR/branch, **não**
-apaga nada. Cards excluídos **só voltam com ordem explícita do Ronan, de um PO ou de um gestor**. Toda
+apaga nada. Cards excluídos **só voltam com ordem explícita do usuário, de um PO ou de um gestor**. Toda
 exclusão é **registrada** em `execucoes/` (card + qual regra). **Nunca incluir** irmão automaticamente —
 a automação só **deixa de fora** (direção segura).
 
@@ -79,7 +79,7 @@ a automação só **deixa de fora** (direção segura).
   ficasse de fora, todos saíam.
 
 > D1 é vínculo **estrutural** (épico); D2 é **mesmo código** (PR). Dados vêm do `coletor` (`epic` +
-> `pull_requests`). Definição de "épico completo" acima **confirmada pelo Ronan (2026-07-22)**: todos os filhos não-cancelados em status de deploy ou já deployados.
+> `pull_requests`). Definição de "épico completo" acima **confirmada pelo usuário (2026-07-22)**: todos os filhos não-cancelados em status de deploy ou já deployados.
 
 ## Saída
 - **Aprovados:** chave, título, responsável, resumo, categoria, evidências, `checked_at`.
@@ -87,7 +87,7 @@ a automação só **deixa de fora** (direção segura).
 
 ## Guardrails
 - O agente **não inventa** dado para preencher campo ausente.
-- Casos inconclusivos / contraditórios / exceções → **intervenção humana** (Ronan aprova).
+- Casos inconclusivos / contraditórios / exceções → **intervenção humana** (usuário aprova).
 - **Modelo sugerido:** decide no **barato** (a regra v2 é objetiva); **escala** para modelo forte **só em
   card ambíguo** (heurística só-banco não fecha, ou dado divergente tipo repo ≠ PR) — aí pausa e pergunta.
 

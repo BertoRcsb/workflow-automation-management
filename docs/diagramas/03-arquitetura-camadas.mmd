@@ -1,19 +1,31 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart TB
+    U(["Usuário<br>/optimus-prime verificar | executar"]):::humano
     subgraph Cerebro["Cérebro — Claude Code (obrigatório)"]
-        O["Orquestrador — Optimus Prime"]
+        O(["Orquestrador — Optimus Prime"]):::llm
     end
-    subgraph Skills["Skills por papel"]
-        C["coletor"]
-        Va["validador"]
-        Mo["montador"]
-        No["notificador · sandbox"]
+    subgraph Skills["Subagentes por papel (contexto isolado)"]
+        C["coletor"]:::llm
+        Va["validador"]:::llm
+        Mo["montador"]:::llm
+        No["notificador · sandbox"]:::llm
     end
-    subgraph Bracos["Braços — ferramentas"]
-        MCP1["MCP Atlassian<br>Jira · read-only"]
-        MCP2["MCP Notion"]
-        MK["make<br>sync-repos-from-master"]
+    subgraph Det["Camada determinística — tools/"]
+        T[["extração ADF · regra v2 + D1/D2<br>versão-alvo · driver do Sync (3 gates)"]]:::det
     end
+    subgraph Bracos["Braços — I/O"]
+        MCP1{{"MCP Atlassian<br>Jira · read-only"}}:::io
+        MCP2{{"MCP Notion"}}:::io
+        MK{{"make<br>sync-repos-from-master"}}:::io
+    end
+    U --> O
     O --> C & Va & Mo & No
+    C & Va --> T
     C --> MCP1
     Mo --> MCP2
-    O --> MK
+    O --> T --> MK
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A

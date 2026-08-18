@@ -18,7 +18,7 @@ Gerar **rascunhos de mensagem** para comunicar pendências dos reprovados e resu
 
 **Sandbox apenas**: você produz rascunho local. Nenhum envio automático até a skill de produção existir.
 
-Mostra resultado somente ao Ronan para revisão.
+Mostra resultado somente ao usuário para revisão.
 
 ## O que fazer
 

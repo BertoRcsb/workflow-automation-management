@@ -5,7 +5,7 @@ Este `repos.yaml` e o CATALOGO CANONICO e IMUTAVEL. Fonte da verdade para restau
 
 Regras:
 - Este arquivo NUNCA e editado pelo Optimus Prime.
-- So CRESCE: quando surgir um repo/trigger novo, o Ronan adiciona aqui (comentado).
+- So CRESCE: quando surgir um repo/trigger novo, o usuário adiciona aqui (comentado).
 - Todos os repos/triggers ficam COMENTADOS por padrao.
 - O Optimus so alterna o '#' no arquivo de TRABALHO (a copia no sync-repos-from-master),
   nunca aqui.
@@ -13,6 +13,6 @@ Regras:
 Restaurar o arquivo de trabalho a partir deste backup:
     cp reference/sync-repos-from-master/repos.yaml /home/ronan/sync-repos-from-master/repos.yaml
 
-Conteudo = o repos.yaml REAL do sync-repos-from-master, fornecido pelo Ronan (o mais proximo do
+Conteudo = o repos.yaml REAL do sync-repos-from-master, fornecido pelo usuário (o mais proximo do
 original). Substitui a reconstrucao anterior (que era inferida dos execucoes/*.json e tinha lacunas:
 faltavam bi-api e catraca; contractweb-api/analysis-api/relatorios/sla-api estavam sem triggers).

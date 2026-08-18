@@ -17,11 +17,11 @@ mínimas**. A esteira fecha essa lacuna — **lê os cards prontos, valida por c
 no Notion e prepara o deploy** — com **governança rastreável** e o **controle sempre com o time**
 (*"a automação assiste, a gestão controla"*).
 
-![Diagrama 1](diagramas/01-sumario-executivo.png)
+<img src="diagramas/01-sumario-executivo.png" alt="Diagrama 1" width="820">
 
 **Destaques**
 - **MCP-first, código mínimo** — orquestra ferramentas oficiais (Atlassian, Notion) e o `make` do deploy.
-- **Autônoma até o `make dry-run` do Sync Passo 1** (board único); todo `make run`, Merge, Master e Triggers **sempre sob aprovação do Ronan**.
+- **Autônoma até o `make dry-run` do Sync Passo 1** (board único); todo `make run`, Merge, Master e Triggers **sempre sob aprovação do usuário**.
 - **Rastreável e idempotente** — cada execução registrada; nada silencioso.
 
 ---
@@ -31,7 +31,7 @@ no Notion e prepara o deploy** — com **governança rastreável** e o **control
 Os 5 campos de deploy do card **não eram obrigatórios** — e um deles ("Ação de infra") nem existia. Sem
 dados estruturados, o time de deploy trabalhava no escuro e a automação do passo seguinte era inviável.
 
-![Diagrama 2](diagramas/02-problema.png)
+<img src="diagramas/02-problema.png" alt="Diagrama 2" width="540">
 
 **Os 5 campos que todo card precisa:** Ação de dados · Link do repositório · Link da PR · Ação de infra
 *(a criar)* · Flags.
@@ -41,12 +41,16 @@ dados estruturados, o time de deploy trabalhava no escuro e a automação do pas
 ## 3. Arquitetura em camadas
 
 A esteira **não é um script que roda sozinho**: ela é um conjunto de instruções que ganham vida quando o
-**Claude (o "cérebro")** está conectado e opera os **"braços"** (MCPs + `make`). Cada papel é uma *skill*.
+**Claude (o "cérebro")** está conectado e opera os **"braços"** (MCPs + `make`). Cada papel roda como
+**subagente isolado** (contexto novo, ferramentas mínimas), e todo cálculo crítico fica na **camada
+determinística `tools/`**.
 
-![Diagrama 3](diagramas/03-arquitetura-camadas.png)
+<img src="diagramas/03-arquitetura-camadas.png" alt="Diagrama 3" width="660">
 
 **Destaques**
 - **Sem clients Python bespoke** — a orquestração é a skill sobre os MCPs (evita overengineering).
+- **Cálculo crítico é código, não LLM** — extração de ADF, regra v2 + D1/D2, versão-alvo e os gates do
+  Sync vivem em `tools/`; o LLM chama o script e lê a saída, nunca decide de cabeça.
 - **Privilégio mínimo**: Jira só leitura; Notion só a base de releases.
 - Trocar de ferramenta **não muda o papel** — só a seção "Configuração atual" de cada skill.
 
@@ -54,7 +58,7 @@ A esteira **não é um script que roda sozinho**: ela é um conjunto de instruç
 
 ## 4. Papéis da esteira
 
-![Diagrama 4](diagramas/04-papeis.png)
+<img src="diagramas/04-papeis.png" alt="Diagrama 4" width="880">
 
 | Papel | Função | Estado |
 |---|---|---|
@@ -73,14 +77,14 @@ No `iniciar`/`executar` de **board único**, a esteira roda **autônoma até o `
 **card genuinamente ambíguo**. No alvo `todos os boards`, a varredura **termina no Notion** (Sync
 por-board, depois). Ao fim do escopo autônomo, o Optimus emite **uma única** mensagem:
 `Optimus Prime retornando com o resultado = Confira`. O **`make run` do Passo 1** (abre os PRs pré-prod)
-só roda **depois**, sob OK do Ronan.
+só roda **depois**, sob OK do usuário.
 
-![Diagrama 5](diagramas/05-fluxo-execucao.png)
+<img src="diagramas/05-fluxo-execucao.png" alt="Diagrama 5" width="800">
 
 **Destaques**
 - **Autonomia até o `make dry-run` do Sync Passo 1** (board único) = velocidade sem perder rastreabilidade.
-- **Incidente não é hotfix por padrão** — é Release comum; hotfix só quando o Ronan avisar.
-- Todo `make run` (Passo 1, Master, Triggers) e o Merge, **tudo é sob aprovação** do Ronan (ver §8 e §9).
+- **Incidente não é hotfix por padrão** — é Release comum; hotfix só quando o usuário avisar.
+- Todo `make run` (Passo 1, Master, Triggers) e o Merge, **tudo é sob aprovação** do usuário (ver §8 e §9).
 
 ---
 
@@ -90,7 +94,7 @@ Um comando varre os três boards **em sequência, por prioridade**, **totalmente
 gera **sua própria release e sua própria página no Notion**. **Nunca** se misturam cards de boards
 diferentes.
 
-![Diagrama 6](diagramas/06-varredura-boards.png)
+<img src="diagramas/06-varredura-boards.png" alt="Diagrama 6" width="520">
 
 **Mapeamento dos boards** (visões dentro do projeto Jira `PB`; status alvo: `Teste regressivo` / `Pronto para deploy`):
 
@@ -107,7 +111,7 @@ diferentes.
 O **status não garante prontidão** — a validação é **por conteúdo**. Um card passa se tem **PR +
 repositório** *ou* é **legitimamente só-banco**.
 
-![Diagrama 7](diagramas/07-regra-elegibilidade.png)
+<img src="diagramas/07-regra-elegibilidade.png" alt="Diagrama 7" width="580">
 
 > `"N/A"` **não** conta como link. A heurística "só-banco legítimo" foi validada em produção (caso PB-5778).
 
@@ -117,12 +121,12 @@ repositório** *ou* é **legitimamente só-banco**.
 
 `make run` **sempre com `target` explícito**, **nunca direto pra master**. Cada seta indica **quem faz**.
 
-![Diagrama 8](diagramas/08-promocao-branches.png)
+<img src="diagramas/08-promocao-branches.png" alt="Diagrama 8" width="880">
 
 **Destaques**
 - **Passo 1** o Optimus edita o YAML e roda o `make dry-run`; o **`make run` (abre os PRs) e o merge são
-  do Ronan** (`auto_merge=false`).
-- **Passo 2 (master)** e **Passo 3 (triggers)** = **comando explícito do Ronan**; ele aprova os builds no GCP.
+  do usuário** (`auto_merge=false`).
+- **Passo 2 (master)** e **Passo 3 (triggers)** = **comando explícito do usuário**; ele aprova os builds no GCP.
 - Após o deploy, a master é sincronizada de volta para as branches de trabalho.
 
 ---
@@ -130,12 +134,13 @@ repositório** *ou* é **legitimamente só-banco**.
 ## 9. Governança & segurança
 
 Da fase de Sync em diante, **toda ação que muda algo** passa por um **gate por ação**: simula primeiro,
-verifica, e só executa o real com **OK explícito**.
+verifica, e só executa o real com **OK explícito**. Nada toca o sync sem passar pelo **driver
+`tools/optimus_sync.py`** — backup do `repos.yaml` e 3 gates determinísticos antes de todo `make`.
 
-![Diagrama 9](diagramas/09-governanca-seguranca.png)
+<img src="diagramas/09-governanca-seguranca.png" alt="Diagrama 9" width="580">
 
 **Guardrails inquebráveis**
-- **Merge, master/prod e `run-triggers` = só o Ronan.**
+- **Merge, master/prod e `run-triggers` = só o usuário.**
 - **`verificar` nunca executa** — só relatório.
 - **Um board por release** — nunca misturar.
 - **Privilégio mínimo** · **sem segredos no repositório** · **não inventar dados ausentes**.
@@ -146,9 +151,9 @@ verifica, e só executa o real com **OK explícito**.
 
 ### 10.1 Ciclo E2E completo — Hotfix 1.111.2 (em produção)
 
-![Diagrama 10](diagramas/10-ciclo-e2e-hotfix.png)
+<img src="diagramas/10-ciclo-e2e-hotfix.png" alt="Diagrama 10" width="880">
 
-Ciclo fechado **sem erros**: coleta → validação → Notion → PR → deploy aprovado pelo Ronan. Registrado
+Ciclo fechado **sem erros**: coleta → validação → Notion → PR → deploy aprovado pelo usuário. Registrado
 em `execucoes/release-2026-07-16-001.json`.
 
 ### 10.2 Varredura "todos os boards" (dry-run — 2026-07-20)
@@ -168,7 +173,7 @@ O gate por conteúdo funcionou: muitos cards de refatoração ainda sem PR/repo 
 
 ## 11. Roadmap / evolução
 
-![Diagrama 11](diagramas/11-roadmap.png)
+<img src="diagramas/11-roadmap.png" alt="Diagrama 11" width="820">
 
 ---
 

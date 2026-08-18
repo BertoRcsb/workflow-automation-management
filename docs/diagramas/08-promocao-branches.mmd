@@ -1,5 +1,11 @@
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, Helvetica, Arial, sans-serif","fontSize":"13px","lineColor":"#8A94A6","primaryColor":"#EDF1F5","primaryBorderColor":"#5A6B7B","primaryTextColor":"#2D3B48","clusterBkg":"#FAFBFC","clusterBorder":"#D5DBE3","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":28,"rankSpacing":36,"padding":8}}}%%
 flowchart LR
-    PR["prerelease"] -->|"Passo 1 · make run<br>Optimus roda · merge = Ronan"| TR["teste_regressivo"]
-    TR -->|"Passo 2 · comando do Ronan"| MA["master"]
-    MA -->|"Passo 3 · make run-triggers<br>100% Ronan + aprova build no GCP"| CL["Ambientes dos clientes<br>Neoenergia · VLI · ..."]
-    MA -.->|"Pós-deploy · make run PR_TITLE=Sync Master"| DV["develop · stage · prerelease"]
+    PR["prerelease"]:::io -->|"Passo 1 · dry autônomo, run sob OK<br>merge = usuário"| TR["teste_regressivo"]:::io
+    TR -->|"Passo 2 · comando do usuário<br>PR_TITLE = Release X.Y.Z"| MA["master"]:::io
+    MA -->|"Passo 3 · run-triggers<br>usuário + aprova builds no GCP"| CL(["Ambientes dos clientes<br>Neoenergia · VLI · ..."]):::humano
+    MA -.->|"pós-deploy · mesmos repos<br>PR_TITLE = Sync Master"| DV["develop · stage · prerelease"]:::io
+    classDef humano fill:#FFF3D6,stroke:#B7791F,color:#7B4B12,stroke-width:1.5px
+    classDef llm fill:#E8ECFB,stroke:#4C5FD5,color:#2A3577
+    classDef det fill:#DDF3E7,stroke:#2F855A,color:#1C4532
+    classDef io fill:#EDF1F5,stroke:#5A6B7B,color:#2D3B48
+    classDef alerta fill:#FBE1E1,stroke:#C53030,color:#742A2A
