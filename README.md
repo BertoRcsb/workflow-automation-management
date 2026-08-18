@@ -15,25 +15,40 @@ orquestrador **"Optimus Prime"** conduzindo a esteira e o Ronan aprovando cada p
 > **Automação assiste, gestão controla.** Nada mergeia nem sobe pra prod sem o Ronan.
 
 ## Como usar (quick start)
-Invoque o orquestrador pelo comando:
 ```
 /optimus-prime verificar     # dry/seguro: coleta, valida, simula Notion e Sync — NÃO toca em nada
-/optimus-prime executar      # board único: autônomo até o make dry-run do Passo 1 (doc no Notion + edita YAML + dry-run); make run sob OK do Ronan
+/optimus-prime executar      # board único: autônomo até o dry-run do Sync Passo 1 → mensagem "Confira"; make run sob OK do Ronan
 ```
 
-## Papéis (skills em `.claude/skills/`)
-| Papel | Função |
-|-------|--------|
-| **coletor** | busca e normaliza cards no Jira (Atlassian MCP, read-only) |
-| **validador** | gate de elegibilidade por conteúdo (regra v2 + heurística) |
-| **montador** | escreve/atualiza a release/hotfix no Notion (molde) |
-| **notificador** | comunica pendências a dev/PO/QA (sandbox — a estruturar) |
-| **orquestrador** ("Optimus Prime") | governa tudo + o `sync-repos-from-master`, com segurança por ação |
+## Fluxo (quem faz o quê)
+```
+Ronan → /optimus-prime → Optimus Prime (orquestrador)
+          ├→ Coletor      (subagente) — Jira → contrato via tools/optimus_extract.py
+          ├→ Validador    (subagente) — regra v2 + D1/D2 via tools/optimus_gates.py
+          ├→ Montador     (subagente) — página no Notion no molde templates/release-notion.md
+          ├→ Notificador  (subagente) — rascunhos (sandbox)
+          └→ Sync (o próprio Optimus) — repos.yaml + make via driver tools/optimus_sync.py
+```
+Cada papel roda como **subagente isolado** (contexto novo, ferramentas mínimas — ver
+[`AGENTS.md`](AGENTS.md)). Todo cálculo crítico é **código determinístico em `tools/`** — o LLM chama
+o script e lê a saída, nunca decide de cabeça (versão-alvo, extração de ADF, elegibilidade, gates do
+Sync). Inventário completo: [`docs/GATES.md`](docs/GATES.md).
+
+## Camada determinística (`tools/`)
+| Script | Papel |
+|---|---|
+| `optimus_extract.py` | extrai PR/repo do ADF do Jira (contrato do coletor) |
+| `optimus_gates.py` | regra v2 + D1/D2 + GATE-CROSSCHECK (veredito do validador) |
+| `optimus_next_version.py` | versão-alvo pelo maior semver + anti-colisão |
+| `optimus_sync.py` | **driver único do Sync**: backup → GATE-YAML → GATE-PROMO → GATE-TRIGGERS → `make` |
+| `rules.json` · `promotion.json` | config das regras (fonte única — mudar regra = editar JSON) |
+
+Testes: `make test` (cria o venv e roda a suíte).
 
 ## Documentação
 - **Apresentação visual (diagramas Mermaid):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
 - **Receita de bolo (comandos):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
-- **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md)
+- **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md) · **Esteira (gates/guardrails):** [`.claude/skills/orquestrador/SKILL.md`](.claude/skills/orquestrador/SKILL.md)
 - **Roadmap:** [`docs/ROADMAP.md`](docs/ROADMAP.md) · **Gates:** [`docs/GATES.md`](docs/GATES.md) · **Histórico (plano/tarefas de julho):** [`docs/archive/`](docs/archive/)
-- **Guia técnico + comandos:** [`CLAUDE.md`](CLAUDE.md) · **Índice de docs:** [`docs/README.md`](docs/README.md)
-- **Diretrizes p/ agentes:** [`AGENTS.md`](AGENTS.md) · **Apresentação:** [`docs/PROPOSTA.md`](docs/PROPOSTA.md)
+- **Guia técnico (índice):** [`CLAUDE.md`](CLAUDE.md) · **Índice de docs:** [`docs/README.md`](docs/README.md)
+- **Subagentes:** [`AGENTS.md`](AGENTS.md) · **Apresentação:** [`docs/PROPOSTA.md`](docs/PROPOSTA.md)
