@@ -1,5 +1,5 @@
 {
   "valores_invalidos_como_vazio": ["N/A", "Apenas PROC"],
   "epicos_all_or_nothing": ["PB-5768"],
-  "db_owners": ["Alexandre Bolonhini", "Alexandre Rudoi"]
+  "db_owners": ["Alexandre Bolonhini", "Alexandre Rudoi", "Giovani Rocha Lima", "Anderson de Oliveira Santos"]
 }

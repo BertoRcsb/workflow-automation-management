@@ -96,6 +96,7 @@ Promoção de branches (**`make run` sempre com `target` explícito, nunca diret
    roda o `make run` de master **só sob seu override explícito**.
 3. **Passo 3** `make run-triggers` (ambientes dos clientes) — **100% seu**, e você **aprova os builds no GCP**.
 4. **Pós-deploy** `master → develop/stage/prerelease` — `make run PR_TITLE="Sync Master"`.
+   O pós-deploy **herda o mesmo conjunto de repos do ciclo anterior**; não reduz, não amplia e não troca a lista por interpretação local.
 
 ---
 
@@ -119,7 +120,7 @@ fica **fora do loop** (por-board e explícito, depois).
 | 6.1 | **Passo 1** `prerelease → teste_regressivo` | `make dry-run PR_TITLE="[…] X"` (autônomo → mensagem `Confira`) → `make run PR_TITLE="[…] X"` | dry-run autônomo; **`make run` sob OK do Ronan** → **Ronan mergeia** |
 | 6.2 | **Passo 2** `teste_regressivo → master` | edita YAML (source/target) → `make dry-run` → `make run` | **Ronan comanda** + OK → **Ronan mergeia** → **QA testa** |
 | 6.3 | **Passo 3** triggers (clientes) | descomenta `triggers:` → `make dry-run-triggers` → **`make run-triggers`** *(sem PR_TITLE)* | **Ronan comanda** (pós-QA) + **aprova os builds no GCP** |
-| 6.4 | **Pós-deploy — sync de volta** | edita YAML `source: master`, `targets: [develop, stage, prerelease]` → `make dry-run` → `make run` | **OK antes do `make run`** → **Ronan mergeia** |
+| 6.4 | **Pós-deploy — sync de volta** | edita YAML `source: master`, `targets: [develop, stage, prerelease]` → **mantém os mesmos repos do ciclo ativo** → `make dry-run` → `make run` | **OK antes do `make run`** → **Ronan mergeia** |
 | 7 | **Resumo** | grava `execucoes/release-AAAA-MM-DD-NNN.json` | autônomo |
 
 ---
@@ -154,6 +155,8 @@ make dry-run-triggers / make run-triggers
   limpo → mostra e **espera comando explícito** antes do real.
 - **`make run` (Passo 1 e Passo 2), merge, master/prod e `run-triggers` = só o Ronan**
   (`auto_merge=false`). O Optimus **sempre pergunta antes** de qualquer `make run`.
+- **Pós-deploy não reclassifica repos:** o sync `master → develop/stage/prerelease` reutiliza a seleção de repos já validada
+  nos passos anteriores; se a lista mudar, isso é erro de sequência, não comportamento normal.
 - **`verificar` nunca executa** — só relatório.
 - **Um board por release** — a varredura "todos os boards" é sequencial e isolada (nunca mistura).
 - **Não inventa dado**; privilégio mínimo (Jira leitura; Notion só a base de releases).

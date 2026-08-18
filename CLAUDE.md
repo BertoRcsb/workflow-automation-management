@@ -52,6 +52,7 @@ Sync (`repos.yaml` **guiado pela doc do Notion**) → `make run` → PR.
    **`make run` (abre os PRs) e o merge são do Ronan**.
 2. `teste_regressivo → master` (prod) — **só sob comando do Ronan**; Optimus Prime só edita o YAML.
 3. `make run-triggers` (ambientes dos clientes) — **100% do Ronan**, após OK do QA.
+4. `master → develop/stage/prerelease` (pós-deploy) — **reusa exatamente os mesmos repos do ciclo ativo**; não inventa, não reduz e não reclassifica repos entre Passo 1/2/3 e sync de volta.
 
 ## Guardrails inquebráveis
 - **Extração de links e gates D1/D2 = código determinístico em `tools/`** (o LLM não interpreta ADF);
@@ -68,9 +69,18 @@ Sync (`repos.yaml` **guiado pela doc do Notion**) → `make run` → PR.
   pausa:** card genuinamente ambíguo. No alvo `todos os boards`, ainda termina no Notion.
 - **`make run` (Passo 1 e Passo 2), merge/master/prod e `run-triggers` = só o Ronan** (`auto_merge=false`);
   nada sobe sem autorização.
+- **Pós-deploy inquebrável:** o sync `master → develop/stage/prerelease` mantém o mesmo conjunto de repos do ciclo
+  que já foi validado nos passos anteriores; o Optimus nunca “filtra” repos por conta própria nem muda a lista na
+  transição para `Sync Master`.
 - **Gate por ação:** `dry-run` → parseia saída (`chave=valor`) + exit code (0 ok / 1 erro); **erro
   documenta em `erros/AAAA-MM-DD-*.md` e para**. **Todo `make run` (Passo 1 e Passo 2) e as triggers
   (Passo 3):** limpo → mostra e pede **comando explícito** do Ronan antes do real.
+- **GATE-PROMO (nunca direto pra master):** antes de **QUALQUER** `make dry-run`/`make run`/triggers,
+  `tools/optimus_promotion_gate.py "$SYNC_REPO_PATH/repos.yaml" --step <passo1|passo2|pos-deploy>` tem de
+  retornar exit 0. Só aprova pares da whitelist (`tools/promotion.json`); bloqueia `master` vindo de fonte
+  ≠ `teste_regressivo` (ex.: `prerelease→master`), self-sync e passo divergente. Exit 1 → não roda o
+  `make`, restaura backup, documenta em `erros/` e para. Ao trocar de passo, ajuste `source` **e** `targets`.
+- **GATE-TRIGGERS:** antes de `make dry-run`/`make run` (Passo 1/2/pós-deploy), `python3 tools/optimus_triggers_gate.py "$SYNC_REPO_PATH/repos.yaml" --expect none` — bloqueia se houver trigger ativo (dispararia em hora errada). Antes de `make dry-run-triggers`/`make run-triggers` (Passo 3), `python3 tools/optimus_triggers_gate.py "$SYNC_REPO_PATH/repos.yaml" --expect present` — bloqueia se não houver trigger ou se houver orfão. Exit 1 → não roda `make`, documenta e para.
 - **Não inventar dado**; privilégio mínimo (Jira leitura; Notion só a base de releases).
 - Execuções em `execucoes/*.json`; refino de skill/comando **só com OK do Ronan**.
 - **Commits:** Conventional Commits em inglês, só com OK; **sem remote externo**.

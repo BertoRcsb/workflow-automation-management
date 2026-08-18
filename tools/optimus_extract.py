@@ -45,7 +45,36 @@ def walk_urls(node, out):
             walk_urls(v, out)
 
 
+def extract_text_from_adf(field):
+    """Extrai texto literal do ADF."""
+    if not field or not isinstance(field, dict):
+        return ""
+    texts = []
+    if 'content' in field:
+        for item in field['content']:
+            if isinstance(item, dict) and 'content' in item:
+                for subitem in item['content']:
+                    if isinstance(subitem, dict) and 'text' in subitem:
+                        texts.append(subitem['text'])
+    return ' '.join(texts).strip()
+
+
+def field_has_real_content(field):
+    """Verifica se o field tem conteúdo REAL (não é "Não tem" / "N/A" / vazio)."""
+    if not field:
+        return False
+    if isinstance(field, str):
+        text = field.strip()
+        return text and text not in ("N/A", "Não tem.", "Não tem")
+    if isinstance(field, dict):
+        text = extract_text_from_adf(field)
+        # Se o único conteúdo é "Não tem" ou "N/A", considerar como sem conteúdo real
+        return text and text not in ("N/A", "Não tem.", "Não tem")
+    return bool(field)
+
+
 def field_has_content(field):
+    """Compatibilidade: verifica se field tem qualquer conteúdo (até "Não tem")."""
     if not field:
         return False
     if isinstance(field, str):
@@ -125,8 +154,8 @@ def build_contract(issue, remote_pr_urls=None):
     )
     repos.sort(key=lambda r: r["url"])
 
-    pr_parse_failed = field_has_content(pr_field) and len(prs) == 0
-    repo_parse_failed = field_has_content(repo_field) and len(repos) == 0
+    pr_parse_failed = field_has_real_content(pr_field) and len(prs) == 0
+    repo_parse_failed = field_has_real_content(repo_field) and len(repos) == 0
     parse_failed = bool(pr_parse_failed or repo_parse_failed)
 
     acao_dados = select_value(f.get(ACAO_DADOS_FIELD))
@@ -138,9 +167,11 @@ def build_contract(issue, remote_pr_urls=None):
 
     parent = f.get("parent") or {}
     epic = None
-    if parent:
+    if parent and isinstance(parent, dict):
         epic = {"key": parent.get("key"), "summary": (parent.get("fields") or {}).get("summary")}
     assignee = f.get("assignee") or {}
+    if assignee and isinstance(assignee, str):
+        assignee = {}
 
     return {
         "card_id": key,

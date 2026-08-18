@@ -25,10 +25,21 @@ Governança do `repos.yaml`, **guiada pela documentação**:
 - **Lê o doc da versão no Notion** e **descomenta as linhas já existentes de** `repos.yaml` **apenas os repositórios que constam em "Repositórios para Deploy"** — ativando **só `name` + `repository`**; **os `triggers:` ficam comentados** (triggers são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do Passo 1/2 **não os usa**). **Tudo que não corresponder → comenta de volta** (não entra no `make run`). **Nunca reescreve/reformata/gera o arquivo nem altera `defaults`/`cloud_build`; só alterna o `#`. Passa pelo gate `tools/optimus_yaml_gate.py` (exit 1 → restaura backup e para).** **Repo faltando no YAML → para e reporta** (Ronan adiciona).
 - **Editar o `repos.yaml` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração**, **não pede OK para ler/editar** — só interrompe/reporta em caso de **discrepância** (repo faltando no YAML, doc ambígua). O `make dry-run` também é autônomo (simulação); o **gate humano** é **todo `make run`**: Passo 1, master (Passo 2) e triggers (Passo 3).
 
+**GATE-PROMO (determinístico, antes de TODO `make`):** ao mudar de passo, ajuste **`source` E `targets`**
+no YAML e rode **antes** de qualquer `make`:
+```
+python3 tools/optimus_promotion_gate.py "$SYNC_REPO_PATH/repos.yaml" --step <passo1|passo2|pos-deploy>
+```
+Exit 0 → segue; exit 1 → restaura o backup, documenta em `erros/` e **para** (não roda o `make`). O gate
+só aprova os pares da whitelist (`tools/promotion.json`) e bloqueia `prerelease→master`, self-sync, branch
+desconhecida e passo divergente. Foi criado após o incidente **2026-08-04** (target trocado pra `master`
+com `source` ainda em `prerelease`).
+
 **Fluxo (NUNCA direto pra master; `make run` sempre com `target` explícito):**
 
-- **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): ajusta o YAML, `make dry-run` e **parseia**; **erro (exit 1) → documenta em `erros/` e para**; **limpo (exit 0) → emite a mensagem `Confira` e para**. **O `make run`** (abre os PRs) só **sob OK explícito do Ronan**, depois da mensagem. Merge é do Ronan.
-- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override explícito do Ronan**. Por padrão o Optimus Prime edita o YAML e roda `make dry-run`; o **`make run` de master só quando o Ronan mandar explicitamente**.
+- **Passo 1** — `source: prerelease` → `target: teste_regressivo` (pré-prod): ajusta o YAML, **GATE-PROMO
+  `--step passo1`**, `make dry-run` e **parseia**; **erro (exit 1) → documenta em `erros/` e para**; **limpo (exit 0) → emite a mensagem `Confira` e para**. **O `make run`** (abre os PRs) só **sob OK explícito do Ronan**, depois da mensagem. Merge é do Ronan.
+- **Passo 2** — `source: teste_regressivo` → `target: master` (prod): **só sob comando/override explícito do Ronan**. Por padrão o Optimus Prime edita o YAML (**troca `source` para `teste_regressivo` E `targets` para `master`**), roda **GATE-PROMO `--step passo2`** e `make dry-run`; o **`make run` de master só quando o Ronan mandar explicitamente**.
 - **Passo 3** — **`make run-triggers`** (dispara os triggers Cloud Build → deploy nos ambientes dos clientes; **NÃO recebe `PR_TITLE`**). O Optimus Prime pode **disparar** sob **comando explícito** do Ronan; **quais** triggers vêm de **instrução do Ronan + os `triggers:` do `repos.yaml`** (ainda **não** estão no Notion). A **aprovação do build no GCP é do Ronan**, após OK do QA. Ex. (autocadastro-front): `neoenergia-front-autocadastro`, `vli-front-autocadastro`.
 - **Pós-deploy (sync de volta)** — depois do deploy, sincroniza **master → develop, stage, prerelease**: edita o YAML (`source: master`, `targets: [develop, stage, prerelease]`), `make dry-run` → OK → **`make run PR_TITLE="Sync Master"`** (título **padrão** desse passo). Cria os PRs; **merges do Ronan**.
 

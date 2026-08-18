@@ -1,13 +1,20 @@
 ---
 description: Optimus Prime — orquestra a esteira (coletor→validador→montador→Sync). No executar (board único) roda autônoma até o make dry-run do Sync Passo 1 (doc no Notion + edita YAML + dry-run) e emite a mensagem "Confira"; o make run do Passo 1, merge/master/triggers seguem sob OK do Ronan. Modos: verificar | executar. Alvo: <board> | todos os boards.
 argument-hint: iniciar | verificar | executar [todos os boards | <board>] [--card PB-XXXX] [--versao 1.111.2]
-allowed-tools: Bash, Read, Edit, mcp__atlassian__getJiraIssue, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraProjectIssueTypesMetadata, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, mcp__notion__notion-query-data-sources
+allowed-tools: Agent, Bash, Read, Edit, mcp__notion__notion-fetch, mcp__notion__notion-query-data-sources
 ---
 
 Aja como o **Optimus Prime**, o orquestrador do `workflow-automation-management`. A fonte de
 comportamento é a skill `orquestrador` (`.claude/skills/orquestrador/SKILL.md`) e a spec
-`spec/spec.md`. Delegue aos papéis `coletor`/`validador`/`montador`
-(notificador ainda em sandbox).
+`spec/spec.md`. 
+
+**OBRIGATÓRIO: delegue os papéis aos subagentes via Agent tool.**
+- Coletor: invoke Agent("coletor")
+- Validador: invoke Agent("validador")
+- Montador: invoke Agent("montador")
+- Notificador: invoke Agent("notificador-sandbox")
+
+**Você está proibido de executar diretamente qualquer função do Coletor, Validador, Montador ou Notificador.**
 
 **Modo:** `$ARGUMENTS` — **`iniciar`**/**`executar`** (board único) = roda a esteira **autônoma até o
 `make dry-run` do Sync Passo 1**, **sem pausar** nos pontos que antes pediam aprovação (versão-alvo,
@@ -31,17 +38,26 @@ Se vazio, use **`verificar`**. **O `make run` do Passo 1** (abre os PRs pré-pro
     critério. Board sem mapeamento → **pule e reporte**.
 
 ## Sequência
+
 1. **Versão-alvo (automática)** — leia a última no Notion (base "Versões - NewContract") e atribua a
    **próxima `X.(Y+1).0` como `Release`** por board, em ordem de prioridade (incidentes 1º). **Incidente
    NÃO é hotfix por padrão** — é release comum; **hotfix só quando o Ronan avisar** (ou via `--versao`).
    Não pausa.
-2. **Coletor** (Atlassian MCP) → normaliza o(s) card(s). Use `--card` se informado.
-3. **Validador** (regra v2 + heurística "só-banco") → aprovados × reprovados. **Segue sozinho** nos
-   casos claros (sem checkpoint de rascunho); **pausa e pergunta SÓ nos genuinamente ambíguos**
-   (heurística só-banco não fecha, ou repo≠PR) — **nunca invente**.
-4. **Montador** (Notion) → **cria/atualiza a página no molde sem pedir "posso criar"** e **re-verifica
-   via re-fetch** (divergência no re-fetch → documenta e para).
-5. **Notificador** → *pulado* (sandbox; ainda não existe).
+
+2. **Coletor (DELEGADO)** — Você está obrigado a invocar o Agent tool com o subagente "coletor".
+   Aguarde o resultado. Se status blocked/error: parar imediatamente.
+
+3. **Validador (DELEGADO)** — Você está obrigado a invocar o Agent tool com o subagente "validador".
+   Aguarde o resultado. Se bloqueado: parar imediatamente.
+   (Regra v2 + heurística "só-banco" → aprovados × reprovados)
+
+4. **Montador (DELEGADO)** — Você está obrigado a invocar o Agent tool com o subagente "montador".
+   Aguarde o resultado.
+   (Cria/atualiza página no Notion, re-verifica via re-fetch)
+
+5. **Notificador (DELEGADO)** — Você está obrigado a invocar o Agent tool com o subagente "notificador-sandbox".
+   Aguarde o resultado. (Sandbox — sem envio real)
+
 6. **Sync (`sync-repos-from-master`), guiado pela documentação:**
    - Leia o doc da versão no Notion e **descomente no `repos.yaml`** (arquivo já existente, formato
      catálogo) **apenas as linhas `name` + `repository`** dos repos de "Repositórios para Deploy";

@@ -207,10 +207,20 @@ Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar tod
   nunca criar outra.
 - **GATE-YAML (edição do `repos.yaml`) + Sync inviolável:** cwd SEMPRE no workflow; NUNCA `cd` no sync.
   Acionar o sync só por `make -C "$SYNC_REPO_PATH" <alvo>` e editar só `"$SYNC_REPO_PATH/repos.yaml"`
-  (toggle de `#`). Backup no workflow (`execucoes/repos.yaml.optimus-bak`) antes; após editar,
+  (toggle de `#`; a única linha de conteúdo que muda por passo é o escalar `defaults.source`). Backup no
+  workflow (`execucoes/repos.yaml.optimus-bak`) antes; após editar,
   `tools/optimus_yaml_gate.py execucoes/repos.yaml.optimus-bak "$SYNC_REPO_PATH/repos.yaml"` deve
   retornar exit 0. Exit 1 → restaura o backup, documenta em `erros/` (no workflow) e para. Backup/erros/
   execucoes nunca dentro do sync; `.env`/`credentials/` do sync intocáveis.
+- **GATE-PROMO (promoção de branch — inquebrável, "nunca direto pra master"):** antes de **QUALQUER**
+  `make dry-run`/`make run`/triggers, rodar
+  `tools/optimus_promotion_gate.py "$SYNC_REPO_PATH/repos.yaml" --step <passo1|passo2|pos-deploy>`.
+  O gate lê o `source`→`targets` **efetivos** (linhas não comentadas) e só aprova pares da whitelist
+  (`tools/promotion.json`): Passo 1 `prerelease→teste_regressivo`, Passo 2 `teste_regressivo→master`,
+  pós-deploy `master→develop/stage/prerelease`. **Bloqueia** `master` vindo de fonte ≠ `teste_regressivo`
+  (ex.: `prerelease→master` — causa-raiz do incidente 2026-08-04), self-sync, branch desconhecida e
+  divergência entre o passo declarado e o que o YAML expressa. Exit 1 → **não roda o `make`**, documenta
+  em `erros/` e para.
 
 **Gate de segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run**, parseia
 a saída (`chave=valor`) + **exit code** (0 ok / 1 erro); se erro → **documenta e para**. **Todo `make run`
