@@ -19,6 +19,7 @@ os merges são do Ronan**. Sem clients Python bespoke (spec §3): a orquestraç�
 | Guia operacional (receitas do Ronan) | `docs/COMANDOS.md` |
 | Índice dos gates (o que roda onde) | `docs/GATES.md` |
 | Config das regras (all-or-nothing, db_owners, promoção) | `tools/rules.json` · `tools/promotion.json` |
+| Catálogo canônico do `repos.yaml` (restauração do Sync) | `reference/sync-repos-from-master/README.md` |
 
 ## Comandos
 ```

@@ -46,9 +46,11 @@ Sync). Inventário completo: [`docs/GATES.md`](docs/GATES.md).
 Testes: `make test` (cria o venv e roda a suíte).
 
 ## Documentação
-- **Apresentação visual (diagramas Mermaid):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
+- **Esquema visual da arquitetura (Mermaid, atualizado):** [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md)
+- **Apresentação para stakeholders (imagens):** [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
 - **Receita de bolo (comandos):** [`docs/COMANDOS.md`](docs/COMANDOS.md)
 - **Comportamento (fonte da verdade):** [`spec/spec.md`](spec/spec.md) · **Esteira (gates/guardrails):** [`.claude/skills/orquestrador/SKILL.md`](.claude/skills/orquestrador/SKILL.md)
 - **Roadmap:** [`docs/ROADMAP.md`](docs/ROADMAP.md) · **Gates:** [`docs/GATES.md`](docs/GATES.md) · **Histórico (plano/tarefas de julho):** [`docs/archive/`](docs/archive/)
 - **Guia técnico (índice):** [`CLAUDE.md`](CLAUDE.md) · **Índice de docs:** [`docs/README.md`](docs/README.md)
 - **Subagentes:** [`AGENTS.md`](AGENTS.md) · **Apresentação:** [`docs/PROPOSTA.md`](docs/PROPOSTA.md)
+- **Catálogo canônico do `repos.yaml` (restauração de backup do Sync):** [`reference/sync-repos-from-master/`](reference/sync-repos-from-master/README.md)

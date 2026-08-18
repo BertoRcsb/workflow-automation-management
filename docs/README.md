@@ -6,7 +6,8 @@ Landing do repo: [`../README.md`](../README.md).
 ## O que é cada doc
 | Arquivo | O que é |
 |---|---|
-| [`APRESENTACAO.md`](APRESENTACAO.md) | **Apresentação visual** — diagramas Mermaid (arquitetura, fluxo, boards, governança) + exemplos reais, para stakeholders. |
+| [`ARQUITETURA.md`](ARQUITETURA.md) | **Esquema visual atualizado** — diagramas Mermaid inline da arquitetura atual (subagentes, camada `tools/`, fluxo do `executar`, promoção de branches, driver do Sync). |
+| [`APRESENTACAO.md`](APRESENTACAO.md) | **Apresentação visual** — diagramas em imagem (histórico de julho/2026) + exemplos reais, para stakeholders. |
 | [`COMANDOS.md`](COMANDOS.md) | **Guia operacional** — como rodar (receitas passo a passo, tabela "Sequência e gates", regras de ouro, mapa dos 3 boards). |
 | [`SETUP.md`](SETUP.md) | **Primeira vez / pós-clone** — instalar o Claude Code, conectar os MCPs, apontar o `sync-repos-from-master`. |
 | [`GATES.md`](GATES.md) | **Índice dos gates** — o que é código determinístico, o que é asserção do LLM, o que é gate humano. |
