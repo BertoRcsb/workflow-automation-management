@@ -355,25 +355,14 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
 }
 ```
 
-## 10. Regra de validação como config (`tools/deploy_requirements.yaml`)
+## 10. Regra de validação como config (`tools/rules.json`)
 
-Exemplo de externalização da regra v2 (evita hardcode; mudar regra = editar YAML):
-
-```yaml
-tipo_ciclo: incidente
-projeto: PB
-status_alvo: ["Teste regressivo", "Pronto para deploy"]
-elegibilidade:
-  aprovar_se_qualquer:
-    - nome: "mudanca de codigo"
-      exige: [pull_request, repositorio]
-    - nome: "apenas banco/proc"
-      exige: [acao_dados_sim]
-      permite_sem: [pull_request, repositorio]
-  reprovar_se:
-    - "sem pull_request e sem repositorio e sem acao_dados"
-  valores_invalidos_como_vazio: ["N/A", "Apenas PROC"]
-```
+A regra v2 é externalizada em **`tools/rules.json`** (fonte única, consumida por
+`tools/optimus_gates.py`): mudar a regra = editar o JSON, nunca o código nem as skills.
+Campos: `valores_invalidos_como_vazio` (strings que não contam como link),
+`epicos_all_or_nothing` (D1 forçado) e `db_owners` (heurística só-banco legítimo).
+Documentação de cada valor no campo `_doc` do próprio arquivo. A matriz de promoção de
+branches segue o mesmo padrão em `tools/promotion.json` (GATE-PROMO).
 
 ## 11. Regras gerais
 

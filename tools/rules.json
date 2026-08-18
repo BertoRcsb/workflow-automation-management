@@ -1,4 +1,11 @@
 {
+  "_doc": {
+    "descricao": "Config executavel da regra de validacao (spec secao 10). Fonte UNICA: mudar regra = editar este arquivo, nunca o codigo nem as skills. Consumido por tools/optimus_gates.py.",
+    "epicos_all_or_nothing": {
+      "PB-5768": "Refatoracao Melhorias Onda 1 — todos os 38 filhos deployam juntos; segura mesmo com filhos em Teste regressivo"
+    },
+    "db_owners": "Responsaveis de banco: acao_dados=Sim sem PR/repo com owner desta lista = so-banco legitimo (caso-modelo PB-5778, Alexandre Bolonhini)"
+  },
   "valores_invalidos_como_vazio": ["N/A", "Apenas PROC"],
   "epicos_all_or_nothing": ["PB-5768"],
   "db_owners": ["Alexandre Bolonhini", "Alexandre Rudoi", "Giovani Rocha Lima", "Anderson de Oliveira Santos"]
