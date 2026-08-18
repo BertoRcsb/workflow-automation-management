@@ -54,12 +54,13 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
 > **automática por board** como **`Release` sequencial** (`X.(Y+1).0`); **incidente NÃO é hotfix por
 > padrão** (release comum) — hotfix só quando o Ronan avisar.
 
-1. **Versão-alvo (automática):** lê **TODAS** as páginas da base e calcula a próxima versão pelo
-   **maior número semântico `X.Y.Z`** (parse e ordenação numérica), atribuindo como `Release` por board
-   (incidentes 1º). **Incidente NÃO é hotfix por padrão**; **hotfix só quando o Ronan avisar**.
-   - **GATE-VER-1:** calcular pelo **maior número**, nunca por data de criação ("Criado em").
-   - **GATE-VER-2 (anti-colisão):** a versão calculada **não pode já existir**. Se existir → PARA e
-     reporta "numeração dessincronizada; OK do Ronan para decidir". (Isto impede reubo como na 1.117.0.)
+1. **Versão-alvo (automática, determinística):** consulta **TODAS** as páginas da base
+   (`notion-query-data-sources`), salva o resultado em `execucoes/<data>-versoes-dump.json` e roda
+   `python3 tools/optimus_next_version.py execucoes/<data>-versoes-dump.json`. **O LLM não calcula a
+   versão de cabeça** — usa a `proxima=` da saída como `Release` por board (incidentes 1º). O script
+   enforça **GATE-VER-1** (maior número semântico, nunca data de criação) e **GATE-VER-2** (anti-colisão;
+   exit 1 → PARA e reporta "numeração dessincronizada; OK do Ronan para decidir"). **Incidente NÃO é
+   hotfix por padrão**; **hotfix só quando o Ronan avisar**.
 2. **Coletor** → cards do Jira normalizados (§7). **Fluxo obrigatório:** fetch cada card com
    `responseContentFormat: "adf"` → salva em `execucoes/<data>-<board>-raw.json` → roda
    `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json > execucoes/<data>-<board>-contrato.json`.

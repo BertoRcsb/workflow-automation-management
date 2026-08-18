@@ -24,58 +24,13 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
   - **Localizar versão/última página: use `notion-query-data-sources` (SQL) — rápido e estável.**
     **Evite `notion-search`** (semântico, lento/instável nesta base).
 - **Modelo sugerido:** barato (ex.: Haiku) — montagem é escrita mecânica no molde.
-- **Molde de referência:** reler a **última página do mesmo `Tipo`** antes de montar
-  (query por `Tipo` ordenando por `Criado em` desc).
 
-## Molde de conteúdo (materializado — exemplo canônico: 1.114.0)
-A página segue **exatamente** este padrão, sem improviso.
-
-### Metadados
-- **Ícone:** `📝`
-- **Propriedades:**
-  - `Versão` (title): `1.116.0` (ex.)
-  - `Tipo` (select): `Release` ou `Hotfix`
-
-### Tabela de itens
-**Colunas (ordem exata):** `Item · Pull Requests · Tem Ação de Banco ? · Tem Ação de Infra ? · Merge Realizado ?`
-
-**Linhas (um card por linha):**
-- **Item:** `[PB-XXXX — <título completo do card>](https://bernhoeft.atlassian.net/browse/PB-XXXX) · <status>`
-  (ex.: `[PB-5811 — Impossibilidade de Readmissão de Colaborador](https://bernhoeft.atlassian.net/browse/PB-5811) · Pronto para deploy`).
-  O "mention" nativo do Jira **não** é reproduzível via MCP — o link markdown com título é o equivalente suportado.
-- **Pull Requests:** renderizar **todas** as `links.pull_requests` do contrato como
-  `[<label>](<url>)`, **separadas por `<br>`** (o label já vem como `repo #num`). Nunca só a primeira;
-  a lista é a do contrato (produzido por `tools/optimus_extract.py`), não reinterpretar o card.
-  **Só-banco:** escrever `• APENAS PROC` **somente** quando `deploy_fields.apenas_proc == true` no
-  contrato. **Nunca** derivar de `acao_dados=Sim` + PR vazio (isso mascarava esquecimento de leitura).
-  **Nenhuma PR:** deixar vazio (não escrever `—` na tabela — isso é pra depois dos blocos).
-- **Ação de Banco:** `Sim` / `Não` (de `deploy_fields.acao_dados` do card).
-- **Ação de Infra / Merge:** deixar em branco (`—`) até apurar (**nunca inventar**).
-
-### Blocos (nesta ordem, cada um um heading + conteúdo)
-1. **Testes regressivos** — 3 checkboxes:
-   - `[x] Aprovado` (por padrão, marca quando todos os cards foram aprovados em testes)
-   - `[ ] Não aprovado`
-   - `[ ] Sem testes regressivos`
-
-2. **Ambientes** — 5 checkboxes (marca os que foram testados):
-   - `[ ] NewContract`
-   - `[ ] NewContract-VLI`
-   - `[ ] Treinamento`
-   - `[ ] Neoenergia`
-   - `[ ] Preprod`
-
-3. **Repositórios para Deploy:** — lista de URLs (deduplicated)
-   (ex.: `- [https://bitbucket.org/bernhoeft/contractweb-v3](...)`)
-   **Deve listar TODOS os repos únicos de todos os cards aprovados** — é este bloco que guia `repos.yaml`.
-
-4. **Participantes do Deploy:** — heading sublinhado, cor marrom (`{color="brown"}`)
-   Estrutura exata:
-   - **Dados:** {color="brown"} — lista nomes (ex.: `- Alexandre Rudoi.`)
-   - **DevOps:** {color="brown"} — lista nomes (ex.: `- Ronan Berto / Yuri Stolai.`)
-   - **QA:** {color="brown"} — lista nomes (ex.: `- Dorgival Silva Filho.`)
-   - **Responsavel Deploy:** {color="brown"} — lista nomes (ex.: `- Ronan Berto / Yuri Stolai.`)
-   - **Desenvolvedores sobreaviso:** {color="brown"} — assignees dos cards aprovados
+## Molde de conteúdo — fonte única: `templates/release-notion.md`
+A página segue **exatamente** o template versionado em **`templates/release-notion.md`** (metadados,
+colunas da tabela, blocos, checkboxes e participantes), sem improviso. Leia o template ANTES de montar.
+A célula de PR vem pronta de `gates.json.rows[].pull_requests` — nunca reinterpretar o card.
+Ação de Infra / Merge ficam `—` até apurar (**nunca inventar**). Mudar o molde = editar o template
+(com OK do Ronan).
 
 ## Gates (asserções duras — param e documentam, nunca "passam" dado errado)
 
@@ -89,15 +44,13 @@ Nenhum card entra na doc sem ter saído do gate do validador. (Este gate teria e
 da 1.117.0, onde entrou PB-4761 não-aprovado e faltaram 4 aprovados.)
 
 ### GATE-MOLDE (fidelidade ao padrão)
-No re-fetch final, **conferir que as colunas e blocos batem com a última página do mesmo Tipo**
-(1.114.0 para Release; 1.111.1 para Hotfix, ex.). Comparação campo a campo:
+No re-fetch final, **conferir que a página bate com `templates/release-notion.md`**, campo a campo:
 - Colunas da tabela exatas.
 - Nomes dos blocos e ordem.
 - Checkboxes presentes.
 - Estrutura de "Participantes" (headings marrom, nomes em lista).
 
-Se divergir → **PARA e documenta**. (Restaura o critério "(colunas iguais às versões anteriores)"
-removido no refactor do orquestrador.)
+Se divergir → **PARA e documenta**.
 
 ### GATE-LINKS (célula bate exatamente com o contrato; APENAS PROC é suspeito)
 Usar `python3 tools/optimus_gates.py <contrato.json> tools/rules.json > gates.json` e montar a tabela
