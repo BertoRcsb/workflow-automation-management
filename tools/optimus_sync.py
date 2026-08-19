@@ -9,6 +9,7 @@ O LLM lembra de DOIS comandos (backup antes de editar; a acao depois) e le a sai
 Uso (cwd = workflow-automation-management; NUNCA cd no sync):
     python3 tools/optimus_sync.py backup
     python3 tools/optimus_sync.py configure --step <passo1|passo2|pos-deploy> --repos <nome1,nome2,...>
+    python3 tools/optimus_sync.py configure-triggers --repos <nome1,nome2,...>   # Passo 3: ativa triggers dos repos
     python3 tools/optimus_sync.py dry-run  --step <passo1|passo2|pos-deploy> [--pr-title "..."]
     python3 tools/optimus_sync.py run      --step <passo1|passo2|pos-deploy> --pr-title "..."
     python3 tools/optimus_sync.py dry-run-triggers
@@ -332,6 +333,76 @@ def cmd_action(action, step, pr_title):
     return 0
 
 
+def cmd_configure_triggers(repos_csv):
+    """Passo 3: ativa (descomenta) os blocos triggers dos repos pedidos e garante
+    name+repository ativos; TODO o resto (outros repos e seus triggers) fica
+    comentado. Nao toca em source/targets (o par do Passo 2 segue whitelistado).
+    So alterna '#'; auto-valida com o GATE-YAML."""
+    yaml = repos_yaml()
+    py = sys.executable or "python3"
+    if not repos_csv:
+        print("ok=false motivo=repos_ausentes esperado=--repos nome1,nome2 (da doc do Notion)")
+        return 1
+    if not os.path.exists(yaml):
+        print(f"ok=false motivo=repos_yaml_nao_encontrado path={yaml}")
+        return 1
+    pedidos = {r.strip() for r in repos_csv.split(",") if r.strip()}
+
+    os.makedirs(os.path.dirname(BACKUP), exist_ok=True)
+    shutil.copyfile(yaml, BACKUP)
+
+    with open(yaml, encoding="utf-8") as fh:
+        lines = fh.read().splitlines(keepends=True)
+
+    out = []
+    in_repos = False
+    entrada_ativa = False
+    repos_vistos = set()
+    ativados = []
+    for line in lines:
+        body = line.rstrip("\n")
+        nl = line[len(body):]
+        if body.strip() == "repos:":
+            in_repos = True
+            out.append(line)
+            continue
+        if in_repos:
+            m = RE_REPO_NAME.match(body)
+            if m:
+                nome = m.group(1)
+                repos_vistos.add(nome)
+                entrada_ativa = nome in pedidos
+                if entrada_ativa:
+                    ativados.append(nome)
+                out.append((_uncomment(body) if entrada_ativa else _comment(body)) + nl)
+                continue
+            if RE_REPO_URL.match(body):
+                out.append((_uncomment(body) if entrada_ativa else _comment(body)) + nl)
+                continue
+            if RE_TRIGGERS_HDR.match(body) or RE_TRIGGER_ITEM.match(body):
+                out.append((_uncomment(body) if entrada_ativa else _comment(body)) + nl)
+                continue
+        out.append(line)
+
+    faltando = pedidos - repos_vistos
+    if faltando:
+        print(f"ok=false etapa=configure-triggers motivo=repo_fora_do_catalogo:{','.join(sorted(faltando))}")
+        print("acao=parar_e_reportar (nunca criar linhas; o usuario adiciona no catalogo)")
+        return 1
+
+    with open(yaml, "w", encoding="utf-8") as fh:
+        fh.writelines(out)
+
+    code, gout = _run([py, os.path.join(TOOLS, "optimus_yaml_gate.py"), BACKUP, yaml])
+    if code != 0:
+        return fail("sync-passo3-configure-triggers-gate-yaml", "GATE-YAML(configure-triggers)",
+                    ["configure-triggers"], code, gout, restore=True)
+
+    print(f"GATE-YAML: {gout}")
+    print(f"ok=true acao=configure-triggers repos_com_triggers_ativos={','.join(ativados) or '-'}")
+    return 0
+
+
 def main(argv):
     args = argv[1:]
     if not args:
@@ -358,6 +429,8 @@ def main(argv):
         return cmd_backup()
     if action == "configure":
         return cmd_configure(step, repos_csv)
+    if action == "configure-triggers":
+        return cmd_configure_triggers(repos_csv)
     if action in PR_ACTIONS | TRIGGER_ACTIONS:
         return cmd_action(action, step, pr_title)
     print(f"ok=false motivo=acao_desconhecida:{action}")

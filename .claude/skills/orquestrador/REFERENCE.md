@@ -41,6 +41,7 @@ removido de `VIRTUAL_ENV`/`PATH` para o `poetry` do sync resolver o venv certo),
 backup e documenta em `erros/` sozinho (exit 1 = pare):
 ```
 python3 tools/optimus_sync.py configure --step <passo1|passo2|pos-deploy> --repos <nome1,nome2>  # backup + edição determinística
+python3 tools/optimus_sync.py configure-triggers --repos <nome1,nome2>            # Passo 3: ativa os triggers dos repos (resto comentado)
 python3 tools/optimus_sync.py dry-run  --step <passo1|passo2|pos-deploy> --pr-title "<título>"
 python3 tools/optimus_sync.py run      --step <passo1|passo2|pos-deploy> --pr-title "<título>"   # só sob OK do usuário
 python3 tools/optimus_sync.py dry-run-triggers                                   # Passo 3
