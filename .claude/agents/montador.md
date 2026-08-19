@@ -1,7 +1,7 @@
 ---
 name: montador
 description: Criar/atualizar a página de release/hotfix no Notion a partir dos aprovados. Ser o único subagente de escrita no Notion. Usar somente na etapa de montagem comandada pelo Optimus Prime.
-tools: Read, Grep, Glob, Write, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, mcp__notion__notion-query-data-sources
+tools: Read, Grep, Glob, Write, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, mcp__notion__notion-query-data-sources, mcp__notion__notion-get-async-task
 model: haiku
 permissionMode: dontAsk
 skills:
@@ -30,6 +30,9 @@ Crie/atualize a página de versão no molde padrão. Re-verifique via fetch ao f
 4. Aplicar GATE-LINKS: usar `gates.json.rows` para montar tabela (não reinterpretar).
 5. Criar ou atualizar página no Notion base "Versões - NewContract".
 6. Aplicar GATE-IDEMPOT: usar `notion-update-page` se existe, `notion-create-pages` se novo.
+   Escritas grandes estouram o timeout: enviar com `allow_async` e fazer poll com
+   `notion-get-async-task` até concluir. Antes de reenviar qualquer escrita, reler a página
+   (`notion-fetch`) para não duplicar conteúdo.
 7. Re-fetch final com `notion-fetch` e validar com GATE-MOLDE + GATE-LINKS.
 8. Persistir evidência do re-fetch.
 9. Devolver resumo curto com URL do Notion.
