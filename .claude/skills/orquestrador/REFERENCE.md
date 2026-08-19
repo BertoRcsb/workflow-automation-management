@@ -22,20 +22,32 @@ O **alvo** é parâmetro (separado do modo). Sem alvo, o Optimus **pergunta** qu
 
 Governança do `repos.yaml`, **guiada pela documentação**:
 
-- **Lê o doc da versão no Notion** e **descomenta as linhas já existentes de** `repos.yaml` **apenas os repositórios que constam em "Repositórios para Deploy"** — ativando **só `name` + `repository`**; **os `triggers:` ficam comentados** (triggers são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do Passo 1/2 **não os usa**). **Tudo que não corresponder → comenta de volta** (não entra no `make run`). **Nunca reescreve/reformata/gera o arquivo nem altera `defaults`/`cloud_build`; só alterna o `#`. Passa pelo gate `tools/optimus_yaml_gate.py` (exit 1 → restaura backup e para).** **Repo faltando no YAML → para e reporta** (usuário adiciona).
-- **Editar o `repos.yaml` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração**, **não pede OK para ler/editar** — só interrompe/reporta em caso de **discrepância** (repo faltando no YAML, doc ambígua). O `make dry-run` também é autônomo (simulação); o **gate humano** é **todo `make run`**: Passo 1, master (Passo 2) e triggers (Passo 3).
+- **Lê o doc da versão no Notion** e prepara o `repos.yaml` via **`optimus_sync.py configure`**, passando
+  em `--repos` exatamente os repositórios de "Repositórios para Deploy". O `configure` ativa **só
+  `name` + `repository`** desses repos, comenta todo o resto, mantém **`triggers:` comentados** (triggers
+  são do **Passo 3**/prod, disparados só após OK do PO/QA — o `make run` do Passo 1/2 **não os usa**) e
+  ajusta `source`/`targets` do passo lendo `tools/promotion.json`. **Nunca reescreve/reformata/gera o
+  arquivo; só alterna o `#`** — e valida a si mesmo com `tools/optimus_yaml_gate.py` (exit 1 → restaura
+  backup e para). **O LLM não edita o YAML na mão** (incidente 2026-08-19). **Repo faltando no catálogo →
+  o comando falha e reporta** (usuário adiciona).
+- **`configure` é autônomo** (guiado pela doc do Notion): **não pergunta a cada alteração** — só
+  interrompe/reporta em caso de **discrepância** (repo faltando no catálogo, doc ambígua). O `make
+  dry-run` também é autônomo (simulação); o **gate humano** é **todo `make run`**: Passo 1, master
+  (Passo 2) e triggers (Passo 3).
 
 **Driver único (`tools/optimus_sync.py`) — sintaxe completa.** Toda ação no sync roda por ele; ele
-encadeia GATE-YAML → GATE-PROMO → GATE-TRIGGERS → `make`, e em falha restaura o backup e documenta em
-`erros/` sozinho (exit 1 = pare):
+encadeia GATE-YAML → GATE-PROMO → GATE-TRIGGERS → `make` (com ambiente saneado: o venv do workflow é
+removido de `VIRTUAL_ENV`/`PATH` para o `poetry` do sync resolver o venv certo), e em falha restaura o
+backup e documenta em `erros/` sozinho (exit 1 = pare):
 ```
-python3 tools/optimus_sync.py backup                                             # ANTES de editar o YAML
+python3 tools/optimus_sync.py configure --step <passo1|passo2|pos-deploy> --repos <nome1,nome2>  # backup + edição determinística
 python3 tools/optimus_sync.py dry-run  --step <passo1|passo2|pos-deploy> --pr-title "<título>"
 python3 tools/optimus_sync.py run      --step <passo1|passo2|pos-deploy> --pr-title "<título>"   # só sob OK do usuário
 python3 tools/optimus_sync.py dry-run-triggers                                   # Passo 3
 python3 tools/optimus_sync.py run-triggers                                       # Passo 3 — só sob OK do usuário
 ```
-Ao mudar de passo, ajuste **`source` E `targets`** no YAML antes do `dry-run`. O GATE-PROMO só aprova os
+(`backup` avulso continua existindo, mas o `configure` já o faz.) Ao mudar de passo, rode `configure`
+com o novo `--step` (ele ajusta **`source` E `targets`** sozinho). O GATE-PROMO só aprova os
 pares da whitelist (`tools/promotion.json`) e bloqueia `prerelease→master`, self-sync, branch desconhecida
 e passo divergente (criado após o incidente **2026-08-04**). O GATE-TRIGGERS exige triggers comentados
 fora do Passo 3 e presentes/sem órfão no Passo 3 (incidente **2026-08-12**).

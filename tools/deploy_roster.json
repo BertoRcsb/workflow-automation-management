@@ -1,0 +1,7 @@
+{
+  "_comment": "Elenco fixo dos Participantes do Deploy (dado canonico, nao exemplo). Sobreaviso = assignees dos cards aprovados (dinamico, nao entra aqui). Fonte: paginas de versao reais no Notion (ex.: 1.121.0). Alterar so com OK do usuario.",
+  "Dados": ["Alexandre Rudoi"],
+  "DevOps": ["Ronan Berto / Yuri Stolai"],
+  "QA": ["Dorgival Silva Filho"],
+  "Responsavel Deploy": ["Ronan Berto / Yuri Stolai"]
+}

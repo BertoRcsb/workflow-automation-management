@@ -23,7 +23,8 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
 - **Ferramentas:** `mcp__notion__notion-create-pages`, `mcp__notion__notion-update-page`, `notion-fetch`, `notion-query-data-sources`.
   - **Localizar versão/última página: use `notion-query-data-sources` (SQL) — rápido e estável.**
     **Evite `notion-search`** (semântico, lento/instável nesta base).
-- **Modelo sugerido:** barato (ex.: Haiku) — montagem é escrita mecânica no molde.
+- **Modelo:** agnóstico — sem pin; herda o da sessão. A corretude vem do molde literal + do
+  `optimus_montage_gate.py` rodado pelo Optimus, não do modelo.
 
 ## Molde de conteúdo — fonte única: `templates/release-notion.md`
 A página segue **exatamente** o template versionado em **`templates/release-notion.md`** (metadados,
@@ -43,14 +44,30 @@ Se detectar **card fora dos aprovados** ou **aprovado ausente** → **PARA e doc
 Nenhum card entra na doc sem ter saído do gate do validador. (Este gate teria evitado o bug B
 da 1.117.0, onde entrou PB-4761 não-aprovado e faltaram 4 aprovados.)
 
-### GATE-MOLDE (fidelidade ao padrão)
-No re-fetch final, **conferir que a página bate com `templates/release-notion.md`**, campo a campo:
-- Colunas da tabela exatas.
-- Nomes dos blocos e ordem.
-- Checkboxes presentes.
-- Estrutura de "Participantes" (headings marrom, nomes em lista).
+### GATE-MOLDE (fidelidade ao padrão — verificação DETERMINÍSTICA, não auto-certificada)
+**A conferência final NÃO é auto-declarada pelo modelo** (o incidente 2026-08-19 foi
+causado por re-fetch "PASSOU" fabricado). Fluxo obrigatório:
+1. **Criar a página como linha da base:** `notion-create-pages` com
+   `parent: { data_source_id: "23e19d89-2318-81ff-812d-000b6afb6b5a" }` e as
+   propriedades `Versão` (title) + `Tipo` (`Release`/`Hotfix`). **Nunca sem parent**
+   (página solta = órfã, sem `Tipo`, fora da listagem de versões).
+2. **Participantes** vêm de `tools/deploy_roster.json` (elenco fixo, dado canônico) +
+   **assignees dos cards aprovados** em "Desenvolvedores sobreaviso". Rótulos em
+   **negrito** (`**Dados:**`), nomes em lista. **Nunca `—`** nesses campos.
+3. **Re-fetch de verdade:** ler a página com `notion-fetch` e **salvar o resultado cru
+   em disco** (ex.: `execucoes/<data>-<ver>-notion-raw.json`).
+4. **Rodar o gate determinístico** sobre esse arquivo:
+   ```
+   python3 tools/optimus_montage_gate.py \
+     --page-json <notion-raw.json> --gates <gates.json> --roster tools/deploy_roster.json \
+     --version <X.Y.Z> --tipo <Release|Hotfix> \
+     --data-source 23e19d89-2318-81ff-812d-000b6afb6b5a --assignees "<nomes>"
+   ```
+   **Exit 0 → ok; exit 1 → PARA e documenta em `erros/`.** O handoff só reporta `ok`
+   quando o gate sai 0 — nunca a partir de conferência "de cabeça".
 
-Se divergir → **PARA e documenta**.
+Confere: página na base, `Tipo`/`Versão`, colunas da tabela, cada card + URLs de PR do
+contrato, e cada nome canônico + assignee presente (nada `—`).
 
 ### GATE-LINKS (célula bate exatamente com o contrato; APENAS PROC é suspeito)
 Usar `python3 tools/optimus_gates.py <contrato.json> tools/rules.json > gates.json` e montar a tabela
