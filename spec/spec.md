@@ -194,7 +194,8 @@ Gatilhos: `Optimus Prime verificar todos os boards` / `Optimus Prime iniciar tod
 - **GATE-VER-1 / GATE-VER-2 (Passo 1 — versão-alvo):** calcular a próxima versão pelo **maior número
   semântico**, nunca por data; verificar que **não colide com página existente**. Impede reubo/fora-de-ordem.
 - **GATE-ADF (Passo 2 — coletor):** extrair URLs de PR/repo como **ADF estruturado**, não string;
-  detectar falso-vazio (campo ADF com conteúdo mas 0 URLs extraídas) e marcar `parse_failed: true`.
+  marcar `parse_failed: true` só quando o campo tem **link** (URL/inlineCard ou resíduo `[Card]`) e a
+  extração zerou. Texto puro sem URL ("APENAS PROC", "N/A") = `sem_link`, com o texto preservado.
 - **GATE-FALSO-VAZIO (Passo 3 — validador):** **nunca reprovar** card com `parse_failed: true` ou ADF
   cru não-vazio; devolver ao coletor ou escalar.
 - **GATE-CONJUNTO (Passo 4 — montador):** **antes de escrever**, reconciliar: o conjunto de cards a
@@ -291,7 +292,11 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
   "parse_status": {
     "parse_failed": false,
     "pr_url_count": 1,
-    "repo_url_count": 1
+    "repo_url_count": 1,
+    "pr_sem_link": false,
+    "repo_sem_link": false,
+    "pr_field_text": "",
+    "repo_field_text": ""
   },
   "deploy_fields": {
     "acao_dados": "Nao",
@@ -314,8 +319,16 @@ montagem do pacote; por isso fica no resumo de execução (§9), não no card.
   (deduplicação via D1/D2) e sinalizar quando irmãos ficam fora (possível dependência).
 - **`parse_status`:** registra se a extração de PR/repo (customfield_12400/12399 em ADF) saiu com
   sucesso ou falhou:
-  - `parse_failed: true` → o campo ADF tinha conteúdo mas a extração zerou (bug de parse; re-extrair).
+  - `parse_failed: true` → o campo tinha **link** (URL/inlineCard, ou resíduo renderizado tipo
+    `[Card]`) mas a extração zerou (falha real; re-extrair). Texto puro sem nenhuma URL
+    ("APENAS PROC", "N/A", "não tem") **não** é falha — é `sem_link`.
+  - `pr_sem_link` / `repo_sem_link` → o campo tem só texto, sem URL alguma (placeholder legítimo;
+    pode ser card só-banco/dados **ou não** — a ação de dados não implica ausência de PR: os campos
+    de PR/repo são sempre a fonte).
+  - `pr_field_text` / `repo_field_text` → texto literal do campo, preservado para ser reescrito no
+    Notion **como está**.
   - `pr_url_count` / `repo_url_count` → contagem de URLs extraídas (para debug/auditoria).
+  - Invariante (GATE-CROSSCHECK): `apenas_proc` **nunca** com `pr_url_count`/`repo_url_count` > 0.
 
 ## 8. Mapeamento de dados
 

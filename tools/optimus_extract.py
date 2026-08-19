@@ -10,8 +10,10 @@ Uso:
 Entrada: um issue, uma lista de issues, ou {"issues":[...]} (formato do searchJiraIssuesUsingJql).
 remote_links.json (opcional): { "PB-5528": ["https://.../pull-requests/195", ...], ... }
 """
-import json, sys
+import json, re, sys
 from urllib.parse import urlsplit, unquote
+
+LINK_RESIDUE = re.compile(r"\[[^\]]*\]")  # "[Card]" etc.: smart link renderizado sem URL
 
 PR_FIELD = "customfield_12400"
 REPO_FIELD = "customfield_12399"
@@ -45,17 +47,26 @@ def walk_urls(node, out):
             walk_urls(v, out)
 
 
+def walk_text(node, out):
+    """Anda o ADF recursivamente e coleta todo texto literal."""
+    if isinstance(node, dict):
+        if node.get("type") == "text" and node.get("text"):
+            out.append(node["text"])
+        for v in node.values():
+            walk_text(v, out)
+    elif isinstance(node, list):
+        for v in node:
+            walk_text(v, out)
+
+
 def extract_text_from_adf(field):
-    """Extrai texto literal do ADF."""
+    """Extrai texto literal do ADF (recursivo — placeholders podem vir aninhados)."""
+    if isinstance(field, str):
+        return field.strip()
     if not field or not isinstance(field, dict):
         return ""
     texts = []
-    if 'content' in field:
-        for item in field['content']:
-            if isinstance(item, dict) and 'content' in item:
-                for subitem in item['content']:
-                    if isinstance(subitem, dict) and 'text' in subitem:
-                        texts.append(subitem['text'])
+    walk_text(field, texts)
     return ' '.join(texts).strip()
 
 
@@ -154,15 +165,30 @@ def build_contract(issue, remote_pr_urls=None):
     )
     repos.sort(key=lambda r: r["url"])
 
-    pr_parse_failed = field_has_real_content(pr_field) and len(prs) == 0
-    repo_parse_failed = field_has_real_content(repo_field) and len(repos) == 0
+    # parse_failed = o campo TEM URL/link mas a normalizacao perdeu tudo (falha real de extracao).
+    # Texto puro sem nenhuma URL ("APENAS PROC", "N/A", "nao tem") NAO e falha: e sem_link,
+    # e o texto literal vai preservado no contrato para ser espelhado no Notion.
+    pr_field_urls = extract_field_urls(pr_field)
+    repo_field_urls = extract_field_urls(repo_field)
+    pr_field_text = extract_text_from_adf(pr_field)
+    repo_field_text = extract_text_from_adf(repo_field)
+    # Residuo de link renderizado ("[Card]", "[...]") sem URL = link perdido, falha real.
+    pr_link_residue = LINK_RESIDUE.search(pr_field_text) is not None
+    repo_link_residue = LINK_RESIDUE.search(repo_field_text) is not None
+    pr_parse_failed = (len(pr_field_urls) > 0 or pr_link_residue) and len(prs) == 0
+    repo_parse_failed = (len(repo_field_urls) > 0 or repo_link_residue) and len(repos) == 0
     parse_failed = bool(pr_parse_failed or repo_parse_failed)
+    pr_sem_link = bool(pr_field_text) and len(pr_field_urls) == 0
+    repo_sem_link = bool(repo_field_text) and len(repo_field_urls) == 0
 
     acao_dados = select_value(f.get(ACAO_DADOS_FIELD))
     merge = select_value(f.get(MERGE_FIELD))
     produto = select_value(f.get(PRODUTO_FIELD))
+    # apenas_proc NUNCA quando existe qualquer PR/repo (acao de dados pode coexistir com PR).
+    placeholder_proc = "apenas proc" in f"{pr_field_text} {repo_field_text}".lower()
     apenas_proc = (
-        acao_dados == "Sim" and len(prs) == 0 and len(repos) == 0 and not parse_failed
+        (acao_dados == "Sim" or placeholder_proc)
+        and len(prs) == 0 and len(repos) == 0 and not parse_failed
     )
 
     parent = f.get("parent") or {}
@@ -191,6 +217,10 @@ def build_contract(issue, remote_pr_urls=None):
             "parse_failed": parse_failed,
             "pr_url_count": len(prs),
             "repo_url_count": len(repos),
+            "pr_sem_link": pr_sem_link,
+            "repo_sem_link": repo_sem_link,
+            "pr_field_text": pr_field_text,
+            "repo_field_text": repo_field_text,
         },
         "deploy_fields": {
             "acao_dados": acao_dados, "acao_infra": None, "merge_realizado": merge,

@@ -85,8 +85,11 @@ def crosscheck(cards_by_id, final_approved):
     for cid, card in cards_by_id.items():
         cell = montador_pr_cell(card)
         pc = card["parse_status"]["pr_url_count"]
+        rc = card["parse_status"]["repo_url_count"]
         if cell == "• APENAS PROC" and pc > 0:
             errors.append(f"{cid}: celula 'APENAS PROC' mas pr_url_count={pc}")
+        if card["deploy_fields"]["apenas_proc"] and (pc > 0 or rc > 0):
+            errors.append(f"{cid}: apenas_proc=true com links reais (pr={pc}, repo={rc})")
         if card["parse_status"]["parse_failed"] and cid in final_approved:
             errors.append(f"{cid}: aprovado com parse_failed=true")
     return errors
