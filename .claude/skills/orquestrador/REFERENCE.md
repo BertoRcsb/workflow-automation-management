@@ -60,8 +60,8 @@ No `executar`, ao concluir **todo o escopo autônomo** — cards conferidos → 
 Optimus Prime retornando com o resultado = Confira
 ```
 
-- É a **única saída conversacional de fechamento**: execução **silenciosa**, sem relatórios verbosos nem perguntas de "posso avançar?" pelo caminho. Só **card genuinamente ambíguo** (passo 3) e **paradas por erro** (documenta em `erros/` e para) interrompem.
-- **Na mesma** mensagem, logo abaixo da linha, listar os artefatos para o usuário conferir: **URL da página no Notion**, **repos ativados no `repos.yaml`** e o **resultado do `make dry-run`** do Passo 1.
+- É a **única saída conversacional de fechamento**: execução **silenciosa**, sem relatórios verbosos nem perguntas de "posso avançar?" pelo caminho. Card genuinamente ambíguo e paradas por erro documentam em `erros/` e encerram com bloqueio objetivo, sem pedido de autorização intermediária.
+- **Na mesma** mensagem, logo abaixo da linha, listar os artefatos para o usuário conferir: **URL da página no Notion**, **repos ativados no `repos.yaml`**, o **resultado do `make dry-run`** do Passo 1 e **o que ficou de fora** — cards reprovados, bloqueados ou ambíguos, cada um com o motivo (do `gates.json` / documentação em `erros/`).
 - **Contrato de confiança:** o Optimus só emite essa linha depois de ter **lido, conferido e montado certo**; o usuário **confere depois** da mensagem (a linha é o sinal de "escopo autônomo concluído").
 - **O `make run` do Passo 1** (abre os PRs pré-prod) só roda **depois**, sob **OK explícito do usuário**.
 - No alvo **`todos os boards`**, o escopo autônomo **termina no Notion** → a mensagem sai **por board**, ao fim de cada bloco (o Sync fica fora do loop).

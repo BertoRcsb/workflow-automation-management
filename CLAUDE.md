@@ -36,8 +36,10 @@ Extração de links e gates = **código determinístico em `tools/`** (o LLM nã
 recalcula regra de cabeça); MCP-first para I/O e escrita.
 
 ## Guardrails (resumo de uma linha — a redação normativa está na skill do orquestrador)
-- **Autonomia:** `executar` roda sozinho até o `make dry-run` do Sync Passo 1; **todo `make run`,
-  merge, master e triggers = OK explícito do usuário**. Única pausa: card genuinamente ambíguo.
+- **Autonomia:** informado modo + board, `verificar` e `executar` trabalham silenciosamente, sem
+  microaprovações; `executar` roda sozinho até Notion revalidado + `make dry-run` do Sync Passo 1.
+  O primeiro gate conversacional é `Confira`; **todo `make run`, merge, master e triggers = OK explícito
+  do usuário**. Ambiguidade/erro falha fechado, documenta e bloqueia sem pedir autorização para contornar.
 - **Sync inviolável:** nunca `cd` no sync; só alternar `#` no `repos.yaml` + `make -C`; gates
   determinísticos (`optimus_yaml_gate`, `optimus_promotion_gate`, `optimus_triggers_gate`) antes de
   todo `make`; **nunca direto pra master**.

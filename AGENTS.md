@@ -40,8 +40,13 @@ Optimus Prime (orquestrador)
 2. **Cada subagente carrega apenas sua skill** — nunca múltiplas.
 3. **Subagentes nunca chamam subagentes** — só o Optimus Prime invoca Agent.
 4. **Optimus valida antes de avançar** — consome o contrato de handoff (abaixo) de cada subagente.
-5. **Falha interrompe** — gate falha → documenta em `erros/` e para; card ambíguo → pergunta ao
-   usuário; sem retry automático (máximo uma repetição por erro de formato).
+5. **Autonomia sem microaprovações** — modo + alvo autorizam o Optimus a coordenar todas as ações
+   internas da esteira. Subagentes não pedem permissão ao usuário; devolvem handoff ao Optimus.
+6. **Falha interrompe** — gate falha ou card ambíguo → documenta em `erros/`, devolve `blocked` e
+   para sem pedir autorização para contornar; máximo uma repetição por erro de formato.
+7. **Gate humano único no escopo autônomo** — depois do Notion revalidado + `dry-run` do Passo 1,
+   o Optimus emite `Confira` e aguarda o comando do usuário para `make run`. Gates posteriores de
+   master, merge e triggers permanecem inalterados.
 
 ## Contrato de handoff (formato mínimo, sem schema complexo)
 

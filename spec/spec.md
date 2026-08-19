@@ -147,9 +147,9 @@ sequenceDiagram
     J-->>O: cards + campos
     O->>V: validar por conteudo (regra v2)
     V-->>O: aprovados + reprovados (com pending_items)
-    opt card genuinamente ambiguo (unica pausa antes do Notion)
-        O->>R: pergunta (heuristica so-banco / repo!=PR)
-        R-->>O: decisao
+    opt card genuinamente ambiguo
+        V-->>O: blocked + evidencias
+        O->>O: documenta erro e encerra sem pedir autorizacao
     end
     alt existem aprovados
         O->>M: montar release (sem pedir OK)
@@ -177,7 +177,8 @@ skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
 - **`executar`** (board único) — roda a esteira **autônoma até o `make dry-run` do Sync Passo 1**
   (versão-alvo automática → coletor → validador → montador cria a página **sem pedir OK** → edita o
   `repos.yaml` → `make dry-run`); ao terminar (dry-run limpo) emite a **mensagem única `Confira`** e
-  **para**. **Única pausa antes disso** é card genuinamente ambíguo. **O `make run` do Passo 1** (abre os
+  **para**. Não há microaprovações antes disso; card ambíguo/erro bloqueia, documenta e encerra sem
+  pedir autorização para contornar. **O `make run` do Passo 1** (abre os
   PRs pré-prod), merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do
   usuário** (com gate de segurança por ação). No alvo `todos os boards`, a varredura **termina no Notion**.
   **Versão-alvo:** `Release` sequencial por board (`X.(Y+1).0`) — **incidente não é hotfix por padrão**;
@@ -251,7 +252,8 @@ autônomo** (cards conferidos → Notion com **TODOS** os links reais → `repos
 do Passo 1 limpo), o Optimus emite **exatamente uma** mensagem de fechamento, começando pela linha exata
 `Optimus Prime retornando com o resultado = Confira`, seguida (na mesma mensagem) dos artefatos para
 conferência (URL do Notion, repos ativados no YAML, resultado do `dry-run`). Execução **silenciosa** pelo
-caminho (sem "posso avançar?"); só card ambíguo e erros interrompem. **O `make run` do Passo 1** (abre os
+caminho (sem "posso avançar?"); card ambíguo e erros interrompem com bloqueio objetivo, nunca com
+pedido de autorização intermediária. **O `make run` do Passo 1** (abre os
 PRs pré-prod) só roda **depois**, sob OK explícito do usuário. No alvo `todos os boards`, a mensagem sai
 **por board** (fim no Notion). `verificar` **não** emite essa linha. O usuário confia na conferência do
 Optimus e **confere depois**.
@@ -368,16 +370,19 @@ branches segue o mesmo padrão em `tools/promotion.json` (GATE-PROMO).
 
 - **Rastreabilidade:** cada decisão registra agente, data/hora, card, critérios, resultado, justificativa, evidências.
 - **Idempotência:** não duplicar cards na release, não renotificar sem nova análise, não gerar duas versões do mesmo pacote.
-- **Intervenção humana:** revisão manual em critérios inconclusivos, dados contraditórios, exceção autorizada, evidências insuficientes. **O agente não inventa dados para preencher campo ausente.**
+- **Exceções:** critérios inconclusivos, dados contraditórios ou evidências insuficientes falham
+  fechado e são documentados para revisão posterior. **O agente não inventa dados nem pede autorização
+  intermediária para preencher campo ausente.**
 - **Segurança (privilégio mínimo):** Jira leitura (`read:jira-work`); Notion só a base de Release Notes; notificação com permissão restrita; repositório leitura.
 - **Regra do projeto:** no `executar` de board único, a esteira é **autônoma até o `make dry-run` do Sync
   Passo 1** (inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run`), terminando na
   mensagem `Confira`. OK **explícito do usuário** fica reservado ao **`make run` (Passo 1 e Passo 2)**,
-  **Merge**, **Triggers (Passo 3)** e **card genuinamente ambíguo** — o resto roda sem aprovação humana.
+  **Merge** e **Triggers (Passo 3)**. Card genuinamente ambíguo bloqueia e documenta; não vira gate de
+  autorização. Todo o restante roda sem aprovação humana.
 - **Desempenho & custo:** **coleta enxuta** (só os campos necessários, sem `description` em lote — puxar
   sob demanda); no Notion, localizar via `query_data_sources` (SQL) e **verificar uma vez ao final**;
-  **rodar no modelo mais barato por padrão**, escalando só em card ambíguo (ver as skills, "Modelo
-  sugerido"). **Nunca** sacrificar o funcionamento por economia — na dúvida, mantém como está.
+  **rodar no modelo mais barato por padrão**; ambiguidade falha fechado e é registrada. **Nunca**
+  sacrificar o funcionamento por economia — na dúvida, mantém como está.
 
 ## 12. Escopo da 1ª versão × evoluções
 

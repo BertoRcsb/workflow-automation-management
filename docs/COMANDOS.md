@@ -21,7 +21,8 @@ operando as ferramentas. **O "cérebro" é o Claude; os "braços" são os MCPs +
 
 > **Resumo do contrato:** no `executar` de um board, a esteira roda **sozinha até o `make dry-run` do
 > Sync Passo 1** e termina na mensagem única `Optimus Prime retornando com o resultado = Confira`.
-> Única pausa antes: card genuinamente ambíguo. **Todo `make run`, merge, master e triggers = seu.**
+> Não existem microaprovações antes desse ponto. Ambiguidade/erro bloqueia e é documentado, sem
+> pergunta para contornar. **Todo `make run`, merge, master e triggers = seu.**
 > No alvo `todos os boards`, a varredura termina no Notion. Consome créditos por execução.
 
 ---
@@ -87,7 +88,7 @@ Promoção de branches (`make run` sempre com `target` explícito, nunca direto 
 |---|-------|-------------------|--------------------------|
 | 1 | **Versão-alvo** | próxima `X.(Y+1).0` pela última no Notion | autônomo |
 | 2 | **Coletor** | Atlassian MCP + `tools/optimus_extract.py` | autônomo (erro → documenta e para) |
-| 3 | **Validador** | `tools/optimus_gates.py` (regra v2 + D1/D2) | autônomo — pausa SÓ em card ambíguo |
+| 3 | **Validador** | `tools/optimus_gates.py` (regra v2 + D1/D2) | autônomo; ambiguidade = `blocked`, sem microaprovação |
 | 4 | **Montador** | Notion (create/update + re-fetch) | autônomo — sem pedir OK |
 | 5 | **Notificador** | *sandbox* | autônomo (só mostra pro usuário) |
 | — | **↑ todos os boards PARAM AQUI (Notion)** · board único segue | | |

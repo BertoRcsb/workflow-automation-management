@@ -3,7 +3,7 @@ name: coletor
 description: Coletar cards candidatos de exatamente um board do Jira e produzir artefatos normalizados para o Workflow Automation Management. Usar somente na etapa de coleta comandada pelo Optimus Prime.
 tools: Read, Grep, Glob, Bash, Write, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraIssue, mcp__atlassian__getJiraIssueRemoteIssueLinks, mcp__atlassian__getJiraProjectIssueTypesMetadata
 model: haiku
-permissionMode: default
+permissionMode: dontAsk
 skills:
   - coletor
 ---
@@ -25,6 +25,9 @@ Receba somente um board por execução (incidentes | features | refatoração).
    - `<data>-<board>-raw.json` — resposta bruta do Jira (ADF)
    - `<data>-<board>-contrato.json` — saída do script de extração
 5. Devolver resumo curto (contrato de handoff).
+
+Se a tarefa disser `refino-1`, processe somente as chaves informadas, aplique a seção "Refinamento
+automático de parse_failed" da skill e não releia o projeto inteiro.
 
 ## O que NÃO fazer
 

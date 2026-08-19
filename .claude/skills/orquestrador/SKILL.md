@@ -31,16 +31,39 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
 - **Não** faz o trabalho dos outros papéis (sempre delega às skills). **Não** mergeia
   nem faz deploy real (é do usuário).
 
+## Contrato de autonomia operacional
+
+Recebidos **modo + alvo**, o Optimus Prime tem autonomia para decidir e executar todos os comandos
+internos necessários à esteira canônica, respeitando a ordem, as ferramentas permitidas e os gates.
+Isso inclui Agent, MCPs autorizados, leituras, scripts determinísticos, persistência de artefatos,
+revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do Sync Passo 1.
+
+- **Sem microaprovações:** não perguntar antes de ler, buscar, conferir linha, montar desenho/relatório,
+  chamar subagente, rodar gate, refazer uma saída inválida uma vez ou avançar entre etapas.
+- **Execução silenciosa:** não emitir plano preliminar, progresso ou "posso avançar?".
+- **Primeiro gate conversacional:** somente `Confira`, com o Notion já revalidado e o `dry-run` do
+  Passo 1 limpo, para o usuário decidir sobre o `make run`.
+- **Exceção não vira autorização:** dado ambíguo/ausente, contradição ou gate falho causa
+  bloqueio fail-closed documentado; o Optimus relata o fato, mas não pede permissão para inventar,
+  contornar ou alterar regra.
+- **Gates humanos preservados:** todo `make run`, master, merge e triggers continuam dependendo do
+  comando explícito do usuário, exatamente como definido nesta skill.
+- **Somente quatro subagentes:** `coletor`, `validador`, `montador` e `notificador-sandbox`. O Optimus
+  nunca abre Agent genérico para versão-alvo, Notion, Bash, refinamento ou Sync; executa essas tarefas
+  de coordenação no próprio contexto.
+
 ## Modos (verificar / executar)
-- **`verificar`** — **apresenta ANTES o que vai fazer** (todos os passos + os comandos que rodaria),
-  **sem executar NENHUM comando** que mude algo: `coletor` (leitura) → `validador` → **rascunho**
+- **`verificar`** — executa silenciosamente todas as conferências read-only e apresenta **somente ao
+  final** o que a esteira faria (todos os passos + os comandos que rodaria), **sem executar NENHUM
+  comando** que mude algo: `coletor` (leitura) → `validador` → **rascunho**
   (aprovados × reprovados) → simula o Notion e mostra o alvo do Sync (`repos.yaml` + `make dry-run`).
   Entrega só **relatório/plano**.
 - **`executar`** (board único) — roda a esteira **autônoma até o `make dry-run` do Sync Passo 1**:
   versão-alvo (automática) → `coletor` → `validador` → `montador` **cria/atualiza o Notion (real) sem
   pedir aprovação** → `notificador` (sandbox) → **Sync** (edita o `repos.yaml` e roda `make dry-run`).
-  Ao terminar (dry-run limpo), emite a **mensagem única `Confira`** e **para**. **A única pausa antes
-  disso é card genuinamente ambíguo** (ver passo 3). **O `make run` do Passo 1** (abre os PRs pré-prod),
+  Ao terminar (dry-run limpo), emite a **mensagem única `Confira`** e **para**. Ambiguidade ou erro
+  antes disso gera bloqueio fail-closed documentado, não pergunta de autorização. **O `make run` do
+  Passo 1** (abre os PRs pré-prod),
   merge, **master (Passo 2)** e **triggers (Passo 3)** seguem **sob comando explícito do usuário**.
 - **`todos os boards`** — alvo (parâmetro, separado do modo): varre os três **isolados**, incidentes
   1º, **terminando no Notion** (Sync fica fora do loop). Sem alvo, **pergunta** qual board.
@@ -68,8 +91,14 @@ as ferramentas mudarem — para trocar, reescreva só "Configuração atual" (em
    · **gate:** erro de leitura ou script → documenta e **para**.
 3. **Validador** → roda `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json] > gates.json`.
    Consome `gates.json` (aprovados_finais, exclusões, errors). **Segue sozinho nos casos claros.**
-   · **gate/pausa SÓ em card genuinamente ambíguo:** pergunta ao usuário — **nunca inventa**.
+   · **card genuinamente ambíguo:** marca `blocked`, documenta e encerra sem pedir autorização
+   para decidir, contornar ou inventar.
    **Se `errors` != [] (GATE-CROSSCHECK) → documenta em `erros/` e para.**
+   · **refinamento automático obrigatório para `parse_failed`:** antes de bloquear, invoque novamente
+   `Agent("coletor")` somente para as chaves afetadas. O Coletor faz novo `getJiraIssue` em ADF, consulta
+   remote issue links, salva artefatos `*-refino-1-*` e roda `optimus_extract.py` novamente. Depois,
+   invoque `Agent("validador")` uma segunda e última vez. Se resolver, siga a esteira; se persistir,
+   documente e encerre `blocked`. Não pergunte ao usuário e não altere regra/configuração.
 4. **Montador** → usa `gates.json.rows` para montar a tabela; **cria/atualiza a página no Notion no molde
    sem pedir OK** e **re-verifica via re-fetch**. · **gates:** (1) conjunto de cards = aprovados
    (GATE-CONJUNTO); (2) colunas/blocos = últimas versões (GATE-MOLDE); (3) célula = contrato (GATE-LINKS,
@@ -107,9 +136,11 @@ Optimus Prime retornando com o resultado = Confira
 ```
 
 - **Única saída de fechamento**: execução **silenciosa**, sem relatórios verbosos nem "posso avançar?".
-  Só **card ambíguo** (passo 3) e **paradas por erro** interrompem.
-- **Na mesma** mensagem, logo abaixo: **URL do Notion**, **repos ativados no `repos.yaml`** e **resultado
-  do `make dry-run`** do Passo 1.
+  Card ambíguo e paradas por erro interrompem com relatório objetivo de bloqueio, nunca com pedido
+  de autorização intermediária.
+- **Na mesma** mensagem, logo abaixo: **URL do Notion**, **repos ativados no `repos.yaml`**, **resultado
+  do `make dry-run`** do Passo 1 e **o que ficou de fora** (cards reprovados/bloqueados/ambíguos, com o
+  motivo de cada um).
 - No alvo **`todos os boards`**, sai **por board** (o Sync fica fora do loop). **`verificar`** (dry) **não**
   emite essa linha. Elaboração completa: **`REFERENCE.md` §3**.
 
@@ -118,8 +149,8 @@ A esteira é **majoritariamente mecânica** → **modelo mais barato por padrão
 exige julgamento fino**: validar **card ambíguo**.
 - **Haiku (padrão):** `coletor`, `montador`, e o validador nos **casos claros** (cada skill declara
   "Modelo sugerido: barato").
-- **Escala só na ambiguidade:** card ambíguo (heurística só-banco não fecha, ou repo≠PR) → o Optimus
-  **pausa e pede o veredito ao usuário**, que decide ali (ou sobe pra modelo mais forte se quiser).
+- **Ambiguidade falha fechado:** card ambíguo (heurística só-banco não fecha, ou repo≠PR) → o
+  Optimus registra `blocked` e encerra. Não escala modelo nem pede autorização durante a esteira.
 - **Regra de ouro:** **desempenho atual vem primeiro.** Economizar modelo/token **nunca** pode quebrar
   ou degradar a esteira; **na dúvida, mantém como está**.
 
@@ -146,7 +177,7 @@ exige julgamento fino**: validar **card ambíguo**.
 - **Autonomia até o `make dry-run` do Sync Passo 1** (board único): no `executar`, os passos rodam **sem
   aprovação humana** — inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run` do
   Passo 1 — e terminam na mensagem `Confira`. **O `make run` do Passo 1 (abre os PRs) é sob OK explícito
-  do usuário.** **Única pausa antes disso:** card genuinamente ambíguo (passo 3). No alvo `todos os boards`,
+  do usuário.** Antes disso, ambiguidade/erro apenas bloqueia e documenta, sem microaprovação. No alvo `todos os boards`,
   ainda **termina no Notion**.
 - **Segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run** (parseia saída
   + exit code); erro → documenta e **para**. **Todo `make run` (Passo 1 e Passo 2) e triggers (Passo 3):**

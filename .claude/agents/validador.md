@@ -3,7 +3,7 @@ name: validador
 description: Aplicar gates de elegibilidade por conteúdo (regra v2, D1, D2) e separar aprovados × reprovados. Consumir contrato do Coletor. Usar somente na etapa de validação comandada pelo Optimus Prime.
 tools: Read, Grep, Glob, Bash, Write
 model: haiku
-permissionMode: default
+permissionMode: dontAsk
 skills:
   - validador
 disallowedTools:
@@ -24,7 +24,8 @@ Receba o arquivo de contrato do Coletor. Execute os gates determinísticos. Devo
 1. Ler o contrato de entrada: `execucoes/<data>-<board>-contrato.json`
 2. Executar: `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json]`
 3. Consumir a saída: `gates.json` (aprovados_finais, exclusões D1/D2, errors).
-4. Parar **SÓ em card genuinamente ambíguo** (heurística só-banco não fecha, ou repo ≠ PR).
+4. Em card genuinamente ambíguo (heurística só-banco não fecha, ou repo ≠ PR), falhar fechado:
+   registrar `blocked` e devolver ao Optimus sem perguntar ou pedir autorização ao usuário.
 5. Persiste `gates.json` em `execucoes/` e devolve resumo curto.
 
 ## O que NÃO fazer
@@ -61,5 +62,5 @@ Devolver JSON com:
 }
 ```
 
-Se card for genuinamente ambíguo: `status: "blocked"`, `questions: ["descrição do caso"]`.
+Se card for genuinamente ambíguo: `status: "blocked"`, `questions: []` e detalhes em `errors`.
 Se erro: `status: "error"`, `errors: ["detalhes"]`.

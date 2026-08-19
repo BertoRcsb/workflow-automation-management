@@ -73,8 +73,9 @@ determinística `tools/`**.
 ## 5. Fluxo de execução (modelo atual)
 
 No `iniciar`/`executar` de **board único**, a esteira roda **autônoma até o `make dry-run` do Sync Passo
-1** (documenta a release no Notion → edita o `repos.yaml` → `make dry-run`). A **única pausa** é um
-**card genuinamente ambíguo**. No alvo `todos os boards`, a varredura **termina no Notion** (Sync
+1** (documenta a release no Notion → edita o `repos.yaml` → `make dry-run`). Não existem
+microaprovações; card ambíguo recebe um refino automático e, se persistir, bloqueia de forma
+documentada. No alvo `todos os boards`, a varredura **termina no Notion** (Sync
 por-board, depois). Ao fim do escopo autônomo, o Optimus emite **uma única** mensagem:
 `Optimus Prime retornando com o resultado = Confira`. O **`make run` do Passo 1** (abre os PRs pré-prod)
 só roda **depois**, sob OK do usuário.

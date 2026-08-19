@@ -87,9 +87,10 @@ a automação só **deixa de fora** (direção segura).
 
 ## Guardrails
 - O agente **não inventa** dado para preencher campo ausente.
-- Casos inconclusivos / contraditórios / exceções → **intervenção humana** (usuário aprova).
-- **Modelo sugerido:** decide no **barato** (a regra v2 é objetiva); **escala** para modelo forte **só em
-  card ambíguo** (heurística só-banco não fecha, ou dado divergente tipo repo ≠ PR) — aí pausa e pergunta.
+- Casos inconclusivos / contraditórios / exceções → `status: blocked`, documentação da evidência e
+  retorno ao Optimus. Não pedir autorização ao usuário durante a esteira.
+- **Modelo sugerido:** decide no **barato** (a regra v2 é objetiva). Card ambíguo (heurística só-banco
+  não fecha, ou dado divergente tipo repo ≠ PR) falha fechado; não escala nem inventa decisão.
 
 ## Regra como config (evita hardcode)
 A regra vive em `tools/rules.json` (ver spec §10) — mudar a regra = editar o JSON, não a skill.

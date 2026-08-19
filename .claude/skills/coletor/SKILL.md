@@ -68,6 +68,17 @@ interpreta ADF de cabeça.** Fluxo obrigatório:
 4. Usar o contrato do script como saída do coletor. GATE-ADF e o falso-vazio já são enforçados no
    código (`parse_failed=true` quando o campo tem conteúdo e 0 URLs) — nunca emitir `[]` silencioso.
 
+### Refinamento automático de `parse_failed`
+
+Quando o Optimus reenviar chaves específicas apó bloqueio do Validador, faça **uma única tentativa**:
+
+1. Re-fetch de cada card com `responseContentFormat: "adf"`, incluindo os campos de PR/repositório.
+2. Consultar `getJiraIssueRemoteIssueLinks` novamente.
+3. Salvar cru e remote links como `execucoes/<data>-<board>-refino-1-{raw,remote}.json`.
+4. Rodar novamente `optimus_extract.py` e salvar `*-refino-1-contrato.json`.
+5. Devolver o novo caminho no handoff. Não investigar manualmente, não mudar parser e não perguntar
+   ao usuário. Se continuar `parse_failed`, devolva a evidência para bloqueio fail-closed.
+
 ### Registro de boards (fonte única — o board é config, não texto solto)
 Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **Ordem = prioridade**
 (incidentes sempre 1º). **Board sem JQL → pula e reporta** "filtro a definir" (não coleta, **não inventa**).

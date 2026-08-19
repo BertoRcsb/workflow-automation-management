@@ -69,7 +69,8 @@ flowchart TB
 ## 2. Fluxo do `executar` (board único)
 
 Autônomo até o `make dry-run` do Sync Passo 1; a partir daí, **todo `make run`, merge, master e
-triggers exigem OK explícito do usuário**. Única pausa antes disso: card genuinamente ambíguo.
+triggers exigem OK explícito do usuário**. Não há microaprovações antes disso; ambiguidade ou erro
+falha fechado, é documentado e encerra com bloqueio objetivo.
 
 ```mermaid
 %%{init: {"theme":"base","themeVariables":{"fontSize":"13px","actorBkg":"#E8ECFB","actorBorder":"#4C5FD5","actorTextColor":"#2A3577","signalColor":"#5A6B7B","signalTextColor":"#2D3B48","noteBkgColor":"#FFF3D6","noteBorderColor":"#B7791F","noteTextColor":"#7B4B12","labelBoxBkgColor":"#EDF1F5","labelBoxBorderColor":"#5A6B7B"}}}%%
@@ -86,8 +87,8 @@ sequenceDiagram
     J-->>O: contrato normalizado (cards + PRs/repos)
     O->>O: validador — optimus_gates.py (regra v2, D1/D2)
     alt card genuinamente ambíguo
-        O->>U: pergunta (única pausa)
-        U-->>O: decisão
+        O->>O: refino automático único
+        O->>O: se persistir, documenta e encerra blocked
     end
     O->>N: montador — cria/atualiza a release (molde canônico)
     O->>O: notificador — rascunhos em sandbox

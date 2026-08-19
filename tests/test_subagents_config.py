@@ -4,6 +4,7 @@
 import json
 import os
 import sys
+from pathlib import Path
 
 def test_four_canonical_subagents_exist():
     """Validar que os 4 subagentes canônicos existem."""
@@ -55,7 +56,8 @@ def test_subagent_frontmatter():
         assert f'name: {agent_name}' in content, f"{agent_name}: sem 'name' correto"
         assert 'description:' in content, f"{agent_name}: sem 'description'"
         assert 'model: haiku' in content, f"{agent_name}: sem 'model: haiku'"
-        assert 'permissionMode: default' in content, f"{agent_name}: sem 'permissionMode'"
+        assert 'permissionMode: dontAsk' in content, \
+            f"{agent_name}: deve executar ferramentas permitidas sem prompts intermediários"
 
         # Verificar que validador, montador e notificador têm Agent explicitamente proibido
         if agent_name in ['validador', 'montador', 'notificador-sandbox']:
@@ -129,8 +131,39 @@ def test_old_test_file_removed():
     print("✓ test_optimus_security.py foi removido")
 
 
+def test_optimus_autonomy_contract():
+    """Modo + alvo autorizam a esteira até o dry-run, sem plano ou microaprovação."""
+    command = open('.claude/commands/optimus-prime.md', encoding='utf-8').read()
+    skill = open('.claude/skills/orquestrador/SKILL.md', encoding='utf-8').read()
+
+    assert 'Autonomia operacional obrigatória' in command
+    assert 'não apresente plano antes de trabalhar' in command
+    assert 'primeiro gate conversacional' in command.lower()
+    assert 'Somente quatro subagentes' in skill
+    assert 'refinamento automático obrigatório para `parse_failed`' in skill
+    assert '**apresenta ANTES o que vai fazer**' not in skill
+
+
+def test_pipeline_permissions_do_not_ask():
+    """Ações canônicas não podem cair no prompt de permissão do Claude Code."""
+    settings = json.load(open('.claude/settings.local.json', encoding='utf-8'))
+    ask = settings['permissions'].get('ask', [])
+    deny = settings['permissions'].get('deny', [])
+
+    assert not any('dry-run' in rule for rule in ask)
+    assert not any('repos.yaml' in rule for rule in ask)
+    assert set(ask) == {
+        'Bash(git add *)',
+        'Bash(git commit *)',
+        'Bash(python3 tools/optimus_sync.py run *)',
+        'Bash(python3 tools/optimus_sync.py run-triggers)',
+    }
+    assert 'Bash(make -C /home/ronan/sync-repos-from-master *)' in deny
+    assert 'Write(//home/ronan/sync-repos-from-master/**)' in deny
+
+
 if __name__ == '__main__':
-    os.chdir('/home/ronan/workflow-automation-management')
+    os.chdir(Path(__file__).resolve().parents[1])
 
     tests = [
         test_four_canonical_subagents_exist,
@@ -141,6 +174,8 @@ if __name__ == '__main__':
         test_settings_no_guard_permissions,
         test_four_subagents_have_agent_disabled,
         test_old_test_file_removed,
+        test_optimus_autonomy_contract,
+        test_pipeline_permissions_do_not_ask,
     ]
 
     failed = 0
