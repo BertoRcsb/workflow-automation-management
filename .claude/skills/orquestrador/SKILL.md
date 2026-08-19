@@ -90,7 +90,14 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
    **O LLM está proibido de derivar PR/repo/apenas_proc de cabeça.** O contrato é a saída do script.
    · **gate:** erro de leitura ou script → documenta e **para**.
 3. **Validador** → roda `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json] > gates.json`.
-   Consome `gates.json` (aprovados_finais, exclusões, errors). **Segue sozinho nos casos claros.**
+   Consome `gates.json` (prosseguir, aprovados_finais, exclusões, avisos, errors). **Segue sozinho nos casos claros.**
+   · **Prosseguimento = campo `prosseguir` do `gates.json`** (calculado em código: aprovados não-vazio
+   e `errors` vazio). `true` → segue ao Montador; `false` → documenta e para. **Não existe limiar
+   mínimo de aprovados** — 1 card aprovado é deploy válido (vide Hotfix 1.121.1); proibido inventar
+   critério de parada ou de prosseguimento (incidente 2026-08-19: bloqueio fabricado "nunca deploy
+   isolado" travou a 1.122.0 com 1 aprovado legítimo).
+   · **`avisos` do `gates.json`** (ex.: campo Repositório com URL de PR) vão ao notificador como
+   pendência informativa — **nunca bloqueiam nem reprovam**.
    · **card genuinamente ambíguo:** marca `blocked`, documenta e encerra sem pedir autorização
    para decidir, contornar ou inventar.
    **Se `errors` != [] (GATE-CROSSCHECK) → documenta em `erros/` e para.**
@@ -100,28 +107,36 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
    invoque `Agent("validador")` uma segunda e última vez. Se resolver, siga a esteira; se persistir,
    documente e encerre `blocked`. Não pergunte ao usuário e não altere regra/configuração.
 4. **Montador** → usa `gates.json.rows` para montar a tabela; **cria/atualiza a página no Notion no molde
-   sem pedir OK** e **re-verifica via re-fetch**. · **gates:** (1) conjunto de cards = aprovados
-   (GATE-CONJUNTO); (2) colunas/blocos = últimas versões (GATE-MOLDE); (3) célula = contrato (GATE-LINKS,
+   sem pedir OK** — sempre como **linha da base** (`parent.data_source_id`), participantes de
+   `tools/deploy_roster.json` + assignees. · **gates:** (1) conjunto de cards = aprovados
+   (GATE-CONJUNTO); (2) colunas/blocos = molde literal (GATE-MOLDE); (3) célula = contrato (GATE-LINKS,
    `"• APENAS PROC"` só quando `deploy_fields.apenas_proc == true`); (4) usar `notion-update-page` se
    página existe (GATE-IDEMPOT). Qualquer falha → documenta e **para**.
+   · **Verificação do Optimus (obrigatória, não delegável):** após o handoff `ok` do montador, o
+   Optimus faz **seu próprio** `notion-fetch` da página, salva o JSON cru em `execucoes/` e roda
+   `python3 tools/optimus_montage_gate.py --page-json <raw> --gates <gates.json> --roster
+   tools/deploy_roster.json --version <X.Y.Z> --tipo <Release|Hotfix> --data-source 23e19d89-2318-81ff-812d-000b6afb6b5a
+   --assignees "<nomes>"`. **Só o exit 0 DESTE comando encerra a etapa** — o auto-relato do
+   subagente nunca conta (incidente 2026-08-19: montador reportou "PASSOU" com página órfã).
 5. **Notificador (sandbox)** → gera mensagens de pendência/deploy p/ dev/PO/QA; **mostra só pro usuário**
    (envio automático pendente até a skill `notificador` existir).
 6. **Sync (`sync-repos-from-master`)** — governança do `repos.yaml`, **guiada pela doc do Notion**.
    Fluxo obrigatório em **DOIS comandos** via o driver `tools/optimus_sync.py` (que encadeia GATE-YAML →
    GATE-PROMO → GATE-TRIGGERS → `make`, restaura backup e documenta em `erros/` sozinho em caso de falha):
-   1. `python3 tools/optimus_sync.py backup` — **ANTES** de editar o `repos.yaml`.
-   2. Edite o YAML: **descomente apenas as linhas `name`+`repository`** dos repos de "Repositórios para
-      Deploy"; recomente os que não são do release; `triggers:` **comentados** (são do Passo 3). **Só
-      alterne o `#`** (+ o escalar `defaults.source`/`targets` ao trocar de passo). Repo ausente no
-      catálogo → **para e reporta** (o usuário adiciona); nunca crie a linha.
-   3. `python3 tools/optimus_sync.py dry-run --step <passo1|passo2|pos-deploy> --pr-title "<título>"`.
+   1. `python3 tools/optimus_sync.py configure --step <passo1|passo2|pos-deploy> --repos <nome1,nome2>`
+      — os repos vêm de "Repositórios para Deploy" da doc do Notion. O `configure` faz o backup, ajusta
+      `source`/`targets` do passo (de `tools/promotion.json`) e alterna **só o `#`** dos pares
+      `name`+`repository` (triggers sempre comentados), validando a si mesmo com o GATE-YAML.
+      **O LLM NÃO edita o `repos.yaml` na mão** (incidente 2026-08-19: edição manual deletou linhas).
+      Repo ausente no catálogo → o comando **falha e reporta** (o usuário adiciona); nunca criar linha.
+   2. `python3 tools/optimus_sync.py dry-run --step <passo1|passo2|pos-deploy> --pr-title "<título>"`.
       **Exit 0 → mensagem `Confira` e espera o usuário; exit 1 → o driver já restaurou/documentou — PARE.**
-   - **Editar o YAML + `dry-run` = autônomo.** **`run`/`run-triggers` (mesmo driver) = OK explícito do
+   - **`configure` + `dry-run` = autônomo.** **`run`/`run-triggers` (mesmo driver) = OK explícito do
      usuário.** Passo 1 `prerelease→teste_regressivo`; Passo 2 `→master` (só usuário); Passo 3
      `run-triggers` (só usuário; aprovação do build no GCP é dele). Pós-deploy:
      `master→develop/stage/prerelease` (`--pr-title "Sync Master"`). Sintaxe completa: **`REFERENCE.md` §2**.
-   - **PROIBIDO chamar `make` direto no sync ou rodar os gates soltos nesta etapa** — sempre pelo driver
-     (é ele que garante ordem, restauração e documentação).
+   - **PROIBIDO chamar `make` direto no sync, rodar os gates soltos ou editar o YAML à mão nesta etapa**
+     — sempre pelo driver (é ele que garante ordem, restauração e documentação).
 7. **Fechamento** → persiste `execucoes/<data>-<board>-{raw,contrato,gates}.json` como passo contratado
    (rastreabilidade); salva o resumo consolidado (§9) em `execucoes/` (auditoria em disco) e emite ao
    usuário **uma única mensagem de fechamento** (ver abaixo).
@@ -144,27 +159,34 @@ Optimus Prime retornando com o resultado = Confira
 - No alvo **`todos os boards`**, sai **por board** (o Sync fica fora do loop). **`verificar`** (dry) **não**
   emite essa linha. Elaboração completa: **`REFERENCE.md` §3**.
 
-## Modelo & custo (escada de modelo)
-A esteira é **majoritariamente mecânica** → **modelo mais barato por padrão (Haiku)**. Só **um ponto
-exige julgamento fino**: validar **card ambíguo**.
-- **Haiku (padrão):** `coletor`, `montador`, e o validador nos **casos claros** (cada skill declara
-  "Modelo sugerido: barato").
+## Modelo (agnóstico)
+A esteira é **agnóstica de modelo**: os subagentes **não pinam `model:`** — herdam o modelo da
+sessão e têm que funcionar em **qualquer** tier (incidente 2026-08-19: subagentes pinados em modelo
+barato fabricaram handoff e montaram página órfã). A corretude **não depende do modelo**: vem dos
+**gates determinísticos** (`tools/`) e da verificação própria do Optimus a cada etapa.
+- **Proibido** escolher/escalar/rebaixar modelo por conta própria ou condicionar etapa ao tier.
 - **Ambiguidade falha fechado:** card ambíguo (heurística só-banco não fecha, ou repo≠PR) → o
-  Optimus registra `blocked` e encerra. Não escala modelo nem pede autorização durante a esteira.
+  Optimus registra `blocked` e encerra. Não pede autorização durante a esteira.
 - **Regra de ouro:** **desempenho atual vem primeiro.** Economizar modelo/token **nunca** pode quebrar
   ou degradar a esteira; **na dúvida, mantém como está**.
 
 ## Guardrails (diretrizes inquebráveis)
 - **Sync inviolável (ligação só por comando):** o cwd é SEMPRE o `workflow-automation-management`;
   **NUNCA** faça `cd` para dentro do `sync-repos-from-master`. O Optimus toca no sync APENAS de dois
-  jeitos: (1) alternar o `#` de linhas já existentes em `"$SYNC_REPO_PATH/repos.yaml"` (nunca
-  reescrever/reformatar/reordenar/gerar, nem mudar `defaults`/`cloud_build`/valores, nem add/remove
-  linhas ou anotações); (2) rodar os alvos do Makefile via `make -C "$SYNC_REPO_PATH" <alvo>`
+  jeitos: (1) preparar o `repos.yaml` via `optimus_sync.py configure` (que só alterna o `#` de linhas
+  já existentes + o par `source`/`targets` do passo — nunca reescreve/reformata/reordena/gera, nem muda
+  `cloud_build`/valores, nem add/remove linhas); (2) rodar os alvos do Makefile via o driver
   (`dry-run` | `run` | `dry-run-triggers` | `run-triggers` — NÃO existe `make sync`). **Nenhum outro
   arquivo** é criado/editado dentro do sync. As autenticações do sync (`.env`, `credentials/`) são dele
   — não tocar. TODO artefato (erros/, execucoes/, backup do YAML) fica no `workflow-automation-management`.
+- **Auto-relato de subagente NUNCA encerra um gate.** Handoff `ok` de coletor/validador/montador é
+  hipótese, não veredito: o Optimus **re-executa o gate determinístico correspondente** sobre artefatos
+  que ele próprio obteve (`optimus_gates.py` sobre o contrato; `optimus_montage_gate.py` sobre o SEU
+  re-fetch do Notion). Um subagente pode fabricar "PASSOU" (incidente 2026-08-19); só exit 0 do script
+  no contexto do Optimus fecha a etapa.
 - **Toda ação no sync passa pelo driver `tools/optimus_sync.py`** (nunca `make` direto, nunca gates
-  soltos): `backup` antes de editar; `dry-run`/`run`/`dry-run-triggers`/`run-triggers` depois. O driver
+  soltos, nunca edição manual do YAML): `configure` para preparar o `repos.yaml`;
+  `dry-run`/`run`/`dry-run-triggers`/`run-triggers` depois. O driver
   encadeia **GATE-YAML** (edição = só toggle de `#` + escalar `source`), **GATE-PROMO** (whitelist
   `tools/promotion.json`; bloqueia `prerelease→master`, self-sync e passo divergente — nunca direto pra
   master) e **GATE-TRIGGERS** (triggers comentados fora do Passo 3; presentes e sem órfão no Passo 3);

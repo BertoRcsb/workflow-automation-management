@@ -2,7 +2,6 @@
 name: montador
 description: Criar/atualizar a página de release/hotfix no Notion a partir dos aprovados. Ser o único subagente de escrita no Notion. Usar somente na etapa de montagem comandada pelo Optimus Prime.
 tools: Read, Grep, Glob, Write, mcp__notion__notion-fetch, mcp__notion__notion-create-pages, mcp__notion__notion-update-page, mcp__notion__notion-query-data-sources, mcp__notion__notion-get-async-task
-model: haiku
 permissionMode: dontAsk
 skills:
   - montador

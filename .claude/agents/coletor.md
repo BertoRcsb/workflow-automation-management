@@ -2,7 +2,6 @@
 name: coletor
 description: Coletar cards candidatos de exatamente um board do Jira e produzir artefatos normalizados para o Workflow Automation Management. Usar somente na etapa de coleta comandada pelo Optimus Prime.
 tools: Read, Grep, Glob, Bash, Write, mcp__atlassian__searchJiraIssuesUsingJql, mcp__atlassian__getJiraIssue, mcp__atlassian__getJiraIssueRemoteIssueLinks, mcp__atlassian__getJiraProjectIssueTypesMetadata
-model: haiku
 permissionMode: dontAsk
 skills:
   - coletor

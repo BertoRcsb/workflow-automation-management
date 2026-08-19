@@ -2,7 +2,6 @@
 name: notificador-sandbox
 description: Gerar rascunhos de notificação para responsáveis sobre pendências e deploy. Sandbox apenas — sem envio real. Usar somente na etapa de notificação comandada pelo Optimus Prime.
 tools: Read, Grep, Glob, Write
-model: haiku
 permissionMode: dontAsk
 disallowedTools:
   - Bash

@@ -2,7 +2,6 @@
 name: validador
 description: Aplicar gates de elegibilidade por conteúdo (regra v2, D1, D2) e separar aprovados × reprovados. Consumir contrato do Coletor. Usar somente na etapa de validação comandada pelo Optimus Prime.
 tools: Read, Grep, Glob, Bash, Write
-model: haiku
 permissionMode: dontAsk
 skills:
   - validador

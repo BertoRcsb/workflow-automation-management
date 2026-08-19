@@ -55,7 +55,9 @@ def test_subagent_frontmatter():
         # Verificar campos obrigatórios
         assert f'name: {agent_name}' in content, f"{agent_name}: sem 'name' correto"
         assert 'description:' in content, f"{agent_name}: sem 'description'"
-        assert 'model: haiku' in content, f"{agent_name}: sem 'model: haiku'"
+        # Agnostico de modelo (2026-08-19): NENHUM pin de 'model:' — o subagente herda o modelo
+        # da sessao. A seguranca vem dos gates deterministicos, nao do tier do modelo.
+        assert 'model:' not in content, f"{agent_name}: nao pode pinar 'model:' (agnostico)"
         assert 'permissionMode: dontAsk' in content, \
             f"{agent_name}: deve executar ferramentas permitidas sem prompts intermediários"
 
