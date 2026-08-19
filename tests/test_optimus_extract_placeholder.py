@@ -76,7 +76,9 @@ def test_acao_dados_sim_com_pr_captura_tudo():
         acao_dados="Sim"))
     assert c["parse_status"]["parse_failed"] is False
     assert c["parse_status"]["pr_url_count"] == 2
-    assert c["parse_status"]["repo_url_count"] == 1
+    # 2026-08-19: repos derivam das PRs (sla-api + newcontract-front) alem do campo (sla-api).
+    # O comportamento antigo (repo so do campo) perderia newcontract-front no repos.yaml.
+    assert c["parse_status"]["repo_url_count"] == 2
     assert c["deploy_fields"]["apenas_proc"] is False
     verdict, _ = G.eligibility_v2(c, RULES)
     assert verdict == "aprovado"

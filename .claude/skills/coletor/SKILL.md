@@ -66,7 +66,9 @@ interpreta ADF de cabeça.** Fluxo obrigatório:
 3. Salvar o cru em `execucoes/<data>-<board>-raw.json` e rodar
    `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json execucoes/<data>-<board>-remote.json > execucoes/<data>-<board>-contrato.json`.
 4. Usar o contrato do script como saída do coletor. GATE-ADF e o falso-vazio já são enforçados no
-   código (`parse_failed=true` quando o campo tem conteúdo e 0 URLs) — nunca emitir `[]` silencioso.
+   código: repo **derivado da URL da PR**; URL de PR no campo Repositório é interpretada (flag
+   `repo_field_com_pr`, aviso não-bloqueante); `parse_failed=true` só quando o campo tinha
+   link/resíduo **não interpretado** — nunca emitir `[]` silencioso.
 
 ### Refinamento automático de `parse_failed`
 
@@ -126,7 +128,8 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
   assignee + os customfields). **NÃO** traga `description` nem `*all` na busca em lote — é o que estoura
   o limite e força salvar-e-parsear. Precisa da descrição (heurística só-banco / card ambíguo)? Puxe
   **sob demanda, por card**, com `getJiraIssue` incluindo `description`. Menos payload = mais rápido e menos token.
-- **Modelo sugerido:** barato (ex.: Haiku) — coleta é trabalho mecânico.
+- **Modelo:** agnóstico — sem pin; herda o da sessão. A coleta é mecânica e a corretude vem do
+  `optimus_extract.py`, não do modelo.
 
 ## Modelo normalizado (contrato de saída)
 ```json
@@ -152,8 +155,12 @@ Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **
 }
 ```
 - **versão de destino:** não vem do card — é atribuída na montagem do pacote.
-- **parse_status.parse_failed:** `true` se o campo ADF tinha conteúdo mas a extração zerou (re-extraído
-  e ainda 0). `false` caso contrário.
-- **parse_status.pr_url_count / repo_url_count:** contagem de URLs extraídas para debug/auditoria.
+- **parse_status.parse_failed:** `true` se o campo ADF tinha link/resíduo que a extração **não
+  interpretou** (re-extraído e ainda perdido). `false` caso contrário — texto sem URL é `*_sem_link`,
+  e URL de PR no campo Repositório é interpretada (vira PR + repo derivado), não falha.
+- **parse_status.pr_url_count / repo_url_count:** contagem de URLs extraídas para debug/auditoria
+  (`repositories` inclui os repos derivados das URLs de PR).
+- **parse_status.repo_field_com_pr:** `true` quando o campo Repositório continha URL de PR —
+  aviso não-bloqueante para corrigir o card no Jira.
 
 > Evolução planejada deste papel: `docs/ROADMAP.md`.

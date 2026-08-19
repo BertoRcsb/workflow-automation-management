@@ -22,17 +22,22 @@ def montador_pr_cell(card):
 def eligibility_v2(card, rules):
     ps = card["parse_status"]
     df = card["deploy_fields"]
+    pc, rc = ps["pr_url_count"], ps["repo_url_count"]
+    # Motivo NUNCA generico: sempre reflete os contadores reais do contrato (incidente
+    # 2026-08-19 PB-5728: "sem PR, sem repo" emitido para card com pr_url_count=6).
+    detalhe = f"pr={pc}, repo={rc}, acao_dados={df['acao_dados'] or 'vazio'}"
     if ps["parse_failed"]:
-        return ("parse_failed", "parse_failed: ADF com conteudo mas 0 URLs; re-extrair")
-    has_code = ps["pr_url_count"] > 0 and ps["repo_url_count"] > 0
-    if has_code:
-        return ("aprovado", "PR + repositorio")
-    if df["acao_dados"] == "Sim" and ps["pr_url_count"] == 0 and ps["repo_url_count"] == 0:
+        return ("parse_failed", "parse_failed: campo com link nao interpretado; re-extrair")
+    if pc > 0 and rc > 0:
+        return ("aprovado", f"PR + repositorio ({detalhe})")
+    if df["acao_dados"] == "Sim" and pc == 0 and rc == 0:
         owner = (card.get("owner") or {}).get("name")
         if owner in rules.get("db_owners", []):
-            return ("aprovado", "so-banco legitimo (owner de banco)")
-        return ("ambiguo", "acao_dados=Sim sem PR/repo e owner nao e de banco: decidir")
-    return ("reprovado", "sem PR, sem repo, sem acao de dados")
+            return ("aprovado", f"so-banco legitimo (owner de banco; {detalhe})")
+        return ("ambiguo", f"acao_dados=Sim sem PR/repo e owner nao e de banco: decidir ({detalhe})")
+    if pc == 0 and rc == 0:
+        return ("reprovado", f"sem PR, sem repo, sem acao de dados ({detalhe})")
+    return ("reprovado", f"elegibilidade v2 nao satisfeita ({detalhe})")
 
 
 def apply_d1(approved, cards_by_id, rules, epic_status):
@@ -135,7 +140,18 @@ def main():
             "repos": c["links"]["repositories"],
         })
 
+    # Avisos nao-bloqueantes (dado interpretado, mas fonte errada no Jira) -> notificador.
+    avisos = [
+        {"card_id": c["card_id"],
+         "aviso": "campo Repositorio contem URL de PR (interpretada e derivada; corrigir no Jira)"}
+        for c in contract if c["parse_status"].get("repo_field_com_pr")
+    ]
+
     out = {
+        # Criterio DETERMINISTICO de prosseguimento da esteira: aprovados nao-vazio e sem
+        # errors. Nao existe limiar minimo de cards (incidente 2026-08-19: bloqueio fabricado
+        # "nunca deploy isolado" com 1 aprovado — 1 aprovado E deploy valido).
+        "prosseguir": bool(kept2) and not errors,
         "aprovados_finais": kept2,
         "rows": rows,
         "reprovados": reprovado,
@@ -143,6 +159,7 @@ def main():
         "parse_failed": parse_failed,
         "excluidos_d1": exc_d1,
         "excluidos_d2": exc_d2,
+        "avisos": avisos,
         "errors": errors,
     }
     json.dump(out, sys.stdout, ensure_ascii=False, indent=2)

@@ -34,6 +34,13 @@ Um item **passa** se:
 **Execução determinística:** a regra v2, D1, D2 e o GATE-CROSSCHECK rodam em
 `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json]`. O validador
 consome `gates.json`. `parse_failed` vira status "parse_failed" (nem aprova nem reprova).
+Os **motivos saem do código com os contadores reais** (`pr=N, repo=N, acao_dados=...`) — nunca
+parafrasear nem trocar por mensagem genérica (incidente 2026-08-19 PB-5728: "sem PR" relatado para
+card com 6 PRs). `avisos` (ex.: `repo_field_com_pr`) são pendência informativa, nunca reprovação.
+
+**Repositório derivado da PR:** o extractor deriva `repositories` das URLs de PR
+(`bitbucket.org/<ws>/<repo>/pull-requests/<n>`) — campo Repositório vazio com PR válida **satisfaz
+a regra 1** (mesma lógica do caso PB-5599 abaixo, agora em código; caso-modelo PB-5728).
 
 **PR por referência de card (conta como PR válida):** quando o `coletor` herda a PR de **outro card
 referenciado** (o campo apontava pra `PB-XXXX` em vez de link do Bitbucket — ver `coletor`), essa PR
@@ -89,8 +96,9 @@ a automação só **deixa de fora** (direção segura).
 - O agente **não inventa** dado para preencher campo ausente.
 - Casos inconclusivos / contraditórios / exceções → `status: blocked`, documentação da evidência e
   retorno ao Optimus. Não pedir autorização ao usuário durante a esteira.
-- **Modelo sugerido:** decide no **barato** (a regra v2 é objetiva). Card ambíguo (heurística só-banco
-  não fecha, ou dado divergente tipo repo ≠ PR) falha fechado; não escala nem inventa decisão.
+- **Modelo:** agnóstico — sem pin; herda o da sessão (a regra v2 roda em `optimus_gates.py`, não
+  no modelo). Card ambíguo (heurística só-banco não fecha, ou dado divergente tipo repo ≠ PR) falha
+  fechado; não escala nem inventa decisão.
 
 ## Regra como config (evita hardcode)
 A regra vive em `tools/rules.json` (ver spec §10) — mudar a regra = editar o JSON, não a skill.

@@ -112,7 +112,8 @@ def norm_pr(url):
         num = parts[i + 1] if i + 1 < len(parts) else "?"
         workspace = parts[0] if parts else "bernhoeft"
         canon = f"https://bitbucket.org/{workspace}/{repo}/pull-requests/{num}"
-        return {"repo": repo, "num": num, "url": canon, "label": f"{repo} #{num}"}
+        return {"repo": repo, "num": num, "url": canon, "label": f"{repo} #{num}",
+                "repo_url": f"https://bitbucket.org/{workspace}/{repo}"}
     return None
 
 
@@ -152,34 +153,47 @@ def build_contract(issue, remote_pr_urls=None):
     for u in (remote_pr_urls or []):
         if "pull-requests" in u:
             pr_raw.append(u)
+    # URL de PR no campo Repositorio (campo preenchido errado no Jira) e INTERPRETADA, nao
+    # descartada: vira PR + repo derivado, com flag repo_field_com_pr para aviso nao-bloqueante
+    # (incidente 2026-08-19 PB-6257: descarte gerava parse_failed falso).
+    repo_field_urls = extract_field_urls(repo_field)
+    repo_field_pr_urls = [u for u in repo_field_urls if "pull-requests" in u]
+    pr_raw.extend(repo_field_pr_urls)
     pr_raw = dedup(pr_raw)
 
-    repo_raw = [u for u in extract_field_urls(repo_field) if "pull-requests" not in u]
+    repo_raw = [u for u in repo_field_urls if "pull-requests" not in u]
 
     prs = dedup_by(
         [p for p in (norm_pr(u) for u in pr_raw) if p], key="url"
     )
     prs.sort(key=lambda p: p["url"])
-    repos = dedup_by(
-        [r for r in (norm_repo(u) for u in repo_raw) if r], key="url"
-    )
+    # Regra v2 (spec 5.2): "PR apontando para repo" — o repositorio e derivavel da URL da PR
+    # (bitbucket.org/<ws>/<repo>/pull-requests/<n>). Campo Repositorio vazio com PR valida
+    # nao reprova (incidente 2026-08-19 PB-5728: 6 PRs reprovadas como "sem PR, sem repo").
+    field_repos = [r for r in (norm_repo(u) for u in repo_raw) if r]
+    derived_repos = [{"repo": p["repo"], "url": p["repo_url"]} for p in prs]
+    repos = dedup_by(field_repos + derived_repos, key="url")
     repos.sort(key=lambda r: r["url"])
 
     # parse_failed = o campo TEM URL/link mas a normalizacao perdeu tudo (falha real de extracao).
     # Texto puro sem nenhuma URL ("APENAS PROC", "N/A", "nao tem") NAO e falha: e sem_link,
     # e o texto literal vai preservado no contrato para ser espelhado no Notion.
     pr_field_urls = extract_field_urls(pr_field)
-    repo_field_urls = extract_field_urls(repo_field)
     pr_field_text = extract_text_from_adf(pr_field)
     repo_field_text = extract_text_from_adf(repo_field)
     # Residuo de link renderizado ("[Card]", "[...]") sem URL = link perdido, falha real.
     pr_link_residue = LINK_RESIDUE.search(pr_field_text) is not None
     repo_link_residue = LINK_RESIDUE.search(repo_field_text) is not None
     pr_parse_failed = (len(pr_field_urls) > 0 or pr_link_residue) and len(prs) == 0
-    repo_parse_failed = (len(repo_field_urls) > 0 or repo_link_residue) and len(repos) == 0
+    # O campo Repositorio e julgado pelo que ELE continha: URL entendida = repo direto OU PR
+    # (repo derivado dela). A derivacao a partir do campo de PR nunca mascara link perdido aqui.
+    repo_field_prs = [p for p in (norm_pr(u) for u in repo_field_pr_urls) if p]
+    repo_field_entendido = len(field_repos) + len(repo_field_prs)
+    repo_parse_failed = (len(repo_field_urls) > 0 or repo_link_residue) and repo_field_entendido == 0
     parse_failed = bool(pr_parse_failed or repo_parse_failed)
     pr_sem_link = bool(pr_field_text) and len(pr_field_urls) == 0
     repo_sem_link = bool(repo_field_text) and len(repo_field_urls) == 0
+    repo_field_com_pr = len(repo_field_prs) > 0
 
     acao_dados = select_value(f.get(ACAO_DADOS_FIELD))
     merge = select_value(f.get(MERGE_FIELD))
@@ -219,6 +233,7 @@ def build_contract(issue, remote_pr_urls=None):
             "repo_url_count": len(repos),
             "pr_sem_link": pr_sem_link,
             "repo_sem_link": repo_sem_link,
+            "repo_field_com_pr": repo_field_com_pr,
             "pr_field_text": pr_field_text,
             "repo_field_text": repo_field_text,
         },

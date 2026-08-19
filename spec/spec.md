@@ -97,6 +97,18 @@ cards em "Pronto para deploy" estavam vazios).
 
 **Barra** quem **não tem nada** (sem PR, sem repo, sem ação de dados). `"N/A"` **não** é link válido.
 
+**Repositório derivado da PR (2026-08-19):** a URL de PR do Bitbucket identifica o repositório
+(`bitbucket.org/<ws>/<repo>/pull-requests/<n>`), então o extractor deriva `repositories` das PRs —
+campo Repositório vazio com PR válida **satisfaz a regra 1** (caso-modelo PB-5728: 6 PRs reprovadas
+como "sem PR, sem repo"). Campo Repositório preenchido com a **própria URL da PR** é interpretado
+(vira PR + repo derivado) e gera aviso não-bloqueante `repo_field_com_pr` para corrigir o card no
+Jira (caso-modelo PB-6257: parse_failed falso). `parse_failed` fica reservado a link/resíduo que a
+extração **não** interpretou.
+
+**Prosseguimento da esteira (determinístico):** o campo `prosseguir` do `gates.json`
+(aprovados não-vazio **e** `errors` vazio) decide seguir ao Montador ou parar. **Não há limiar
+mínimo de aprovados** — 1 card aprovado é deploy válido; o orquestrador não inventa critério.
+
 **Heurística "só-banco legítimo"** (validada 2026-07-14, caso-modelo **PB-5778** — virou deploy
 real em prod): para distinguir banco legítimo de "código que esqueceu a PR" →
 `Ação de dados = Sim` **e** (assignee é responsável de banco **ou** a descrição cita

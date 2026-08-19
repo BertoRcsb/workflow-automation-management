@@ -8,8 +8,8 @@
 
 | Gate | Script | O que garante | Falha → |
 |---|---|---|---|
-| **GATE-ADF / falso-vazio** | `optimus_extract.py` | Extração de PR/repo do ADF; `parse_failed=true` quando o campo tem conteúdo e 0 URLs (nunca `[]` silencioso) | contrato marca o card; validador não aprova nem reprova |
-| **Regra v2 + D1 + D2** | `optimus_gates.py` | Elegibilidade por conteúdo; exclusão por épico incompleto (D1) e PR compartilhada parcial (D2, fixpoint) | card excluído/ambíguo registrado em `gates.json` |
+| **GATE-ADF / falso-vazio** | `optimus_extract.py` | Extração de PR/repo do ADF; repo **derivado da URL da PR**; URL de PR no campo repo = interpretada + aviso (`repo_field_com_pr`); `parse_failed=true` só quando o campo tinha link/resíduo **não interpretado** (nunca `[]` silencioso) | contrato marca o card; validador não aprova nem reprova |
+| **Regra v2 + D1 + D2** | `optimus_gates.py` | Elegibilidade por conteúdo com **motivo calculado dos contadores reais** (nunca genérico); exclusão por épico incompleto (D1) e PR compartilhada parcial (D2, fixpoint); campo `prosseguir` (aprovados não-vazio e sem errors — **sem limiar mínimo**) e `avisos` não-bloqueantes | card excluído/ambíguo registrado em `gates.json`; `prosseguir=false` → documenta e para |
 | **GATE-CROSSCHECK** | `optimus_gates.py` | Nunca "APENAS PROC" onde há PR; nunca aprovar `parse_failed` | exit 1 → documenta e para |
 | **GATE-VER-1/VER-2** | `optimus_next_version.py` | Versão-alvo pelo maior semver numérico (nunca data); anti-colisão | exit 1 → decisão do usuário |
 | **GATE-YAML** | `optimus_yaml_gate.py` (via driver) | Edição do `repos.yaml` = só toggle de `#` (+ escalar `defaults.source` por passo) | driver restaura backup, documenta, para |
