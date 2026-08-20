@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 
 def test_four_canonical_subagents_exist():
-    """Validar que os 4 subagentes canônicos existem."""
+    """Validar que os 4 papéis + worker efêmero de fan-out existem."""
     agents_dir = '.claude/agents'
-    required_agents = ['coletor', 'validador', 'montador', 'notificador-sandbox']
+    required_agents = ['coletor', 'coletor-card', 'validador', 'montador', 'notificador-sandbox']
 
     for agent in required_agents:
         filepath = os.path.join(agents_dir, f'{agent}.md')
@@ -41,8 +41,8 @@ def test_no_guard_scripts():
 
 
 def test_subagent_frontmatter():
-    """Validar frontmatter YAML dos 4 subagentes."""
-    agents = ['coletor', 'validador', 'montador', 'notificador-sandbox']
+    """Validar frontmatter YAML dos subagentes canônicos."""
+    agents = ['coletor', 'coletor-card', 'validador', 'montador', 'notificador-sandbox']
 
     for agent_name in agents:
         filepath = f'.claude/agents/{agent_name}.md'
@@ -61,8 +61,8 @@ def test_subagent_frontmatter():
         assert 'permissionMode: dontAsk' in content, \
             f"{agent_name}: deve executar ferramentas permitidas sem prompts intermediários"
 
-        # Verificar que validador, montador e notificador têm Agent explicitamente proibido
-        if agent_name in ['validador', 'montador', 'notificador-sandbox']:
+        # Verificar que validador, montador, notificador e coletor-card têm Agent explicitamente proibido
+        if agent_name in ['validador', 'montador', 'notificador-sandbox', 'coletor-card']:
             assert 'Agent' in content, f"{agent_name}: Agent não está listado em disallowedTools"
 
         # Verificar que não tem hooks de guard
@@ -108,8 +108,8 @@ def test_settings_no_guard_permissions():
 
 
 def test_four_subagents_have_agent_disabled():
-    """Validar que validador, montador e notificador proíbem Agent."""
-    restricted_agents = ['validador', 'montador', 'notificador-sandbox']
+    """Validar que validador, montador, notificador e coletor-card proíbem Agent."""
+    restricted_agents = ['validador', 'montador', 'notificador-sandbox', 'coletor-card']
 
     for agent in restricted_agents:
         filepath = f'.claude/agents/{agent}.md'
@@ -141,7 +141,7 @@ def test_optimus_autonomy_contract():
     assert 'Autonomia operacional obrigatória' in command
     assert 'não apresente plano antes de trabalhar' in command
     assert 'primeiro gate conversacional' in command.lower()
-    assert 'Somente quatro subagentes' in skill
+    assert 'Somente os subagentes canônicos' in skill
     assert 'refinamento automático obrigatório para `parse_failed`' in skill
     assert '**apresenta ANTES o que vai fazer**' not in skill
 
@@ -164,6 +164,29 @@ def test_pipeline_permissions_do_not_ask():
     assert 'Write(//home/ronan/sync-repos-from-master/**)' in deny
 
 
+def test_coletor_card_escopo_minimo():
+    """Coletor-card nao pode rodar JQL nem tocar Notion."""
+    filepath = '.claude/agents/coletor-card.md'
+    with open(filepath, 'r') as f:
+        content = f.read()
+
+    assert 'searchJiraIssuesUsingJql' not in content, \
+        "coletor-card: nao pode ter searchJiraIssuesUsingJql (nao escolhe escopo)"
+    assert 'mcp__notion' not in content, \
+        "coletor-card: nao pode ter MCP Notion (worker efemero, sem escrita)"
+
+    print("✓ test_coletor_card_escopo_minimo")
+
+
+def test_no_montador_card():
+    """Montador-card NAO deve existir (descartado por ora)."""
+    filepath = '.claude/agents/montador-card.md'
+    assert not os.path.isfile(filepath), \
+        f"montador-card.md nao deve existir: {filepath}"
+
+    print("✓ test_no_montador_card")
+
+
 if __name__ == '__main__':
     os.chdir(Path(__file__).resolve().parents[1])
 
@@ -178,6 +201,8 @@ if __name__ == '__main__':
         test_old_test_file_removed,
         test_optimus_autonomy_contract,
         test_pipeline_permissions_do_not_ask,
+        test_coletor_card_escopo_minimo,
+        test_no_montador_card,
     ]
 
     failed = 0

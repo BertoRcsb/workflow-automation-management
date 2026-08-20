@@ -55,6 +55,25 @@ não muda se a fonte mudar — para trocar de fonte, reescreva só a seção
 ## Configuração atual — Jira via MCP Atlassian (read-only, escopo `read:jira-work`)
 - **cloudId:** `f36e5519-1f88-4f71-a406-75326e86deda` (bernhoeft.atlassian.net)
 
+### Decisão de fan-out (determinística — antes de qualquer fetch de card)
+1. Rodar a JQL do board (registro abaixo) pedindo SÓ as chaves (`fields: ["key"]`) e salvar o
+   resultado em `execucoes/<data>-<board>-jql.json`.
+2. Rodar `python3 tools/optimus_card_manifest.py execucoes/<data>-<board>-jql.json <board> <data> > execucoes/<data>-<board>-manifesto.json`.
+   O script decide (config `tools/workers.json`): quantidade de cards, lotes, caminhos e concorrência.
+   **O coletor não decide fan-out de cabeça.**
+3. **`fanout: false`** → seguir o fluxo monolítico desta skill, inalterado (raw/remote/contrato do board).
+4. **`fanout: true`** → NÃO coletar os cards: devolver handoff com `fanout: true` e
+   `manifest_path`, e encerrar. O Optimus Prime despacha os workers `coletor-card` (um por lote,
+   em ondas de `params.max_workers`) e agrega com
+   `python3 tools/optimus_card_aggregate.py <manifesto> > execucoes/<data>-<board>-contrato.json`.
+
+### Modo card (worker `coletor-card`)
+Quando invocado como worker de um lote (agente `coletor-card`): coletar SOMENTE as `keys`
+recebidas, na ordem, com o fluxo obrigatório de parse abaixo (ADF + `optimus_extract.py`),
+gravando nos três caminhos exatos recebidos (`raw_path`, `remote_path`, `contrato_path`).
+Sem JQL, sem escopo próprio, sem validação. Problema num card → registrar no contrato
+(`parse_failed`/aviso) e reportar em `errors[]`; nunca inventar nem omitir.
+
 ### Parse de PR/repositório = tools/optimus_extract.py (determinístico, não fazer à mão)
 Os campos `customfield_12400` (PR) e `customfield_12399` (repositório) chegam em ADF. **O coletor NÃO
 interpreta ADF de cabeça.** Fluxo obrigatório:
@@ -80,6 +99,9 @@ Quando o Optimus reenviar chaves específicas apó bloqueio do Validador, faça 
 4. Rodar novamente `optimus_extract.py` e salvar `*-refino-1-contrato.json`.
 5. Devolver o novo caminho no handoff. Não investigar manualmente, não mudar parser e não perguntar
    ao usuário. Se continuar `parse_failed`, devolva a evidência para bloqueio fail-closed.
+6. No fluxo com fan-out, o refino é executado pelo worker `coletor-card` (só as chaves afetadas)
+   e o Optimus reagrega com `optimus_card_aggregate.py <manifesto> <refino-1-contrato.json>`
+   (o override substitui os cards refinados por `card_id`).
 
 ### Registro de boards (fonte única — o board é config, não texto solto)
 Cada board seleciona uma linha → monta o JQL → normaliza (modelo abaixo). **Ordem = prioridade**

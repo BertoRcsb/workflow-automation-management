@@ -48,9 +48,13 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
   contornar ou alterar regra.
 - **Gates humanos preservados:** todo `make run`, master, merge e triggers continuam dependendo do
   comando explícito do usuário, exatamente como definido nesta skill.
-- **Somente quatro subagentes:** `coletor`, `validador`, `montador` e `notificador-sandbox`. O Optimus
-  nunca abre Agent genérico para versão-alvo, Notion, Bash, refinamento ou Sync; executa essas tarefas
-  de coordenação no próprio contexto.
+- **Somente os subagentes canônicos:** os quatro papéis `coletor`, `validador`, `montador` e
+  `notificador-sandbox`, mais o worker efêmero `coletor-card` — despachado EXCLUSIVAMENTE pelo
+  Optimus durante fan-out de coleta indicado pelo manifesto (`fanout: true`), um lote por worker,
+  em ondas de até `params.max_workers` invocações Agent paralelas numa mesma mensagem. O Optimus
+  nunca abre Agent genérico para versão-alvo, Notion, Bash, refinamento ou Sync; executa essas
+  tarefas de coordenação no próprio contexto. A concorrência vem de `tools/workers.json` via
+  manifesto — o Optimus não escolhe números.
 
 ## Modos (verificar / executar)
 - **`verificar`** — executa silenciosamente todas as conferências read-only e apresenta **somente ao
@@ -89,6 +93,16 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
    `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json > execucoes/<data>-<board>-contrato.json`.
    **O LLM está proibido de derivar PR/repo/apenas_proc de cabeça.** O contrato é a saída do script.
    · **gate:** erro de leitura ou script → documenta e **para**.
+   · **Fan-out (quando o handoff do coletor vier com `fanout: true`):** o Optimus lê o manifesto
+   (`manifest_path`), despacha `Agent("coletor-card")` por lote em ondas de até `params.max_workers`
+   (paralelos na mesma mensagem), cada worker com `board`, `data`, `batch_id`, `keys` e os três
+   caminhos EXATOS do manifesto. Falha de um lote não cancela os demais. Depois roda ele próprio
+   `python3 tools/optimus_card_aggregate.py <manifesto> > execucoes/<data>-<board>-contrato.json`.
+   **Só o exit 0 deste script fecha a coleta** — auto-relato de worker nunca conta. Exit 1 →
+   redespachar SOMENTE os lotes faltantes (uma única vez) e reagregar; persistindo, documenta em
+   `erros/` e **para** (fail-closed; nunca prosseguir sem card do manifesto). No refino-1 de
+   `parse_failed`, invocar `Agent("coletor-card")` só nas chaves afetadas e reagregar com o
+   override `*-refino-1-contrato.json`.
 3. **Validador** → roda `python3 tools/optimus_gates.py <contrato.json> tools/rules.json [epic_status.json] > gates.json`.
    Consome `gates.json` (prosseguir, aprovados_finais, exclusões, avisos, errors). **Segue sozinho nos casos claros.**
    · **Prosseguimento = campo `prosseguir` do `gates.json`** (calculado em código: aprovados não-vazio
@@ -157,6 +171,26 @@ Optimus Prime retornando com o resultado = Confira
   motivo de cada um).
 - No alvo **`todos os boards`**, sai **por board** (o Sync fica fora do loop). **`verificar`** (dry) **não**
   emite essa linha. Elaboração completa: **`REFERENCE.md` §3**.
+
+## Mensagem de encerramento do ciclo (cópia para notificar)
+Diferente da mensagem `Confira` (que fecha só o dry-run do Passo 1), esta fecha o **ciclo inteiro**:
+emitida quando o **pós-deploy** (Sync Master `master→develop/stage/prerelease`) termina com sucesso —
+ou seja, quando a versão (Release ou Hotfix) realmente terminou de ir para todos os ambientes. Vale
+para qualquer ciclo que mude a versão em produção, não só para o board "features". É um **rascunho
+pronto para o usuário copiar e colar** e mandar para quem precisa saber — substitui o notificador real
+enquanto a skill `notificador` não existir (ver `docs/ROADMAP.md`).
+
+Formato fixo (só a versão/tipo muda), em bloco de código para facilitar o copy-paste:
+
+```
+Pessoal, finalizado!
+Deploy da versão <X.Y.Z> (<Release|Hotfix>) finalizado para todos os clientes: NeoEnergia, VLI,
+Treinamento, Prod e Pré-prod. Ambientes sincronizados com master → dev, pré-release e stage.
+```
+
+- Não personalizar por repo/trigger disparado — é uma mensagem padrão de status para os clientes, não
+  um relatório técnico (o relatório técnico já existe nos artefatos de `execucoes/`).
+- Emitir **uma vez**, ao final do pós-deploy, depois do resumo técnico daquele passo.
 
 ## Modelo (agnóstico)
 A esteira é **agnóstica de modelo**: os subagentes **não pinam `model:`** — herdam o modelo da

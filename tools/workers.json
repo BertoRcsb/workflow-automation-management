@@ -1,0 +1,11 @@
+{
+  "_doc": {
+    "descricao": "Config do fan-out de coleta (coletor-card). Fonte unica: limiar/concorrencia mudam AQUI, nunca no codigo nem nas skills. O manifesto embute estes params e o Optimus obedece ao manifesto.",
+    "fanout_threshold": "acima de N cards a coleta fan-out; N ou menos = fluxo monolitico atual",
+    "batch_size": "cards por worker (1 = um card por worker efemero)",
+    "max_workers": "maximo de workers simultaneos por onda (protege o rate limit do Jira)"
+  },
+  "fanout_threshold": 8,
+  "batch_size": 1,
+  "max_workers": 5
+}

@@ -6,11 +6,12 @@
 2. **spec/spec.md** — fonte da verdade funcional
 3. **`.claude/skills/orquestrador/SKILL.md`** — sequência, gates e guardrails da esteira
 
-## Subagentes canônicos (exatamente 4 papéis da spec — nenhum 5º)
+## Subagentes canônicos (4 papéis + worker efêmero de fan-out)
 
 | Papel | Arquivo | Skill | Responsabilidade |
 |-------|---------|-------|------------------|
-| **Coletor** | `.claude/agents/coletor.md` | `coletor` | Busca cards no Jira, normaliza, executa `optimus_extract.py` |
+| **Coletor** | `.claude/agents/coletor.md` | `coletor` | Busca cards no Jira, normaliza, executa `optimus_extract.py`; decide fan-out |
+| **Worker de coleta** | `.claude/agents/coletor-card.md` | `coletor` | Worker efêmero de coleta por lote, despachado só pelo Optimus em fan-out |
 | **Validador** | `.claude/agents/validador.md` | `validador` | Aplica gates (regra v2, D1/D2), executa `optimus_gates.py` |
 | **Montador** | `.claude/agents/montador.md` | `montador` | Cria/atualiza release no Notion via MCP |
 | **Notificador** | `.claude/agents/notificador-sandbox.md` | (nenhuma) | Gera rascunhos de notificação (sandbox) |
@@ -38,7 +39,9 @@ Optimus Prime (orquestrador)
 1. **Contexto novo por subagente** — cada invocação é uma chamada Agent independente; sem resume,
    sem compartilhamento de contexto anterior.
 2. **Cada subagente carrega apenas sua skill** — nunca múltiplas.
-3. **Subagentes nunca chamam subagentes** — só o Optimus Prime invoca Agent.
+3. **Subagentes nunca chamam subagentes** — só o Optimus Prime invoca Agent. Workers efêmeros também são
+   despachados só pelo Optimus Prime; a consolidação do fan-out é determinística (`tools/optimus_card_aggregate.py`),
+   sem agente consolidador.
 4. **Optimus valida antes de avançar** — consome o contrato de handoff (abaixo) de cada subagente.
 5. **Autonomia sem microaprovações** — modo + alvo autorizam o Optimus a coordenar todas as ações
    internas da esteira. Subagentes não pedem permissão ao usuário; devolvem handoff ao Optimus.
@@ -57,13 +60,20 @@ Optimus Prime (orquestrador)
   "artifact_paths": [],
   "counts": {},
   "questions": [],
-  "errors": []
+  "errors": [],
+  "fanout": false,
+  "manifest_path": "execucoes/<data>-<board>-manifesto.json",
+  "batch_id": "<bNN>"
 }
 ```
 
+Campos opcionais `fanout`/`manifest_path` aparecem no handoff do coletor quando há fan-out; `batch_id`
+aparece no handoff do worker `coletor-card`.
+
 ## Camada determinística (o LLM não modifica)
 
-`tools/optimus_extract.py` · `optimus_gates.py` · `optimus_yaml_gate.py` ·
+`tools/optimus_extract.py` · `optimus_card_manifest.py` · `optimus_card_aggregate.py` ·
+`optimus_gates.py` · `optimus_yaml_gate.py` ·
 `optimus_promotion_gate.py` · `optimus_triggers_gate.py` — ver `docs/GATES.md`.
 
 ## Próximas etapas

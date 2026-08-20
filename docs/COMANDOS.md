@@ -88,6 +88,7 @@ Promoção de branches (`make run` sempre com `target` explícito, nunca direto 
 |---|-------|-------------------|--------------------------|
 | 1 | **Versão-alvo** | próxima `X.(Y+1).0` pela última no Notion | autônomo |
 | 2 | **Coletor** | Atlassian MCP + `tools/optimus_extract.py` | autônomo (erro → documenta e para) |
+| 2b | **Fan-out (boards grandes)** | `tools/optimus_card_manifest.py` (JQL → manifesto) → workers `coletor-card` em ondas → `tools/optimus_card_aggregate.py` (contrato agregado) | autônomo; acima de `fanout_threshold` de `tools/workers.json`; artefatos `execucoes/<data>-<board>-{jql,manifesto}.json` e `-lote-bNN-{raw,remote,contrato}.json` |
 | 3 | **Validador** | `tools/optimus_gates.py` (regra v2 + D1/D2) | autônomo; ambiguidade = `blocked`, sem microaprovação |
 | 4 | **Montador** | Notion (create/update + re-fetch) | autônomo — sem pedir OK |
 | 5 | **Notificador** | *sandbox* | autônomo (só mostra pro usuário) |

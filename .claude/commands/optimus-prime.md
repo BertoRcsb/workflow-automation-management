@@ -44,13 +44,18 @@ Vazio → `verificar`.
 diretamente qualquer função deles:
 
 - Coletor: `Agent("coletor")`
+- Worker de coleta (fan-out): `Agent("coletor-card")` — SOMENTE quando o handoff do coletor vier
+  com `fanout: true`; um lote do manifesto por worker, em ondas de até `params.max_workers`
+  invocações paralelas numa mesma mensagem; falha de um lote não cancela os demais; um único
+  redespacho por lote faltante, depois bloqueio fail-closed.
 - Validador: `Agent("validador")`
 - Montador: `Agent("montador")`
 - Notificador: `Agent("notificador-sandbox")`
 
-Estes são os **únicos quatro agentes permitidos**. Não crie agente genérico para calcular versão,
-rodar Bash, consultar Notion, investigar erro ou coordenar a esteira. Versão-alvo, revalidação dos
-handoffs, refinamento automático e Sync pertencem ao próprio Optimus Prime.
+Estes são os **únicos agentes permitidos**. Não crie agente genérico para calcular versão,
+rodar Bash, consultar Notion, investigar erro ou coordenar a esteira. Versão-alvo, agregação do
+fan-out (`tools/optimus_card_aggregate.py`), revalidação dos handoffs, refinamento automático e
+Sync pertencem ao próprio Optimus Prime.
 
 Aguarde e valide o contrato de handoff de cada um (`status: ok|blocked|error`) antes de avançar.
 Se o Validador devolver `blocked` por `parse_failed`, execute primeiro o refinamento automático único

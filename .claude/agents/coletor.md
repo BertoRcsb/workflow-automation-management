@@ -17,7 +17,10 @@ Receba somente um board por execução (incidentes | features | refatoração).
 
 ## O que fazer
 
-1. Buscar cards de **exatamente um board** conforme JQL e mapeamento definido na skill.
+1. Executar a "Decisão de fan-out (determinística)" da skill: JQL enxuta (só chaves) →
+   `optimus_card_manifest.py` → manifesto. Com `fanout: false`, buscar os cards do board
+   normalmente conforme a skill; com `fanout: true`, devolver o handoff com `fanout` e
+   `manifest_path` e encerrar (os workers `coletor-card` fazem a coleta).
 2. Normalizar cada card no modelo de contrato (seção 7 da skill).
 3. Extrair URLs de PR/repositório usando `python3 tools/optimus_extract.py` (obrigatório — nunca interpretar ADF manualmente).
 4. Persistir artefatos em `execucoes/`:
@@ -47,6 +50,8 @@ Devolver JSON com:
   "agent": "coletor",
   "status": "ok|blocked|error",
   "board": "nome-do-board",
+  "fanout": false,
+  "manifest_path": "execucoes/<data>-<board>-manifesto.json",
   "artifact_paths": [
     "execucoes/<data>-<board>-raw.json",
     "execucoes/<data>-<board>-contrato.json"

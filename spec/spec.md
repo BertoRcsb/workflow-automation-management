@@ -179,6 +179,12 @@ sequenceDiagram
     Note over R,N: Passo 1 do Sync roda no executar de board unico; master/triggers sob OK do usuario
 ```
 
+> **Coleta paralelizável (fan-out):** acima do limiar de `tools/workers.json`, a coleta é dividida
+> em lotes executados por workers efêmeros `coletor-card`, despachados pelo orquestrador (subagente
+> nunca invoca subagente), com agregação determinística equivalente ao monolítico
+> (`tools/optimus_card_aggregate.py`, fail-closed). A validação (regra v2, D1/D2) nunca é
+> fragmentada — roda sempre sobre o contrato agregado completo.
+
 ### 6.1 Optimus Prime (orquestrador) — modos, gates e o Sync
 
 O orquestrador é a skill **"Optimus Prime"** (`.claude/skills/orquestrador/`). Ele **governa as

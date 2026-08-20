@@ -21,10 +21,17 @@
 - **Nome do proc** nas linhas só-banco.
 - Preencher **Merge / Infra** quando a origem do dado estiver definida.
 
+## Montador (descartado por ora)
+- **montador-card**: avaliado em 2026-08-20 e descartado — as células por card já saem prontas do
+  `gates.json.rows` (determinístico) e a escrita no Notion permanece single-writer, então fragmentar
+  a preparação não acelera o gargalo. Recriar somente se o molde exigir enriquecimento por card,
+  e nesse caso sem MCP de escrita (só fragmentos locais; o montador principal segue único escritor).
+
 ## Orquestrador / esteira
 - Skill **`notificador`** de verdade (envio a dev/PO/QA por canal oficial — hoje sandbox).
 - **Leitura diária multi-board** com montagem automática.
-- **Paralelismo** entre subagentes independentes.
+- **Paralelismo** entre subagentes independentes — FEITO 2026-08-20 para a coleta (fan-out
+  `coletor-card` + `optimus_card_manifest.py`/`optimus_card_aggregate.py`).
 - Estudar (com o usuário) se um dia o Optimus poderá mergear/deployar com segurança.
 - **Lean Loop (redução de custo):** mover I/O pesado (coleta do Jira, escrita dos `execucoes/*.json`)
   para passos determinísticos estilo `make`, deixando o LLM só para julgamento.
