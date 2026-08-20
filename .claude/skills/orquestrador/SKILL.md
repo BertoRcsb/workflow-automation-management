@@ -185,12 +185,18 @@ para qualquer ciclo que mude a versão em produção, não só para o board "fea
 pronto para o usuário copiar e colar** e mandar para quem precisa saber — substitui o notificador real
 enquanto a skill `notificador` não existir (ver `docs/ROADMAP.md`).
 
-Formato fixo (só a versão/tipo muda), em bloco de código para facilitar o copy-paste:
+Formato fixo (só a versão muda), em bloco de código para facilitar o copy-paste:
 
 ```
-Pessoal, finalizado!
-Deploy da versão <X.Y.Z> (<Release|Hotfix>) finalizado para todos os clientes: NeoEnergia, VLI,
-Treinamento, Prod e Pré-prod. Ambientes sincronizados com master → dev, pré-release e stage.
+Pessoal,
+
+Deploy da versão <X.Y.Z> finalizado com sucesso.
+
+Os ambientes de Prod, Pre-Prod com os clientes Neoenergia, VLI e Treinamento estão atualizados e sincronizados.
+
+As branches de MASTER -> dev, pre-release e stage também estão sincronizadas.
+
+Obrigado a todos.
 ```
 
 - Não personalizar por repo/trigger disparado — é uma mensagem padrão de status para os clientes, não
