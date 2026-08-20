@@ -133,8 +133,7 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
       **Exit 0 → mensagem `Confira` e espera o usuário; exit 1 → o driver já restaurou/documentou — PARE.**
    - **`configure` + `dry-run` = autônomo.** **`run`/`run-triggers` (mesmo driver) = OK explícito do
      usuário.** Passo 1 `prerelease→teste_regressivo`; Passo 2 `→master` (só usuário); Passo 3
-     `run-triggers` (só usuário; aprovação do build no GCP é dele). Pós-deploy:
-     `master→develop/stage/prerelease` (`--pr-title "Sync Master"`). Sintaxe completa: **`REFERENCE.md` §2**.
+     `run-triggers` (só usuário; aprovação do build no GCP é dele); **Pós-deploy: PAUSA após `run-triggers` e aguarda aprovação explícita do usuário antes de proceder ao Sync Master** (`master→develop/stage/prerelease`, `--pr-title "Sync Master"`). Sintaxe completa: **`REFERENCE.md` §2**.
    - **PROIBIDO chamar `make` direto no sync, rodar os gates soltos ou editar o YAML à mão nesta etapa**
      — sempre pelo driver (é ele que garante ordem, restauração e documentação).
 7. **Fechamento** → persiste `execucoes/<data>-<board>-{raw,contrato,gates}.json` como passo contratado
@@ -199,8 +198,8 @@ barato fabricaram handoff e montaram página órfã). A corretude **não depende
 - **Autonomia até o `make dry-run` do Sync Passo 1** (board único): no `executar`, os passos rodam **sem
   aprovação humana** — inclui criar a doc no Notion, editar o `repos.yaml` e rodar o `make dry-run` do
   Passo 1 — e terminam na mensagem `Confira`. **O `make run` do Passo 1 (abre os PRs) é sob OK explícito
-  do usuário.** Antes disso, ambiguidade/erro apenas bloqueia e documenta, sem microaprovação. No alvo `todos os boards`,
-  ainda **termina no Notion**.
+  do usuário.** Antes disso, ambiguidade/erro apenas bloqueia e documenta, sem microaprovação. **Passo 3 e pós-deploy também requerem OK explícito do usuário**, ordenados (`run-triggers` OK → PAUSA → usuário aprova pós-deploy → Sync Master OK). No alvo `todos os boards`,
+  termina no Notion (Sync fica fora do loop).
 - **Segurança por ação:** toda ação do `sync-repos-from-master` roda antes em **dry-run** (parseia saída
   + exit code); erro → documenta e **para**. **Todo `make run` (Passo 1 e Passo 2) e triggers (Passo 3):**
   limpo → mostra e espera **comando explícito** do usuário antes do real. O `make dry-run` e a edição do
