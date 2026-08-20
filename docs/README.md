@@ -25,7 +25,7 @@ real e os merges são do usuário.
 
 ## Como usar (resumo — passo a passo em `COMANDOS.md`)
 ```
-Optimus Prime verificar <board|todos os boards>   # dry: coleta, valida, simula — NÃO toca em nada
+Optimus Prime verificar <board|todos os boards>   # dry: coleta e valida de verdade (read-only), escrita zero — só relatório
 Optimus Prime iniciar   <board|todos os boards>   # board único: autônomo até o make dry-run do Passo 1 (make run sob OK); todos os boards: até o Notion
 ```
 

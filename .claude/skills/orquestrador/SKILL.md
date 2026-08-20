@@ -58,10 +58,11 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
 
 ## Modos (verificar / executar)
 - **`verificar`** — executa silenciosamente todas as conferências read-only e apresenta **somente ao
-  final** o que a esteira faria (todos os passos + os comandos que rodaria), **sem executar NENHUM
-  comando** que mude algo: `coletor` (leitura) → `validador` → **rascunho**
-  (aprovados × reprovados) → simula o Notion e mostra o alvo do Sync (`repos.yaml` + `make dry-run`).
-  Entrega só **relatório/plano**.
+  final** o que a esteira faria (todos os passos + os comandos que rodaria). **Leitura real, escrita
+  zero:** lança os subagentes reais de leitura (`coletor` → `validador`, read-only no Jira) e roda os
+  scripts de gate sobre os dumps; monta o **rascunho** (aprovados × reprovados), **simula o Notion**
+  (montador não roda) e apenas **reporta** o alvo do Sync — `repos.yaml` intocado, **nenhum `make`**
+  (nem dry-run). Entrega só **relatório/plano**.
 - **`executar`** (board único) — roda a esteira **autônoma até o `make dry-run` do Sync Passo 1**:
   versão-alvo (automática) → `coletor` → `validador` → `montador` **cria/atualiza o Notion (real) sem
   pedir aprovação** → `notificador` (sandbox) → **Sync** (edita o `repos.yaml` e roda `make dry-run`).
@@ -81,13 +82,17 @@ revalidação do Notion, backup/toggle controlado do `repos.yaml` e `dry-run` do
 > **automática por board** como **`Release` sequencial** (`X.(Y+1).0`); **incidente NÃO é hotfix por
 > padrão** (release comum) — hotfix só quando o usuário avisar.
 
-1. **Versão-alvo (automática, determinística):** consulta **TODAS** as páginas da base
-   (`notion-query-data-sources`), salva o resultado em `execucoes/<data>-versoes-dump.json` e roda
+1. **Versão-alvo (automática, determinística):** consulta a base com `notion-query-data-sources`
+   e **pagina até o fim**: enquanto a resposta tiver `has_more: true`, repete a consulta com o
+   cursor devolvido até vir `has_more: false`. Salva **todas** as respostas cruas (preservando os
+   campos `has_more`) em `execucoes/<data>-versoes-dump.json` **com a ferramenta Write** — nunca
+   heredoc no Bash (dispara prompt de permissão e quebra a autonomia) — e roda
    `python3 tools/optimus_next_version.py execucoes/<data>-versoes-dump.json`. **O LLM não calcula a
    versão de cabeça** — usa a `proxima=` da saída como `Release` por board (incidentes 1º). O script
-   enforça **GATE-VER-1** (maior número semântico, nunca data de criação) e **GATE-VER-2** (anti-colisão;
-   exit 1 → PARA e reporta "numeração dessincronizada; OK do usuário para decidir"). **Incidente NÃO é
-   hotfix por padrão**; **hotfix só quando o usuário avisar**.
+   enforça **GATE-VER-1** (maior número semântico, nunca data de criação), **GATE-VER-2** (anti-colisão;
+   exit 1 → PARA e reporta "numeração dessincronizada; OK do usuário para decidir") e **GATE-VER-3**
+   (completude: dump terminando em `has_more: true` = consulta parcial → exit 1; refazer paginando).
+   **Incidente NÃO é hotfix por padrão**; **hotfix só quando o usuário avisar**.
 2. **Coletor** → cards do Jira normalizados (§7). **Fluxo obrigatório:** fetch cada card com
    `responseContentFormat: "adf"` → salva em `execucoes/<data>-<board>-raw.json` → roda
    `python3 tools/optimus_extract.py execucoes/<data>-<board>-raw.json > execucoes/<data>-<board>-contrato.json`.
@@ -244,7 +249,8 @@ barato fabricaram handoff e montaram página órfã). A corretude **não depende
 - **Hotfix** → identificar e **devolver ao usuário** para ele conduzir.
 - **Um board por vez** — coletar de UM board (incidentes/features/refatoração) por execução;
   **nunca misturar** numa release. Misturar só com **OK explícito do usuário**.
-- **`verificar` nunca executa** — só apresenta o plano; execução real só em `executar`/`iniciar`.
+- **`verificar` nunca executa ações de escrita** — conferências read-only (subagentes de leitura,
+  consultas MCP, gates sobre dumps) rodam de verdade; escrita e `make` só em `executar`/`iniciar`.
 - **Execução silenciosa + mensagem única:** no `executar`, nada de relatórios verbosos ou "posso
   avançar?" pelo caminho; ao fim do escopo autônomo, **uma só** mensagem — `Optimus Prime retornando com
   o resultado = Confira` + os links dos artefatos.

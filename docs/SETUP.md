@@ -42,7 +42,7 @@ Configure o `.env` dele (tokens Bitbucket/GCP) e rode `make setup` — **ver o R
 ## Como usar
 No Claude Code (com MCPs conectados), escreva:
 ```
-optimus prime verificar <board>          # DRY: mostra o que faria, sem executar nada
+optimus prime verificar <board>          # DRY: leitura real (coleta/valida), escrita zero — só relatório
 optimus prime iniciar <board>            # board único: autônoma até o make dry-run do Passo 1 (make run sob OK do usuário)
 optimus prime verificar todos os boards  # DRY dos três (um bloco por board)
 optimus prime iniciar todos os boards    # varre os três, incidentes 1º, 1 Notion por board (para no Notion)

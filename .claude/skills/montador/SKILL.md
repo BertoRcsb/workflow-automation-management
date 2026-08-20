@@ -22,7 +22,8 @@ hoje escreve no Notion — para trocar o destino, reescreva só "Configuração 
 - **Propriedades:** `Versão` (title) · `Tipo` (select: `Release` / `Hotfix`)
 - **Ferramentas:** `mcp__notion__notion-create-pages`, `mcp__notion__notion-update-page`, `notion-fetch`, `notion-query-data-sources`.
   - **Localizar versão/última página: use `notion-query-data-sources` (SQL) — rápido e estável.**
-    **Evite `notion-search`** (semântico, lento/instável nesta base).
+    **Evite `notion-search`** (semântico, lento/instável nesta base). **Pagine até `has_more: false`**
+    antes de concluir que uma página/versão não existe — resultado parcial não prova ausência.
 - **Modelo:** agnóstico — sem pin; herda o da sessão. A corretude vem do molde literal + do
   `optimus_montage_gate.py` rodado pelo Optimus, não do modelo.
 

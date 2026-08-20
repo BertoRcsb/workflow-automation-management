@@ -34,7 +34,8 @@ ANTES de agir e obedeça à sequência, aos gates e aos guardrails de lá. Detal
 `.claude/skills/orquestrador/REFERENCE.md`. Nada neste comando substitui a skill.
 
 **Modo (de `$ARGUMENTS`):** `iniciar`/`executar` = esteira real; `verificar` = ensaio dry, executado
-silenciosamente e com somente o relatório final (não toca em nada, sem a linha de fechamento).
+silenciosamente e com somente o relatório final (leitura real — coletor/validador rodam read-only;
+escrita zero — sem Notion, sem `repos.yaml`, sem `make`; sem a linha de fechamento).
 Vazio → `verificar`.
 
 **Alvo (de `$ARGUMENTS`):** `incidentes` | `features` | `refatoração` (um board) ou

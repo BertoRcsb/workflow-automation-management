@@ -190,8 +190,9 @@ sequenceDiagram
 O orquestrador é a skill **"Optimus Prime"** (`.claude/skills/orquestrador/`). Ele **governa as
 skills e o `sync-repos-from-master`**, com **um comando único** e dois modos:
 
-- **`verificar`** — dry/seguro: roda a sequência sem tocar em nada (coletor → confere → montador
-  **simula** o Notion → mostra o alvo do Sync + `make dry-run`). Só relatório.
+- **`verificar`** — dry/seguro: leitura real, escrita zero (coletor e validador rodam read-only →
+  confere → montador **simula** o Notion → o alvo do Sync é só **reportado**, sem editar
+  `repos.yaml` nem rodar `make`). Só relatório.
 - **`executar`** (board único) — roda a esteira **autônoma até o `make dry-run` do Sync Passo 1**
   (versão-alvo automática → coletor → validador → montador cria a página **sem pedir OK** → edita o
   `repos.yaml` → `make dry-run`); ao terminar (dry-run limpo) emite a **mensagem única `Confira`** e
